@@ -1,23 +1,16 @@
 import js from "@eslint/js";
 import globals from "globals";
-import { defineConfig } from "eslint/config";
 
-export default defineConfig([
-  { 
-    files: ["**/*.{js,mjs,cjs}"], 
-    plugins: { js }, 
-    extends: ["js/recommended"], 
-    languageOptions: { 
+export default [
+  js.configs.recommended,
+
+  {
+    files: ["**/*.js"],
+    languageOptions: {
       globals: {
         ...globals.browser,
-        ...globals.jest     // ← Lägger till Jest-globaler här!
+        ...globals.jest
       }
-    } 
-  },
-  { 
-    files: ["**/*.js"], 
-    languageOptions: { 
-      sourceType: "script" 
-    } 
-  },
-]);
+    }
+  }
+];
