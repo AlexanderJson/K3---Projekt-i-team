@@ -51,3 +51,42 @@
   --error:   #ef4444; 
   --request: #a855f7;  
 }
+
+
+body {
+    background: var(--bg-main);
+}
+
+.app {
+    display: grid;
+    grid-template-columns: minmax(380px, 22vw) 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 1rem;
+
+    height: 100vh;
+    border: 0.4px solid var(--border);
+    background: var(--bg-main);
+    margin-top: 44px;
+}
+
+.header {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    padding: 12px 20px;
+}
+
+
+.left {
+    background: var(--bg-element);
+    border-top: 0.4px solid var(--border);
+    border-right: 0.3px solid var(--border);
+}
+
+.center {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
