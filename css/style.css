@@ -105,6 +105,17 @@ body {
 }
 
 
+.menu {
+  display: inline-block;
+  margin-bottom: 8px;
+  margin-top: 8px;
+  background: var(--bg-element);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+}
+
 .menu-btn {
   width: 100%;
   height: 3.5rem;
