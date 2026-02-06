@@ -1,4 +1,4 @@
-import { Btn } from "../comps/createButton.js";
+import { Btn } from "../comps/btn.js";
 
 
 function showScreen(){

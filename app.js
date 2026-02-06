@@ -1,6 +1,7 @@
 
 import { menu } from "./js/menu/sideMenu.js";
-
+import { taskScreen } from "./js/taskList/taskScreen.js";
+import { tasks } from "./js/taskList/seed.js";
 const app = document.getElementById("app");
 app.classList.add("app");
 
@@ -10,7 +11,8 @@ sideMenuDiv.classList.add("left")
 
 
 const mainContent = document.createElement("div");
-mainContent.classList.add("content");
+mainContent.classList.add("center");
+mainContent.append(taskScreen(tasks))
 
 
 
@@ -18,6 +20,5 @@ mainContent.classList.add("content");
 
 
 
-
-app.append(menu())
+app.append(sideMenuDiv, mainContent)
 

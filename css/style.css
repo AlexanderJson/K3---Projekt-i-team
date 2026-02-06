@@ -1,5 +1,4 @@
-:root
-{
+:root {
   --bg-main: #ffffff;     
   --bg-deep: #E5E7EB;     
   --bg-card: #ffffff;    
@@ -15,10 +14,10 @@
   --border: #d1d5db;     
   --border-strong: #9ca3af;
   --bg-btn-contrast: #000002;
+
 }
 
-[data-theme="dark"]
-{
+[data-theme="dark"] {
   --bg-main: #121212;     
   --bg-deep: #000002;        
   --bg-card: #1a1a1a;        
@@ -45,6 +44,14 @@
 }
 
 :root {
+  --accent-cyan:    #22d3ee;
+  --accent-amber:   #fbbf24;
+  --accent-crimson: #f87171;
+  --accent-violet:  #a78bfa;
+}
+
+
+:root {
   --success: #22c55e; 
   --info:    #22d3ee;  
   --warning: #f59e0b; 
@@ -53,33 +60,123 @@
 }
 
 
-body {
+.listItem {
     background: var(--bg-main);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    position: relative;
+    padding: 2.5rem;
+    text-align: left;
+    margin: 2px;
+    align-items: center;
+    position: relative;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 24px;
+    box-shadow:
+        0 1px 2px rgba(0,0,0,0.05),
+        0 4px 8px rgba(0,0,0,0.06);
 }
 
-.app {
-    display: grid;
-    grid-template-columns: minmax(380px, 22vw) 1fr;
-    grid-template-rows: 1fr;  
+.assignedTitle {
+        font-size: 88px;
+        color: var(--text-muted);
 
-    border: 0.4px solid var(--border);
-    background: var(--bg-main);
-    margin-top: 44px;
-    height: 100vh;
-    overflow: hidden;
+}
+
+
+.listItem span {
+    font-size: 28px;
+}
+
+
+.listItem:hover {
+    border: 2px solid var(--accent-cyan);
+}
+
+
+.leftCard {
+    display: flex;
+    flex-direction: column;
+}
+.rightCard {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.listItem input[type="checkbox"] {
+  appearance: none;;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 22%;
+
+  border: 2px solid var(--border-strong);
+  background: transparent;
+
+  cursor: pointer;
+  position: relative;
+
+}
+
+.listItem input[type="checkbox"]:hover {
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.15);
+}
+
+.listItem input[type="checkbox"]:checked {
+  background: var(--info);  
+  border-color: transparent;
+  
+}
+
+.listItem input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+
+  left: 12px;
+  top: 2px;
+
+  width: 12px;
+  height: 24px;
+
+  border: solid var(--bg-card);
+  border-width: 0 6px 6px 0;
+  transform: rotate(45deg);
 }
 
 
 
 
+.taskWrapper {
+    flex: 1 1 0;
+    min-width: 250px;
 
-html,
-body {
-    height: 100%;
-    margin: 0;
-    overflow: hidden; 
+    margin: 8px;
+    padding: 8px;
+
+    display: flex;
+    flex-direction: column;
+
+    min-height: 0;
+
 }
 
+
+.taskList {
+        flex: 1;
+    overflow-y: auto;
+    min-height: 0; 
+}
+
+
+.taskHeader {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
 
 
 .header {
@@ -91,17 +188,69 @@ body {
 
 .left {
     background: var(--bg-element);
-    border-top: 0.4px solid var(--border);
-    border-right: 0.3px solid var(--border);
+
 }
+
+.left,
+.center {
+    min-height: 0;
+}
+
 
 .center {
     display: flex;
     flex-direction: row;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 1rem;
     overflow-x: auto;
     overflow-y: hidden;
+    
+    border: solid var(--border);
+    border-width: 1px;
+    min-height: 0;
+}
+
+
+.statusCircle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 8px solid var(--accent-crimson);
+}
+.app {
+    display: grid;
+    grid-template-columns: minmax(380px, 22vw) 1fr;
+    grid-template-rows: 1fr;  
+
+    height: 100vh;
+    overflow: hidden;
+}
+
+
+body { 
+    background-color: var(--bg-main);
+    font-family: 'Share Tech Mono', monospace;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden; 
+}
+
+
+
+
+.addBtn {
+  border: none;
+  color: var(--text-main);
+  background: transparent;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 44px;
+  cursor: pointer;
 }
 
 
@@ -115,6 +264,21 @@ body {
   flex-direction: column;
 
 }
+
+
+.menu h2 {
+  color: var(--text-dim);
+  text-align: left;
+  font-family: 'Share Tech Mono', monospace;
+  font-size:medium;
+  font-size: 52px;
+  margin: 8px;
+  margin-bottom: 88px;
+  margin-left: 44px;
+}
+
+
+
 
 .menu-btn {
   width: 100%;
