@@ -1,18 +1,26 @@
-import { taskList } from "./taskList.js"
-
+import { taskList } from "./taskList.js";
+import { TASK_STATUSES } from "../status.js";
 
 export const taskScreen = (tasks) => 
 {
     const screen = document.createDocumentFragment();
 
-    const backlogList = tasks.filter(t => t.status == "backlog");
-    const progressList = tasks.filter(t => t.status == "progress");
-    const doneList = tasks.filter(t => t.status == "done");
+    const backlogList = tasks.filter(
+        t => t.status === TASK_STATUSES.TODO
+    );
 
-    const backlog = taskList("Backlog", backlogList);
-    const progress = taskList("In Progress", progressList);
-    const done = taskList("Done", doneList);
+    const progressList = tasks.filter(
+        t => t.status === TASK_STATUSES.IN_PROGRESS
+    );
 
-    screen.append(backlog,progress,done)
+    const doneList = tasks.filter(
+        t => t.status === TASK_STATUSES.DONE
+    );
+
+    const backlog = taskList("Att göra", backlogList);
+    const progress = taskList("Pågår", progressList);
+    const done = taskList("Klart", doneList);
+
+    screen.append(backlog, progress, done);
     return screen;
-}
+};
