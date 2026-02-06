@@ -1,24 +1,38 @@
-
+import { initSeed } from "./js/taskList/seed.js";
 import { menu } from "./js/menu/sideMenu.js";
 import { taskScreen } from "./js/taskList/taskScreen.js";
-import { tasks } from "./js/taskList/seed.js";
+import { subscribe } from "./js/observer.js";
+import { loadState } from "./js/storage.js";
+
 const app = document.getElementById("app");
 app.classList.add("app");
 
+// Sidebar
 const sideMenuDiv = document.createElement("div");
+sideMenuDiv.classList.add("left");
 sideMenuDiv.append(menu());
-sideMenuDiv.classList.add("left")
 
-
+// Main content
 const mainContent = document.createElement("div");
 mainContent.classList.add("center");
-mainContent.append(taskScreen(tasks))
 
+app.append(sideMenuDiv, mainContent);
 
+function render() {
+  mainContent.innerHTML = "";
 
+  const state = loadState();
 
+  if (!state || !state.tasks || state.tasks.length === 0) {
+    return;
+  }
 
+  mainContent.append(taskScreen(state.tasks));
+}
 
+// Observer
+subscribe(render);
 
-app.append(sideMenuDiv, mainContent)
-
+// Init + första render
+initSeed();
+render();

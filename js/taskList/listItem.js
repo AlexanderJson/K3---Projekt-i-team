@@ -1,29 +1,53 @@
-export const listItem = (task) => 
-{
-    const div = document.createElement("div");
-    const leftCard = document.createElement("div");
-    leftCard.classList.add("leftCard");
+import { updateTaskStatus, TASK_STATUSES } from "../status.js";
 
-    const statusCheck = document.createElement("input");
-    statusCheck.type = "checkbox";
+function getNextStatus(currentStatus) {
+  if (currentStatus === TASK_STATUSES.TODO) {
+    return TASK_STATUSES.IN_PROGRESS;
+  }
 
-    const taskTitle = document.createElement("span");
-    const assignedTitle = document.createElement("span");
-    assignedTitle.classList.add("assignedTitle");
-    assignedTitle.textContent = task.assigned;
+  if (currentStatus === TASK_STATUSES.IN_PROGRESS) {
+    return TASK_STATUSES.DONE;
+  }
 
-    taskTitle.textContent = task.title;
-    statusCheck.checked = task.completed;
-
-    const statusBadge = document.createElement("span");
-    statusBadge.classList.add("statusBadge");
-    statusBadge.textContent = task.status;
-    statusBadge.dataset.status = task.status;
-
-    div.classList.add("listItem");
-
-    leftCard.append(taskTitle, statusBadge, assignedTitle);
-    
-    div.append(leftCard, statusCheck);
-    return div;
+  return null;
 }
+
+export const listItem = (task) => {
+  const div = document.createElement("div");
+  div.classList.add("listItem");
+
+  const leftCard = document.createElement("div");
+  leftCard.classList.add("leftCard");
+
+  const taskTitle = document.createElement("span");
+  taskTitle.textContent = task.title;
+
+  const assignedTitle = document.createElement("span");
+  assignedTitle.classList.add("assignedTitle");
+  assignedTitle.textContent = task.assigned;
+
+  const statusBadge = document.createElement("span");
+  statusBadge.classList.add("statusBadge");
+  statusBadge.textContent = task.status;
+  statusBadge.dataset.status = task.status;
+
+  const statusCheck = document.createElement("input");
+  statusCheck.type = "checkbox";
+  statusCheck.checked = task.completed;
+
+  statusCheck.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+
+  leftCard.append(taskTitle, statusBadge, assignedTitle);
+  div.append(leftCard, statusCheck);
+
+  div.addEventListener("click", () => {
+    const nextStatus = getNextStatus(task.status);
+    if (!nextStatus) return;
+
+    updateTaskStatus(task.id, nextStatus);
+  });
+
+  return div;
+};

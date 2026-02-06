@@ -1,24 +1,11 @@
+import {
+  isValidTaskStatus,
+  requiresCommentForStatus,
+  TASK_STATUSES
+} from "./status.js";
+
 import { loadState, saveState } from "./storage.js";
 import { notify } from "./observer.js";
-
-// Central definition of allowed task statuses
-export const TASK_STATUSES = Object.freeze({
-  TODO: "Att göra",
-  IN_PROGRESS: "Pågår",
-  DONE: "Klar",
-  CLOSED: "Stängd"
-});
-
-// Validate that a status value is allowed
-export function isValidTaskStatus(status) {
-  return Object.values(TASK_STATUSES).includes(status);
-}
-
-// Business rule: closed tasks must have a comment (UI enforced later)
-export function requiresCommentForStatus(status) {
-  return status === TASK_STATUSES.CLOSED;
-}
-
 
 export function updateTaskStatus(taskId, newStatus, comment = "") {
   if (!isValidTaskStatus(newStatus)) {
@@ -35,14 +22,13 @@ export function updateTaskStatus(taskId, newStatus, comment = "") {
     throw new Error("State not initialized");
   }
 
-  const task = state.tasks.find(t => t.id === taskId);
+  const task = state.tasks.find(task => task.id === taskId);
 
   if (!task) {
     throw new Error("Task not found");
   }
 
   task.status = newStatus;
-  task.completed = newStatus === TASK_STATUSES.DONE;
 
   if (newStatus === TASK_STATUSES.CLOSED) {
     task.comment = comment;
