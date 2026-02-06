@@ -1,16 +1,15 @@
-export function createTask(
-    {
-        title,
-        completed,
-        status,
-        assigned
-    }
-) 
-    {
-        return {
-            title,
-            completed,
-            status,
-            assigned
-    };
+export function createTask({
+  id,
+  title,
+  completed,
+  status,
+  assigned
+}) {
+  return {
+    id,
+    title,
+    completed,
+    status,
+    assigned
+  };
 }
