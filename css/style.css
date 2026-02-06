@@ -1,310 +1,262 @@
-:root {
-  --bg-main: #ffffff;     
-  --bg-deep: #E5E7EB;     
-  --bg-card: #ffffff;    
-  --bg-element: #f9fafb; 
-  --bg-header: #ffffff;
-  --bg-bck: #ffffff;
-  --text-main: #111827;  
-  --text-dim: #4b5563;   
-  --text-muted: #9ca3af;  
-  --text-btn-contrast: #ffffff;  
-
-
-  --border: #d1d5db;     
-  --border-strong: #9ca3af;
-  --bg-btn-contrast: #000002;
-
+/* =========================
+   RESET
+   ========================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-[data-theme="dark"] {
-  --bg-main: #121212;     
-  --bg-deep: #000002;        
-  --bg-card: #1a1a1a;        
-  --bg-element: #27272A;     
-  --bg-header: #2a2a2a;
-  --bg-bck: #000002;
+html,
+body {
+  height: 100%;
+}
 
-  --text-main: #ffffff;      
-  --text-dim: #cecece;     
-  --text-muted: #666666;     
+body {
+  font-family: 'Share Tech Mono', monospace;
+  background: var(--bg-main);
+  color: var(--text-main);
+}
 
-  --bg-btn-active: #202023;
-  --bg-btn-contrast: #ffffff;
-  --text-btn-contrast: #000002; 
+/* =========================
+   FÄRGVARIABLER
+   ========================= */
+:root {
+  --bg-main: #ffffff;
+  --bg-deep: #E5E7EB;
+  --bg-card: #ffffff;
+  --bg-element: #f9fafb;
+  --bg-header: #ffffff;
 
+  --text-main: #111827;
+  --text-dim: #4b5563;
+  --text-muted: #9ca3af;
 
-  --border: rgba(255,255,255,0.10);
-  --border-strong: rgba(255,255,255,0.25);
+  --border: #d1d5db;
+  --border-strong: #9ca3af;
 
   --accent-cyan: #22d3ee;
   --accent-amber: #fbbf24;
   --accent-crimson: #f87171;
   --accent-violet: #a78bfa;
+
+  --success: #22c55e;
 }
 
-:root {
-  --accent-cyan:    #22d3ee;
-  --accent-amber:   #fbbf24;
-  --accent-crimson: #f87171;
-  --accent-violet:  #a78bfa;
+/* =========================
+   APP LAYOUT (MOBILE FIRST)
+   ========================= */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-
-:root {
-  --success: #22c55e; 
-  --info:    #22d3ee;  
-  --warning: #f59e0b; 
-  --error:   #ef4444; 
-  --request: #a855f7;  
+/* =========================
+   SIDEMENU
+   ========================= */
+.left {
+  display: none;
+  background: var(--bg-element);
 }
 
+.menu {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
 
-.listItem {
-  background: var(--bg-card);
+.menu-btn {
+  background: none;
+  border: none;
+  font-size: 32px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+}
+
+/* DEV ONLY */
+.menu-btn.dev {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-left: 4px solid #ef4444;
+}
+
+/* =========================
+   CENTER CONTENT
+   ========================= */
+.center {
+  flex: 1;
+  background: #f6f8fb;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* =========================
+   TASK WRAPPER
+   ========================= */
+.taskWrapper {
+  background: transparent;
+}
+
+.taskHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  gap: 12px;
-  padding: 20px;
-  margin-bottom: 16px;
-
-  border-radius: 18px;
-  border: 1px solid var(--border);
-
-  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-}
-
-
-.assignedTitle {
-  font-size: 18px;
-  color: var(--text-muted);
-  margin-top: 6px;
-}
-
-
-.listItem span {
-  font-size: 20px;
-}
-
-
-.listItem:hover {
-  border-color: var(--accent-cyan);
-}
-
-
-.leftCard {
-    display: flex;
-    flex-direction: column;
-}
-.rightCard {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.listItem input[type="checkbox"] {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-}
-
-.listItem input[type="checkbox"]:hover {
-  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.15);
-}
-
-.listItem input[type="checkbox"]:checked {
-  background: var(--info);  
-  border-color: transparent;
-  
-}
-
-.listItem input[type="checkbox"]:checked::after {
-  left: 9px;
-  top: 4px;
-
-  width: 8px;
-  height: 16px;
-
-  border-width: 0 4px 4px 0;
-}
-
-
-
-
-.taskWrapper {
-    flex: 1 1 0;
-    min-width: 250px;
-
-    margin: 8px;
-    padding: 8px;
-
-    display: flex;
-    flex-direction: column;
-
-    min-height: 0;
-
-    background: transparent;
-
-}
-
-
-.taskList {
-        flex: 1;
-    overflow-y: auto;
-    min-height: 0; 
-}
-
-
-.taskHeader {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+  margin-bottom: 12px;
 }
 
 .taskHeader h1 {
   font-size: 22px;
   font-weight: 600;
-  letter-spacing: 0.02em;
 }
-
-
-.header {
-    grid-column: 1 / -1;
-    justify-content: space-between;
-    padding: 12px 20px;
-}
-
-
-.left {
-    background: var(--bg-element);
-
-}
-
-.left,
-.center {
-    min-height: 0;
-}
-
-
-.center {
-  background: #f6f8fb;
-  padding: 16px;
-  gap: 16px;
-}
-
-
-
-.statusCircle {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 8px solid var(--accent-crimson);
-}
-.app {
-    display: grid;
-    grid-template-columns: minmax(380px, 22vw) 1fr;
-    min-height: 100vh;
-}
-
-
-
-body { 
-    background-color: var(--bg-main);
-    font-family: 'Share Tech Mono', monospace;
-}
-
-html,
-body {
-    margin: 0;
-}
-
-
-
 
 .addBtn {
+  background: none;
   border: none;
-  color: var(--text-main);
-  background: transparent;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 44px;
+  font-size: 36px;
   cursor: pointer;
 }
 
+/* =========================
+   STATUS CIRCLE
+   ========================= */
+.statusCircle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 6px solid var(--accent-crimson);
+}
 
-.menu {
-  display: inline-block;
-  margin-bottom: 8px;
-  margin-top: 8px;
-  background: var(--bg-element);
-  height: 100%;
+/* =========================
+   TASK LIST
+   ========================= */
+.taskList {
   display: flex;
   flex-direction: column;
-
+  gap: 12px;
 }
 
-
-.menu h2 {
-  color: var(--text-dim);
-  text-align: left;
-  font-family: 'Share Tech Mono', monospace;
-  font-size:medium;
-  font-size: 52px;
-  margin: 8px;
-  margin-bottom: 88px;
-  margin-left: 44px;
-}
-
-
-
-
-.menu-btn {
-  width: 100%;
-  height: 3.5rem;
-  background: var(--bg-btn-active);
-  text-align: left;
-  font-size: 44px;
-  border: none;
-  cursor: pointer;
-  margin-bottom: 44px;
-  margin-left: 44px;
-
-}
-
-
-.statusBadge {
+.emptyState {
   font-size: 14px;
+  color: var(--text-muted);
+  padding: 12px;
+}
+
+/* =========================
+   TASK ITEM
+   ========================= */
+.listItem {
+  background: var(--bg-card);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+.listItem:hover {
+  border-color: var(--accent-cyan);
+}
+
+.listItem.isLocked {
+  opacity: 0.6;
+}
+
+.leftCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.listItem span {
+  font-size: 16px;
+}
+
+.assignedTitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* =========================
+   STATUS BADGE
+   ========================= */
+.statusBadge {
+  font-size: 12px;
   font-weight: 600;
-  padding: 4px 12px;
+  margin-top: 4px;
+  padding: 4px 10px;
   border-radius: 999px;
-  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-
-.statusBadge[data-status="todo"] {
-  border-color: var(--border-strong);
+.statusBadge[data-status="Att göra"] {
+  background: var(--bg-element);
 }
 
-.statusBadge[data-status="in-progress"] {
+.statusBadge[data-status="Pågår"] {
   background: var(--accent-amber);
   color: #000;
-  border-color: transparent;
 }
 
-.statusBadge[data-status="done"] {
+.statusBadge[data-status="Klar"] {
   background: var(--success);
   color: #000;
-  border-color: transparent;
 }
 
-.statusBadge[data-status="closed"] {
+.statusBadge[data-status="Stängd"] {
   background: var(--accent-crimson);
   color: #000;
-  border-color: transparent;
 }
 
+/* =========================
+   CHECKBOX
+   ========================= */
+.listItem input[type="checkbox"] {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.listItem input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+}
+
+/* =========================
+   RESPONSIVE – TABLET
+   ========================= */
+@media (min-width: 768px) {
+  .center {
+    padding: 20px;
+  }
+
+  .taskHeader h1 {
+    font-size: 24px;
+  }
+}
+
+/* =========================
+   RESPONSIVE – LAPTOP
+   ========================= */
+@media (min-width: 1024px) {
+  .app {
+    display: grid;
+    grid-template-columns: minmax(260px, 20vw) 1fr;
+  }
+
+  .left {
+    display: block;
+  }
+
+  .center {
+    padding: 24px;
+  }
+}

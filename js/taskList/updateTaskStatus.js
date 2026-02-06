@@ -2,10 +2,10 @@ import {
   isValidTaskStatus,
   requiresCommentForStatus,
   TASK_STATUSES
-} from "./status.js";
+} from "../status.js";
 
-import { loadState, saveState } from "./storage.js";
-import { notify } from "./observer.js";
+import { loadState, saveState } from "../storage.js";
+import { notify } from "../observer.js";
 
 export function updateTaskStatus(taskId, newStatus, comment = "") {
   if (!isValidTaskStatus(newStatus)) {
@@ -22,13 +22,14 @@ export function updateTaskStatus(taskId, newStatus, comment = "") {
     throw new Error("State not initialized");
   }
 
-  const task = state.tasks.find(task => task.id === taskId);
+  const task = state.tasks.find(t => t.id === taskId);
 
   if (!task) {
     throw new Error("Task not found");
   }
 
   task.status = newStatus;
+  task.completed = newStatus === TASK_STATUSES.DONE;
 
   if (newStatus === TASK_STATUSES.CLOSED) {
     task.comment = comment;
