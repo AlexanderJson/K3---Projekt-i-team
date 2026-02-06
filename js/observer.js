@@ -1,5 +1,11 @@
-import { isValidTaskStatus, requiresCommentForStatus, TASK_STATUSES } from "./status.js";
-import { saveState } from "./storage.js";
+import {
+  isValidTaskStatus,
+  requiresCommentForStatus,
+  TASK_STATUSES
+} from "./status.js";
+
+import { loadState, saveState } from "./storage.js";
+import { notify } from "./observer.js";
 
 export function updateTaskStatus(taskId, newStatus, comment = "") {
   if (!isValidTaskStatus(newStatus)) {
@@ -8,6 +14,12 @@ export function updateTaskStatus(taskId, newStatus, comment = "") {
 
   if (requiresCommentForStatus(newStatus) && !comment) {
     throw new Error("Comment is required for closed tasks");
+  }
+
+  const state = loadState();
+
+  if (!state || !state.tasks) {
+    throw new Error("State not initialized");
   }
 
   const task = state.tasks.find(task => task.id === taskId);
