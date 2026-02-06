@@ -1,10 +1,5 @@
-import { card } from "../comps/card.js";
 import { listItem } from "./listItem.js";
 
-function addTask()
-{
-    alert("no");
-}
 
 export const taskList = (text, tasks) => {
 
