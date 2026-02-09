@@ -1,29 +1,57 @@
-export const listItem = (task) => 
-{
-    const div = document.createElement("div");
-    const leftCard = document.createElement("div");
-    leftCard.classList.add("leftCard");
+import { updateTaskStatus } from "./updateTaskStatus.js";
+import { TASK_STATUSES } from "../status.js";
 
-    const statusCheck = document.createElement("input");
-    statusCheck.type = "checkbox";
-
-    const taskTitle = document.createElement("span");
-    const assignedTitle = document.createElement("span");
-    assignedTitle.classList.add("assignedTitle");
-    assignedTitle.textContent = task.assigned;
-
-    taskTitle.textContent = task.title;
-    statusCheck.checked = task.completed;
-
-    const statusBadge = document.createElement("span");
-    statusBadge.classList.add("statusBadge");
-    statusBadge.textContent = task.status;
-    statusBadge.dataset.status = task.status;
-
-    div.classList.add("listItem");
-
-    leftCard.append(taskTitle, statusBadge, assignedTitle);
-    
-    div.append(leftCard, statusCheck);
-    return div;
+function getNextStatus(status) {
+  if (status === TASK_STATUSES.TODO) return TASK_STATUSES.IN_PROGRESS;
+  if (status === TASK_STATUSES.IN_PROGRESS) return TASK_STATUSES.DONE;
+  return null;
 }
+
+function getPrevStatus(status) {
+  if (status === TASK_STATUSES.DONE) return TASK_STATUSES.IN_PROGRESS;
+  if (status === TASK_STATUSES.IN_PROGRESS) return TASK_STATUSES.TODO;
+  return null;
+}
+
+export const listItem = (task) => {
+  const div = document.createElement("div");
+  div.classList.add("listItem");
+
+  const leftCard = document.createElement("div");
+  leftCard.classList.add("leftCard");
+
+  const title = document.createElement("span");
+  title.textContent = task.title;
+
+  const assigned = document.createElement("span");
+  assigned.classList.add("assignedTitle");
+  assigned.textContent = task.assigned;
+
+  const badge = document.createElement("span");
+  badge.classList.add("statusBadge");
+  badge.textContent = task.status;
+  badge.dataset.status = task.status;
+
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.checked = task.status === TASK_STATUSES.DONE;
+
+  checkbox.addEventListener("change", () => {
+    let newStatus;
+
+    if (checkbox.checked) {
+      newStatus = getNextStatus(task.status);
+    } else {
+      newStatus = getPrevStatus(task.status);
+    }
+
+    if (!newStatus) return;
+
+    updateTaskStatus(task.id, newStatus);
+  });
+
+  leftCard.append(title, badge, assigned);
+  div.append(leftCard, checkbox);
+
+  return div;
+};
