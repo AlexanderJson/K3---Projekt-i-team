@@ -1,6 +1,7 @@
 import { Btn } from "../comps/btn.js";
 import { setView } from "../views/viewController.js";
-
+import { toggleThemeBtn } from "../comps/themeBtn.js";
+import { toggleTheme } from "../theme.js";
 // DEV ONLY - reset state
 function resetState() {
   const ok = confirm("DEV: Rensa all local state?");
@@ -43,6 +44,10 @@ export const menu = () => {
 
   mainMenuButtons.forEach(b => mainButtons.append(Btn(b)));
 
+
+  const themeBtn = toggleThemeBtn();
+
+
   // Nedre DEV-knapp
   const devButtons = document.createElement("div");
   devButtons.classList.add("menu-dev");
@@ -52,7 +57,8 @@ export const menu = () => {
       text: "DEV: Reset state",
       className: "menu-btn dev",
       onClick: resetState
-    })
+    }),
+    themeBtn
   );
 
   div.append(mainButtons, devButtons);
