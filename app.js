@@ -1,8 +1,7 @@
 import { initSeed } from "./js/taskList/seed.js";
 import { menu } from "./js/menu/sideMenu.js";
-import { taskScreen } from "./js/taskList/taskScreen.js";
 import { subscribe } from "./js/observer.js";
-import { loadState } from "./js/storage.js";
+import { initViewController, rerenderActiveView, setView } from "./js/views/viewController.js";
 
 const app = document.getElementById("app");
 app.classList.add("app");
@@ -18,21 +17,12 @@ mainContent.classList.add("center");
 
 app.append(sideMenuDiv, mainContent);
 
-function render() {
-  mainContent.innerHTML = "";
+// Init view controller
+initViewController(mainContent);
 
-  const state = loadState();
+// Re-render AKTIV vy när state ändras
+subscribe(() => rerenderActiveView());
 
-  if (!state || !state.tasks || state.tasks.length === 0) {
-    return;
-  }
-
-  mainContent.append(taskScreen(state.tasks));
-}
-
-// Observer
-subscribe(render);
-
-// Init + första render
+// Init data + startvy
 initSeed();
-render();
+setView("dashboard");
