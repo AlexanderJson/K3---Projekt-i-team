@@ -1,32 +1,36 @@
 import { listItem } from "./listItem.js";
 
 export const taskList = (text, tasks) => {
-  const addBtn = document.createElement("button");
-  addBtn.classList.add("addBtn");
-  addBtn.textContent = "+";
-
-  const rightCard = document.createElement("div");
-  rightCard.classList.add("rightCard");
-
   const taskWrapper = document.createElement("div");
   taskWrapper.classList.add("taskWrapper");
+  taskWrapper.dataset.status = text;
+
+  /* ===== Header ===== */
+  const taskHeader = document.createElement("div");
+  taskHeader.classList.add("taskHeader");
+  taskHeader.setAttribute("role", "button");
+
+  const titleWrap = document.createElement("div");
+  titleWrap.classList.add("taskTitleWrap");
 
   const statusType = document.createElement("h1");
   statusType.textContent = text;
 
-  const statusCircle = document.createElement("div");
-  statusCircle.classList.add("statusCircle");
+  const count = document.createElement("span");
+  count.classList.add("taskCount");
+  count.textContent = tasks.length;
 
-  rightCard.append(statusType, addBtn);
+  const arrow = document.createElement("span");
+  arrow.classList.add("taskArrow");
+  arrow.textContent = "▾";
 
-  const taskHeader = document.createElement("div");
-  taskHeader.classList.add("taskHeader");
-  taskHeader.append(rightCard, statusCircle);
+  titleWrap.append(statusType, count);
+  taskHeader.append(titleWrap, arrow);
 
+  /* ===== Task list ===== */
   const list = document.createElement("div");
   list.classList.add("taskList");
 
-  // ✅ TOMLISTE-STATE (EN gång, rätt plats)
   if (tasks.length === 0) {
     const empty = document.createElement("p");
     empty.textContent = "Inga uppgifter";
@@ -37,6 +41,15 @@ export const taskList = (text, tasks) => {
       list.append(listItem(task));
     });
   }
+
+  /* ===== Collapse / Expand ===== */
+  let isOpen = true;
+
+  taskHeader.addEventListener("click", () => {
+    isOpen = !isOpen;
+    taskWrapper.classList.toggle("collapsed", !isOpen);
+    arrow.textContent = isOpen ? "▾" : "▸";
+  });
 
   taskWrapper.append(taskHeader, list);
   return taskWrapper;
