@@ -1,10 +1,7 @@
 import { Btn } from "../comps/btn.js";
+import { setView } from "../views/viewController.js";
 
-function showScreen() {
-  alert("Ej implementerat ännu");
-}
-
-// DEV ONLY – reset state
+// DEV ONLY - reset state
 function resetState() {
   const ok = confirm("DEV: Rensa all local state?");
   if (!ok) return;
@@ -17,16 +14,47 @@ export const menu = () => {
   const div = document.createElement("div");
   div.classList.add("menu");
 
-  const buttons = [
-    { text: "Uppgifter", className: "menu-btn", onClick: showScreen },
-    { text: "Schema", className: "menu-btn", onClick: showScreen },
-    { text: "Kontakter", className: "menu-btn", onClick: showScreen },
+  // Övre menyval
+  const mainButtons = document.createElement("div");
+  mainButtons.classList.add("menu-main");
 
-    // DEV-knapp (tas bort senare)
-    { text: "DEV: Reset state", className: "menu-btn dev", onClick: resetState }
+  const mainMenuButtons = [
+    {
+      text: "Dashboard",
+      className: "menu-btn",
+      onClick: () => setView("dashboard")
+    },
+    {
+      text: "Uppgifter",
+      className: "menu-btn",
+      onClick: () => setView("tasks")
+    },
+    {
+      text: "Schema",
+      className: "menu-btn",
+      onClick: () => alert("Ej implementerat ännu")
+    },
+    {
+      text: "Kontakter",
+      className: "menu-btn",
+      onClick: () => alert("Ej implementerat ännu")
+    }
   ];
 
-  buttons.forEach(b => div.append(Btn(b)));
+  mainMenuButtons.forEach(b => mainButtons.append(Btn(b)));
 
+  // Nedre DEV-knapp
+  const devButtons = document.createElement("div");
+  devButtons.classList.add("menu-dev");
+
+  devButtons.append(
+    Btn({
+      text: "DEV: Reset state",
+      className: "menu-btn dev",
+      onClick: resetState
+    })
+  );
+
+  div.append(mainButtons, devButtons);
   return div;
 };
