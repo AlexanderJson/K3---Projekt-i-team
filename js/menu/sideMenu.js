@@ -1,7 +1,6 @@
 import { Btn } from "../comps/btn.js";
 import { setView } from "../views/viewController.js";
 import { toggleThemeBtn } from "../comps/themeBtn.js";
-import { toggleTheme } from "../theme.js";
 // DEV ONLY - reset state
 function resetState() {
   const ok = confirm("DEV: Rensa all local state?");

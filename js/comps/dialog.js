@@ -1,7 +1,6 @@
 
 import { addState } from "../storage.js";
 import { TASK_STATUSES } from "../status.js";
-import { notify } from "../observer.js";
 export const addTaskDialog = () => {
     const div = document.createElement("div");
     div.id = "addTaskModal";

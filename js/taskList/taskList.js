@@ -1,5 +1,4 @@
 import { listItem } from "./listItem.js";
-import { addTaskDialog } from "../comps/dialog.js";
 export const taskList = (text, tasks) => {
   const taskWrapper = document.createElement("div");
   taskWrapper.classList.add("taskWrapper");
