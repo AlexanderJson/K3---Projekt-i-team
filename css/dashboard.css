@@ -1,0 +1,355 @@
+/* =========================
+   DASHBOARD – CORE
+   ========================= */
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+/* Titel */
+.dashboard h2 {
+  grid-column: 1 / -1;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* =========================
+   CONTROLS
+   ========================= */
+
+.dashboard-controls {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dashboard-select {
+  min-width: 220px;
+  padding: 10px 14px;
+
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  cursor: pointer;
+}
+
+.dashboard-select:focus {
+  outline: none;
+  border-color: var(--accent-violet);
+  box-shadow: 0 0 0 2px rgba(167,139,250,0.25);
+}
+
+
+.dashboard-reset {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-element);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dashboard-reset:hover {
+  background: var(--bg-card);
+}
+
+/* =========================
+   DASHBOARD BOX
+   ========================= */
+
+.dashboard-box {
+  background: var(--bg-card);
+  border-radius: 18px;
+  padding: 22px;
+
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.08);
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dashboard-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(0,0,0,0.12);
+}
+
+/* Header: namn + stjärna */
+.dashboard-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboard-box h3 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--text-main);
+}
+/* =========================
+   FAVORIT-STJÄRNA – FÖRBÄTTRAD
+   ========================= */
+
+.dashboard-star {
+  background: none;
+  border: none;
+
+  font-size: 30px;
+  line-height: 1;
+  padding: 4px;
+
+  cursor: pointer;
+  color: var(--text-muted);
+
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.dashboard-star:hover {
+  transform: scale(1.2);
+  color: var(--accent-violet);
+}
+
+.dashboard-star.is-active {
+  color: #fbbf24;
+}
+
+/* =========================
+   TOTAL
+   ========================= */
+
+.dashboard-total {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+/* =========================
+   STATUS GROUP
+   ========================= */
+
+.status-group {
+  margin-top: 8px;
+}
+
+.status-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 6px 0;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.status-toggle:hover {
+  color: var(--text-main);
+}
+
+/* Chevron */
+.status-toggle .chevron {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+
+.status-group.open .chevron {
+  transform: rotate(180deg);
+}
+
+/* =========================
+   STATUS DOTS
+   ========================= */
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dot.todo { background: var(--accent-todo); }
+.dot.progress { background: var(--accent-amber); }
+.dot.done { background: var(--success); }
+
+/* =========================
+   PROGRESS BAR
+   ========================= */
+
+.progress-wrap {
+  height: 6px;
+  background: var(--bg-deep);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+.progress-bar {
+  height: 100%;
+}
+
+.progress-bar.todo { background: var(--accent-todo); }
+.progress-bar.progress { background: var(--accent-amber); }
+.progress-bar.done { background: var(--success); }
+
+/* =========================
+   COLLAPSIBLE LIST
+   ========================= */
+
+.status-list {
+  list-style: none;
+  padding-left: 14px;
+  margin-top: 6px;
+  display: none;
+}
+
+.status-group.open .status-list {
+  display: block;
+}
+
+.status-list li {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .dashboard {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    align-items: start;
+  }
+}
+
+/* =========================
+   DASHBOARD DROPDOWN NAMES
+   ========================= */
+
+.dashboard-dropdown {
+  position: relative;
+  min-width: 240px;
+}
+
+.dashboard-dropdown-toggle {
+  width: 100%;
+  padding: 10px 14px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.dashboard-dropdown-toggle .chevron {
+  transition: transform 0.2s ease;
+}
+
+.dashboard-dropdown.open .chevron {
+  transform: rotate(180deg);
+}
+
+/* Lista */
+.dashboard-dropdown-list {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  padding: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+  z-index: 50;
+}
+
+.dashboard-dropdown.open .dashboard-dropdown-list {
+  display: flex;
+}
+
+/* Item */
+.dashboard-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 8px 10px;
+  border-radius: 10px;
+
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dashboard-dropdown-item:hover {
+  background: var(--bg-element);
+}
+
+.dashboard-dropdown-item input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* =========================
+   DASHBOARD HEADER – NAMN
+   ========================= */
+
+.dashboard-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dashboard-box h3 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--text-main);
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Team ska kännas stabilt */
+.dashboard-box h3::before {
+  content: "";
+}
+
+.dashboard-box h3 {
+  line-height: 1.2;
+}

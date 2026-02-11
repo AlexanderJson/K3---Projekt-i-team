@@ -1,37 +1,75 @@
-
-import { addState } from "../storage.js";
+import { addState, loadState } from "../storage.js";
 import { TASK_STATUSES } from "../status.js";
+
 export const addTaskDialog = () => {
-    const div = document.createElement("div");
-    div.id = "addTaskModal";
-    div.setAttribute("hidden", "");
-    const header = document.createElement("h1");
-    header.textContent = "Lägg till uppgift";
-    const title = document.createElement("input");
-    const start = document.createElement("input");
-    const end = document.createElement("input");
-    const confirmBtn = document.createElement("button");
-    const closeBtn = document.createElement("button");
+  const overlay = document.createElement("div");
+  overlay.id = "addTaskModal";
+  overlay.setAttribute("hidden", "");
+  overlay.classList.add("modalOverlay");
 
-    closeBtn.textContent = "Stäng";
-    
-    closeBtn.addEventListener("click", () => {
-        div.setAttribute("hidden", "");
-    });
+  const modal = document.createElement("div");
+  modal.classList.add("modalCard");
 
-    confirmBtn.textContent = "Lägg till";
-        confirmBtn.addEventListener("click", () => {
-        const state =
-        {
-            title: title.value, 
-            start: start.value,
-            end: end.value,
-            status: TASK_STATUSES.TODO
-        }
-        addState(state);
-        console.log("added new")
-    });
-    div.append(header, title, start, end, confirmBtn, closeBtn);
-    return div;
-}
+  const header = document.createElement("h2");
+  header.textContent = "Lägg till uppgift";
 
+  const titleInput = document.createElement("input");
+  titleInput.classList.add("modalInput");
+  titleInput.placeholder = "Titel på uppgift...";
+
+  const state = loadState();
+  const people = state.people || [];
+
+  const assignedSelect = document.createElement("select");
+  assignedSelect.classList.add("modalSelect");
+
+  const defaultOption = document.createElement("option");
+  defaultOption.value = "";
+  defaultOption.textContent = "Tilldela person (valfritt)";
+  assignedSelect.append(defaultOption);
+
+  people.forEach(person => {
+    const option = document.createElement("option");
+    option.value = person;
+    option.textContent = person;
+    assignedSelect.append(option);
+  });
+
+  const buttonRow = document.createElement("div");
+  buttonRow.classList.add("modalButtons");
+
+  const confirmBtn = document.createElement("button");
+  confirmBtn.textContent = "Skapa";
+  confirmBtn.classList.add("confirmBtn");
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.textContent = "Avbryt";
+  cancelBtn.classList.add("cancelBtn");
+
+  cancelBtn.addEventListener("click", () => {
+    overlay.setAttribute("hidden", "");
+  });
+
+  confirmBtn.addEventListener("click", () => {
+    if (!titleInput.value.trim()) return;
+
+    const newTask = {
+      id: Date.now(),
+      title: titleInput.value.trim(),
+      assigned: assignedSelect.value || "",
+      status: TASK_STATUSES.TODO
+    };
+
+    addState(newTask);
+
+    titleInput.value = "";
+    assignedSelect.value = "";
+    overlay.setAttribute("hidden", "");
+  });
+
+  buttonRow.append(confirmBtn, cancelBtn);
+  modal.append(header, titleInput, assignedSelect, buttonRow);
+  overlay.append(modal);
+
+  return overlay;
+};
