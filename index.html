@@ -5,7 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LIA App</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/dashboard.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&icon_names=sunny" />    
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&icon_names=dark_mode" />
+
+<script>
+        (function() 
+        {
+            const savedTheme = localStorage.getItem('theme');
+            const darkTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if(savedTheme === 'light'){
+                document.documentElement.setAttribute('data-theme','dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
 </head>
 <body>
     <div id="app"></div>

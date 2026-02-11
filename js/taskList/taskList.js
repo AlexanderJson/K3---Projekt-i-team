@@ -1,9 +1,16 @@
 import { listItem } from "./listItem.js";
-
 export const taskList = (text, tasks) => {
   const taskWrapper = document.createElement("div");
   taskWrapper.classList.add("taskWrapper");
   taskWrapper.dataset.status = text;
+  const addBtn = document.createElement("button");
+  addBtn.classList.add("addTaskBtn");
+  addBtn.textContent = "Lägg till";
+  addBtn.onclick = function()
+  {
+    let addTaskModal = document.getElementById("addTaskModal");
+    addTaskModal.removeAttribute("hidden");
+  }
 
   /* ===== Header ===== */
   const taskHeader = document.createElement("div");
@@ -20,11 +27,11 @@ export const taskList = (text, tasks) => {
   count.classList.add("taskCount");
   count.textContent = tasks.length;
 
-  const arrow = document.createElement("span");
+  const arrow = document.createElement("button");
   arrow.classList.add("taskArrow");
   arrow.textContent = "▾";
 
-  titleWrap.append(statusType, count);
+  titleWrap.append(statusType,addBtn, count);
   taskHeader.append(titleWrap, arrow);
 
   /* ===== Task list ===== */
@@ -45,7 +52,7 @@ export const taskList = (text, tasks) => {
   /* ===== Collapse / Expand ===== */
   let isOpen = true;
 
-  taskHeader.addEventListener("click", () => {
+  arrow.addEventListener("click", () => {
     isOpen = !isOpen;
     taskWrapper.classList.toggle("collapsed", !isOpen);
     arrow.textContent = isOpen ? "▾" : "▸";
