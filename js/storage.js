@@ -30,6 +30,17 @@ export function addState(value)
   notify();
 }
 
+
+//todo fixa med id osv..!
+export function removeById(id) 
+{
+  const state = loadState();
+  state.tasks = state.tasks.filter(task => task.id !== id);
+  saveState(state);
+  notify();
+}
+
+
 export function getTasks(key)
 {
   const raw = localStorage.getItem(key);
