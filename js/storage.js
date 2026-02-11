@@ -1,4 +1,6 @@
-const STORAGE_KEY = "state";
+import { notify } from "./observer.js";
+
+const STORAGE_KEY = "state"; //TODO lagra i ENV 
 
 export function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -12,4 +14,26 @@ export function loadState() {
 
 export function saveState(state) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+
+export function addState(value)
+{
+
+  const state = loadState();
+  if (!Array.isArray(state.tasks)) {
+    state.tasks = [];
+  }
+
+  state.tasks.push(value);
+  saveState(state);
+  notify();
+}
+
+export function getTasks(key)
+{
+  const raw = localStorage.getItem(key);
+  console.log("Tolkat objekt:", raw);
+  const data =  raw ? JSON.parse(raw) : { tasks: []};
+  console.log(data);
 }
