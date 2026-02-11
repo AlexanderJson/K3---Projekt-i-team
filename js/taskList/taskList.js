@@ -1,18 +1,10 @@
 import { listItem } from "./listItem.js";
+
 export const taskList = (text, tasks) => {
   const taskWrapper = document.createElement("div");
   taskWrapper.classList.add("taskWrapper");
   taskWrapper.dataset.status = text;
-  const addBtn = document.createElement("button");
-  addBtn.classList.add("addTaskBtn");
-  addBtn.textContent = "Lägg till";
-  addBtn.onclick = function()
-  {
-    let addTaskModal = document.getElementById("addTaskModal");
-    addTaskModal.removeAttribute("hidden");
-  }
 
-  /* ===== Header ===== */
   const taskHeader = document.createElement("div");
   taskHeader.classList.add("taskHeader");
   taskHeader.setAttribute("role", "button");
@@ -31,10 +23,9 @@ export const taskList = (text, tasks) => {
   arrow.classList.add("taskArrow");
   arrow.textContent = "▾";
 
-  titleWrap.append(statusType,addBtn, count);
+  titleWrap.append(statusType, count);
   taskHeader.append(titleWrap, arrow);
 
-  /* ===== Task list ===== */
   const list = document.createElement("div");
   list.classList.add("taskList");
 
@@ -49,7 +40,6 @@ export const taskList = (text, tasks) => {
     });
   }
 
-  /* ===== Collapse / Expand ===== */
   let isOpen = true;
 
   arrow.addEventListener("click", () => {
