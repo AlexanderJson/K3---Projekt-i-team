@@ -219,54 +219,49 @@ body {
 }
 
 /* =========================
-   TASK WRAPPER
+   TASK WRAPPER (GLOW & BORDERS)
    ========================= */
 .taskWrapper {
-  border-left: 3px solid transparent;
-  padding-left: 8px;
-  border-radius: 12px;
-  padding: 8px 8px 12px;
-  background: transparent;
+  border: 1px solid var(--border); /* Subtil ram runt hela kolumnen */
+  border-left: 4px solid transparent; /* Den tjockare färgade kanten */
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(25, 23, 30, 0.4); /* Lite genomskinlig för djup */
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 
+/* Färgade kanter och subtil glöd baserat på status */
 .taskWrapper[data-status="Att göra"] {
-  border-color: var(--accent-todo);
+  border-left-color: var(--accent-todo);
+  box-shadow: inset 5px 0 15px -10px var(--accent-todo);
 }
 
 .taskWrapper[data-status="Pågår"] {
-  border-color: var(--accent-amber);
+  border-left-color: var(--accent-amber);
+  box-shadow: inset 5px 0 15px -10px var(--accent-amber);
 }
 
 .taskWrapper[data-status="Klar"] {
-  border-color: var(--success);
+  border-left-color: var(--success);
+  box-shadow: inset 5px 0 15px -10px var(--success);
 }
 
+/* Dynamisk Hover-effekt på korten inuti kolumnen */
 .taskWrapper[data-status="Att göra"] .listItem:hover {
   border-color: var(--accent-todo);
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.2);
 }
 
 .taskWrapper[data-status="Pågår"] .listItem:hover {
   border-color: var(--accent-amber);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.2);
 }
 
 .taskWrapper[data-status="Klar"] .listItem:hover {
   border-color: var(--success);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.2);
 }
-
-.taskHeader {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-
-.taskHeader h1 {
-  font-size: 22px;
-  font-weight: 600;
-}
-
 /* =========================
    TASK BOARD
    ========================= */
@@ -355,7 +350,8 @@ body {
 .taskList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
+  padding: 10px 0;
 }
 
 .emptyState {
@@ -391,7 +387,7 @@ body {
 .leftCard {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 
 .listItem span {
@@ -532,9 +528,11 @@ body {
    STATUS BADGE
    ========================= */
 .statusBadge {
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 600;
   margin-top: 4px;
+  margin-bottom: 4px;
+  letter-spacing: 1px;
   padding: 4px 10px;
   border-radius: 999px;
   text-transform: uppercase;
@@ -546,7 +544,8 @@ body {
   color: #1e3a8a;
 }
 
-.statusBadge[data-status="Pågår"] {
+.statusBadge[data-status="Pågår"] {margin-bottom: 4px;
+    letter-spacing: 1px;
   background: var(--accent-amber);
   color: #000;
 }
@@ -586,6 +585,11 @@ body {
   .taskHeader h1 {
     font-size: 24px;
   }
+}
+
+.task-meta-row {
+    font-size: 11px;
+    margin-bottom: 2px;
 }
 
 /* =========================
@@ -744,20 +748,66 @@ body {
   border-color: var(--success);
 }
 
-.taskHeader {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-
+/* =========================
+   TASK HEADERS (Att göra, Pågår, Klar)
+   ========================= */
 .taskHeader h1 {
-  font-size: 22px;
-  font-weight: 600;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
 }
 
+/* Den lilla siffran i rubriken */
+.taskCount {
+  font-size: 14px;
+  color: var(--text-dim);
+  background: var(--bg-element);
+  padding: 2px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+/* =========================
+   TASK LIST (Mellanrum mellan korten)
+   ========================= */
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px; /* <--- Här ökar du mellanrummet mellan korten */
+  padding-bottom: 100px; /* Ger plats för FAB-knappen längst ner */
+}
+
+/* =========================
+   DEADLINE (Röd text)
+   ========================= */
+.deadline-highlight .meta-label,
+.deadline-highlight .meta-value {
+  color: var(--accent-crimson) !important; /* Röd färg från dina variabler */
+  font-weight: bold;
+}
+
+/* Kompakt meta-rad */
+.task-meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+  font-size: 11px;
+}
+
+.meta-label {
+  opacity: 0.6;
+  margin-right: 4px;
+}
 /* =========================
    TASK BOARD
    ========================= */
@@ -842,8 +892,8 @@ body {
    ========================= */
 .taskList {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  gap: 20px;
+  padding: 10px 0;
 }
 
 .emptyState {
@@ -1472,9 +1522,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     z-index: 5001;
 }
 
-/* DEADLINE HIGHLIGHT */
+/* DEADLINE - RÖD TEXT */
 .deadline-highlight .meta-label,
 .deadline-highlight .meta-value {
-  color: var(--accent-amber); /* Din guldiga färg */
-  font-weight: bold;
+    color: var(--accent-crimson) !important; /* Gör texten röd */
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(248, 113, 113, 0.2); /* Subtil röd glöd */
+}
+
+/* Ta bort eventuella gamla timglas-marginaler om de finns kvar */
+.deadline-highlight::before {
+    content: none !important;
 }
