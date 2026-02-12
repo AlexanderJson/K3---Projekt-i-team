@@ -1,5 +1,6 @@
 import { renderDashboard } from "./dashboardView.js";
 import { taskScreen } from "../taskList/taskScreen.js";
+import { renderSettings } from "./settingsView.js"; // Den nya importen
 import { loadState } from "../storage.js";
 
 let container = null;
@@ -31,6 +32,12 @@ function render() {
   if (activeView === "tasks") {
     const state = loadState();
     container.append(taskScreen(state.tasks || []));
+    return;
+  }
+
+  // Nytt case för inställningar
+  if (activeView === "settings") {
+    renderSettings(container);
     return;
   }
 }
