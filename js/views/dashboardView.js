@@ -13,17 +13,16 @@ export function renderDashboard(container) {
 
   const state = loadState();
   const tasks = state.tasks || [];
-  const people = state.people || [];
-  
-  // Hämta det dynamiska teamnamnet från state (Subtask: visa teamnamn istället för statisk text)
+  const people = state.people || []; 
   const teamName = state.settings?.teamName || "Mitt Team";
 
-  const favorites =
-    JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+  // Städning av favoriter för att undvika tomma sektioner
+  let favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+  favorites = favorites.filter(name => people.includes(name));
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
 
   let currentFilter = localStorage.getItem("dashboardViewFilter") || "Team";
 
-  // ---------- UI WRAPPER ----------
   const wrapper = document.createElement("div");
   wrapper.className = "dashboard";
 
@@ -31,23 +30,23 @@ export function renderDashboard(container) {
   title.textContent = "Dashboard";
   wrapper.append(title);
 
-  // ---------- DROPDOWN (Med dynamiskt teamnamn) ----------
+  // ---------- KONTROLLER ----------
   const controls = document.createElement("div");
   controls.className = "dashboard-controls";
-  controls.style.marginBottom = "24px"; 
-
-  const filterLabel = document.createElement("span");
-  filterLabel.textContent = "Visa dashboard för: ";
-  filterLabel.style.marginRight = "8px";
 
   const select = document.createElement("select");
-  select.className = "taskFilterSelect"; 
+  select.className = "taskFilterSelect";
 
-  // Dynamiskt team-alternativ baserat på inställningar
+  // Proffsigt namn för standardvalet i dropdown
   const teamOption = document.createElement("option");
   teamOption.value = "Team";
-  teamOption.textContent = teamName; // Här används det sparade namnet, t.ex. "Team Malmö"
+  teamOption.textContent = `${teamName} & Favoriter`;
   select.append(teamOption);
+
+  const allOption = document.createElement("option");
+  allOption.value = "ALLA";
+  allOption.textContent = "--- Visa alla dashboards ---";
+  select.append(allOption);
 
   people.forEach(person => {
     const option = document.createElement("option");
@@ -57,145 +56,100 @@ export function renderDashboard(container) {
   });
 
   select.value = currentFilter;
-
-  select.addEventListener("change", (e) => {
-    localStorage.setItem("dashboardViewFilter", e.target.value);
-    render();
+  select.addEventListener("change", () => {
+    localStorage.setItem("dashboardViewFilter", select.value);
+    renderDashboard(container);
   });
 
-  controls.append(filterLabel, select);
+  controls.append(select);
   wrapper.append(controls);
 
-  // ---------- RENDER LOGIK ----------
-  function render() {
-    wrapper.querySelectorAll(".dashboard-box").forEach(b => b.remove());
+  // ---------- RENDERING AV KORT ----------
+  const activeFilter = localStorage.getItem("dashboardViewFilter") || "Team";
+  let dashboardsToShow = ["Team"];
 
-    const activeFilter = localStorage.getItem("dashboardViewFilter") || "Team";
+  if (activeFilter === "ALLA") {
+    dashboardsToShow = ["Team", ...people];
+  } else if (activeFilter === "Team") {
+    dashboardsToShow = ["Team", ...favorites];
+  } else {
+    const combined = [activeFilter, ...favorites].filter(name => people.includes(name));
+    dashboardsToShow = ["Team", ...new Set(combined)];
+  }
 
-    const visiblePeople = activeFilter === "Team" 
-      ? favorites 
-      : [...new Set([activeFilter, ...favorites])];
+  dashboardsToShow.forEach(name => {
+    const box = document.createElement("div");
+    box.className = "dashboard-box";
 
-    const dashboards = ["Team", ...visiblePeople];
+    const header = document.createElement("div");
+    header.className = "dashboard-box-header";
 
-    dashboards.forEach(name => {
-      const box = document.createElement("div");
-      box.className = "dashboard-box";
+    const heading = document.createElement("h3");
+    // Nu visas Teamnamnet som rubrik på huvudkortet
+    heading.textContent = name === "Team" ? `${teamName}` : name;
+    header.append(heading);
 
-      const header = document.createElement("div");
-      header.className = "dashboard-box-header";
+    if (name !== "Team") {
+      const star = document.createElement("button");
+      star.className = `dashboard-star ${favorites.includes(name) ? "is-active" : ""}`;
+      star.innerHTML = favorites.includes(name) ? "★" : "☆";
+      star.onclick = () => {
+        const currentFavs = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+        const updated = currentFavs.includes(name) 
+          ? currentFavs.filter(f => f !== name) 
+          : [...currentFavs, name];
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated));
+        renderDashboard(container);
+      };
+      header.append(star);
+    }
+    box.append(header);
 
-      const heading = document.createElement("h3");
-      // Använd teamnamnet även som rubrik på dashboard-boxen
-      heading.textContent = name === "Team" ? teamName : name;
-      header.append(heading);
+    const relevantTasks = name === "Team" ? tasks : tasks.filter(t => t.assigned === name);
+    const totalCount = relevantTasks.length;
 
-      if (name !== "Team") {
-        const star = document.createElement("button");
-        star.className = "dashboard-star";
-        star.innerHTML = favorites.includes(name) ? "★" : "☆";
+    const total = document.createElement("div");
+    total.className = "dashboard-total";
+    total.textContent = `Totalt: ${totalCount}`;
+    box.append(total);
 
-        if (favorites.includes(name)) {
-          star.classList.add("is-active");
-        }
+    STATUSES.forEach(status => {
+      const statusTasks = relevantTasks.filter(t => t.status === status.key);
+      const percent = totalCount === 0 ? 0 : Math.round((statusTasks.length / totalCount) * 100);
 
-        star.addEventListener("click", () => {
-          toggleFavorite(name);
+      const group = document.createElement("div");
+      group.className = "status-group";
+
+      const toggle = document.createElement("button");
+      toggle.className = "status-toggle";
+      toggle.innerHTML = `<span class="dot ${status.css}"></span><span>${status.key}: ${statusTasks.length}</span><span class="chevron">▾</span>`;
+      
+      // Gör raden klickbar för att fälla ut listan
+      toggle.addEventListener("click", () => group.classList.toggle("open"));
+
+      const progressWrap = document.createElement("div");
+      progressWrap.className = "progress-wrap";
+      progressWrap.innerHTML = `<div class="progress-bar ${status.css}" style="width: ${percent}%"></div>`;
+
+      const list = document.createElement("ul");
+      list.className = "status-list";
+      
+      if (statusTasks.length === 0) {
+        list.innerHTML = `<li style="font-style:italic; opacity:0.5;">Inga uppgifter här</li>`;
+      } else {
+        statusTasks.forEach(task => {
+          const li = document.createElement("li");
+          li.textContent = task.title;
+          list.append(li);
         });
-
-        header.append(star);
       }
 
-      box.append(header);
-
-      const relevantTasks =
-        name === "Team"
-          ? tasks
-          : tasks.filter(t => t.assigned === name);
-
-      const totalCount = relevantTasks.length;
-
-      const total = document.createElement("div");
-      total.className = "dashboard-total";
-      total.textContent = `Totalt antal uppgifter: ${totalCount}`;
-      box.append(total);
-
-      STATUSES.forEach(status => {
-        const statusTasks = relevantTasks.filter(
-          t => t.status === status.key
-        );
-
-        const percent = totalCount === 0 ? 0 : Math.round((statusTasks.length / totalCount) * 100);
-
-        const group = document.createElement("div");
-        group.className = "status-group";
-
-        const toggle = document.createElement("button");
-        toggle.className = "status-toggle";
-
-        const dot = document.createElement("span");
-        dot.className = `dot ${status.css}`;
-
-        const label = document.createElement("span");
-        label.textContent = `${status.key}: ${statusTasks.length}`;
-
-        const chevron = document.createElement("span");
-        chevron.className = "chevron";
-        chevron.textContent = "▾";
-
-        toggle.append(dot, label, chevron);
-        toggle.addEventListener("click", () => {
-          group.classList.toggle("open");
-        });
-
-        const progressWrap = document.createElement("div");
-        progressWrap.className = "progress-wrap";
-
-        const progressBar = document.createElement("div");
-        progressBar.className = `progress-bar ${status.css}`;
-        progressBar.style.width = `${percent}%`;
-
-        progressWrap.append(progressBar);
-
-        const list = document.createElement("ul");
-        list.className = "status-list";
-
-        if (statusTasks.length === 0) {
-          const emptyItem = document.createElement("li");
-          emptyItem.textContent = "Inga uppgifter här";
-          emptyItem.style.fontStyle = "italic";
-          emptyItem.style.opacity = "0.5";
-          list.append(emptyItem);
-        } else {
-          statusTasks.forEach(task => {
-            const li = document.createElement("li");
-            li.textContent = task.title;
-            list.append(li);
-          });
-        }
-
-        group.append(toggle, progressWrap, list);
-        box.append(group);
-      });
-
-      wrapper.append(box);
+      group.append(toggle, progressWrap, list);
+      box.append(group);
     });
-  }
 
-  function toggleFavorite(name) {
-    let updated;
-    const currentFavs = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+    wrapper.append(box);
+  });
 
-    if (currentFavs.includes(name)) {
-      updated = currentFavs.filter(f => f !== name);
-    } else {
-      updated = [...currentFavs, name];
-    }
-
-    localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated));
-    renderDashboard(container);
-  }
-
-  render();
   container.append(wrapper);
 }

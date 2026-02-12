@@ -1,7 +1,7 @@
 import { loadState, saveState } from "./storage.js";
 import { notify } from "./observer.js";
 
-// Central definition of allowed task statuses
+// Central definition av tillåtna statusar
 export const TASK_STATUSES = Object.freeze({
   TODO: "Att göra",
   IN_PROGRESS: "Pågår",
@@ -9,22 +9,28 @@ export const TASK_STATUSES = Object.freeze({
   CLOSED: "Stängd"
 });
 
-// Validate that a status value is allowed
+// Validera att statusen existerar
 export function isValidTaskStatus(status) {
   return Object.values(TASK_STATUSES).includes(status);
 }
 
-// Business rule: closed tasks must have a comment (UI enforced later)
+// Affärsregel: Stängda uppgifter kräver en kommentar/anledning
 export function requiresCommentForStatus(status) {
   return status === TASK_STATUSES.CLOSED;
 }
 
-
+/**
+ * Uppdaterar status på en uppgift
+ * @param {number} taskId 
+ * @param {string} newStatus 
+ * @param {string} comment - Obligatorisk om status är CLOSED
+ */
 export function updateTaskStatus(taskId, newStatus, comment = "") {
   if (!isValidTaskStatus(newStatus)) {
     throw new Error("Invalid task status");
   }
 
+  // Kontrollera om kommentar saknas när man stänger
   if (requiresCommentForStatus(newStatus) && !comment) {
     throw new Error("Comment is required for closed tasks");
   }
@@ -41,13 +47,17 @@ export function updateTaskStatus(taskId, newStatus, comment = "") {
     throw new Error("Task not found");
   }
 
+  // Uppdatera status och logik för avklarad
   task.status = newStatus;
-  task.completed = newStatus === TASK_STATUSES.DONE;
+  
+  // En uppgift räknas som färdig i statistiken om den är Klar ELLER Stängd
+  task.completed = (newStatus === TASK_STATUSES.DONE || newStatus === TASK_STATUSES.CLOSED);
 
+  // Om den stängs, spara anledningen
   if (newStatus === TASK_STATUSES.CLOSED) {
     task.comment = comment;
   }
 
   saveState(state);
-  notify();
+  notify(); // Triggar re-render av vyn
 }

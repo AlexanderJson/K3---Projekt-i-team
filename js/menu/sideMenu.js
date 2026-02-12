@@ -1,7 +1,7 @@
 import { Btn } from "../comps/btn.js";
 import { setView } from "../views/viewController.js";
 import { toggleThemeBtn } from "../comps/themeBtn.js";
-import { loadState } from "../storage.js"; // Importerad för att hämta teamnamn
+import { loadState } from "../storage.js";
 
 // DEV ONLY - reset state
 function resetState() {
@@ -19,17 +19,17 @@ export const menu = () => {
   const div = document.createElement("div");
   div.classList.add("menu");
 
-  // --- TEAM NAMN (Huvudrubrik i menyn) ---
+  // --- TEAM NAMN ---
   const brand = document.createElement("div");
   brand.classList.add("menu-brand");
-  brand.style.padding = "16px"; // 8px-regeln
+  brand.style.padding = "16px"; 
   brand.style.fontWeight = "bold";
   brand.style.borderBottom = "1px solid rgba(255,255,255,0.1)";
   brand.style.marginBottom = "16px";
   brand.textContent = teamName;
   div.append(brand);
 
-  // Övre menyval
+  // --- ÖVRE MENYVAL ---
   const mainButtons = document.createElement("div");
   mainButtons.classList.add("menu-main");
 
@@ -54,7 +54,6 @@ export const menu = () => {
       className: "menu-btn",
       onClick: () => alert("Ej implementerat ännu")
     },
-    // NY KNAPP: Inställningar
     {
       text: "Inställningar",
       className: "menu-btn settings-link",
@@ -64,9 +63,20 @@ export const menu = () => {
 
   mainMenuButtons.forEach(b => mainButtons.append(Btn(b)));
 
-  const themeBtn = toggleThemeBtn();
+  // --- NY SEKTION: LÄGG TILL UPPGIFT (Samma stil som themeBtn) ---
+  const addSection = document.createElement("div");
+  addSection.style.padding = "24px 12px"; // Ger luft mellan navigering och dev-del
+  
+  const addBtn = Btn({
+    text: "+ Ny uppgift",
+    className: "side-add-btn addTaskFab", // Klassen addTaskFab krävs för klick-lyssnaren i app.js
+    onClick: () => {} // Logiken hanteras centralt i app.js via event delegation
+  });
+  
+  addSection.append(addBtn);
 
-  // Nedre DEV-knapp
+  // --- NEDRE SEKTION (DEV & THEME) ---
+  const themeBtn = toggleThemeBtn();
   const devButtons = document.createElement("div");
   devButtons.classList.add("menu-dev");
 
@@ -79,6 +89,8 @@ export const menu = () => {
     themeBtn
   );
 
-  div.append(mainButtons, devButtons);
+  // Lägg till alla delar i huvudmenyn
+  div.append(mainButtons, addSection, devButtons);
+  
   return div;
 };
