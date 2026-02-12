@@ -2,13 +2,19 @@ import { notify } from "./observer.js";
 
 const STORAGE_KEY = "state"; 
 
+
+// TODO gör om sen
+const TASK_KEY = "tasks";
+const USER_KEY = "people";
+
+// todo sätt argument
 export function loadState() {
-  const raw = localStorage.getItem(STORAGE_KEY);
+  const raw = localStorage.getItem(STORAGE_KEY); 
   return raw
   ? JSON.parse(raw)
   : {
       tasks: [],
-      people: ["Ingen", "Person 1", "Person 2"]
+      people: ["Ingen", "Person 1", "Person 2"] // TODO: KOLLA 
     };
 }
 

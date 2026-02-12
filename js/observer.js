@@ -7,3 +7,8 @@ export function subscribe(fn) {
 export function notify() {
   subscribers.forEach(fn => fn());
 }
+
+export function notifySpecific(key)
+{
+  
+}

@@ -6,6 +6,7 @@ export const taskList = (status, tasks) => {
 
   const header = document.createElement("div");
   header.className = "task-column-header";
+  //todo - ta bort och gör om detta (cors osv)
   header.innerHTML = `<h3>${status} <span class="task-count">${tasks.length}</span></h3>`;
   
   const list = document.createElement("div");
