@@ -1,75 +1,64 @@
-import { addState, loadState } from "../storage.js";
+import { addState } from "../storage.js";
 import { TASK_STATUSES } from "../status.js";
+import { getPeople } from "../people/peopleService.js";
 
 export const addTaskDialog = () => {
   const overlay = document.createElement("div");
-  overlay.id = "addTaskModal";
-  overlay.setAttribute("hidden", "");
-  overlay.classList.add("modalOverlay");
-
+  overlay.className = "modalOverlay"; 
   const modal = document.createElement("div");
-  modal.classList.add("modalCard");
+  modal.className = "modalCard"; 
 
-  const header = document.createElement("h2");
-  header.textContent = "Lägg till uppgift";
+  const people = getPeople(); // Innehåller nu "Ingen" från service
 
-  const titleInput = document.createElement("input");
-  titleInput.classList.add("modalInput");
-  titleInput.placeholder = "Titel på uppgift...";
+  modal.innerHTML = `
+    <h2>Skapa ny uppgift</h2>
+    <div class="modal-body">
+      <input type="text" id="taskTitle" placeholder="Vad ska göras?" class="modalInput">
+      <textarea id="taskDesc" placeholder="Beskrivning..." class="modalInput" style="min-height: 100px; resize: none;"></textarea>
+      
+      <div class="modal-field">
+        <label class="modal-label">Ansvarig:</label>
+        <select id="taskAssigned" class="modalInput">
+          ${people.map(person => 
+            `<option value="${person}" ${person === "Ingen" ? "selected" : ""}>${person}</option>`
+          ).join("")}
+        </select>
+      </div>
 
-  const state = loadState();
-  const people = state.people || [];
+      <div class="modal-field">
+        <label class="modal-label">Deadline:</label>
+        <input type="date" id="taskDeadline" class="modalInput">
+      </div>
+    </div>
+    <div class="modalButtons">
+      <button id="cancelTask" class="cancelBtn">Avbryt</button>
+      <button id="saveTask" class="confirmBtn">Spara</button>
+    </div>
+  `;
 
-  const assignedSelect = document.createElement("select");
-  assignedSelect.classList.add("modalSelect");
+  modal.querySelector("#saveTask").onclick = () => {
+    const title = modal.querySelector("#taskTitle").value.trim();
+    const assigned = modal.querySelector("#taskAssigned").value;
 
-  const defaultOption = document.createElement("option");
-  defaultOption.value = "";
-  defaultOption.textContent = "Tilldela person (valfritt)";
-  assignedSelect.append(defaultOption);
-
-  people.forEach(person => {
-    const option = document.createElement("option");
-    option.value = person;
-    option.textContent = person;
-    assignedSelect.append(option);
-  });
-
-  const buttonRow = document.createElement("div");
-  buttonRow.classList.add("modalButtons");
-
-  const confirmBtn = document.createElement("button");
-  confirmBtn.textContent = "Skapa";
-  confirmBtn.classList.add("confirmBtn");
-
-  const cancelBtn = document.createElement("button");
-  cancelBtn.textContent = "Avbryt";
-  cancelBtn.classList.add("cancelBtn");
-
-  cancelBtn.addEventListener("click", () => {
-    overlay.setAttribute("hidden", "");
-  });
-
-  confirmBtn.addEventListener("click", () => {
-    if (!titleInput.value.trim()) return;
+    if (!title) return alert("Titeln får inte vara tom!");
 
     const newTask = {
       id: Date.now(),
-      title: titleInput.value.trim(),
-      assigned: assignedSelect.value || "",
-      status: TASK_STATUSES.TODO
+      title: title,
+      description: modal.querySelector("#taskDesc").value.trim(),
+      deadline: modal.querySelector("#taskDeadline").value || 0,
+      createdAt: new Date().toISOString(), 
+      status: TASK_STATUSES.TODO,
+      assigned: assigned, // Kommer nu vara "Ingen" som standard
+      completed: false,
+      comment: ""
     };
 
     addState(newTask);
+    overlay.remove();
+  };
 
-    titleInput.value = "";
-    assignedSelect.value = "";
-    overlay.setAttribute("hidden", "");
-  });
-
-  buttonRow.append(confirmBtn, cancelBtn);
-  modal.append(header, titleInput, assignedSelect, buttonRow);
+  modal.querySelector("#cancelTask").onclick = () => overlay.remove();
   overlay.append(modal);
-
-  return overlay;
+  return overlay; 
 };

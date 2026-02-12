@@ -1,6 +1,6 @@
 import { notify } from "./observer.js";
 
-const STORAGE_KEY = "state"; //TODO lagra i ENV 
+const STORAGE_KEY = "state"; 
 
 export function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -8,7 +8,7 @@ export function loadState() {
   ? JSON.parse(raw)
   : {
       tasks: [],
-      people: ["Person 1", "Person 2"]
+      people: ["Ingen", "Person 1", "Person 2"]
     };
 }
 
@@ -16,10 +16,7 @@ export function saveState(state) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-
-export function addState(value)
-{
-
+export function addState(value) {
   const state = loadState();
   if (!Array.isArray(state.tasks)) {
     state.tasks = [];
@@ -30,21 +27,20 @@ export function addState(value)
   notify();
 }
 
-
-//todo fixa med id osv..!
-export function removeById(id) 
-{
+/**
+ * Raderar en uppgift permanent från localStorage
+ */
+export function removeById(id) {
   const state = loadState();
+  
+  // Filtrera bort uppgiften med det specifika ID:t
   state.tasks = state.tasks.filter(task => task.id !== id);
+  
   saveState(state);
   notify();
 }
 
-
-export function getTasks(key)
-{
-  const raw = localStorage.getItem(key);
-  console.log("Tolkat objekt:", raw);
-  const data =  raw ? JSON.parse(raw) : { tasks: []};
-  console.log(data);
+export function getTasks() {
+  const state = loadState();
+  return state.tasks || [];
 }

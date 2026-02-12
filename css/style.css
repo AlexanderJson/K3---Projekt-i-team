@@ -22,12 +22,9 @@ body {
    FÄRGVARIABLER
    ========================= */
 
-
-
 @media (prefers-color-scheme: dark){
   :root {
   --bg-main: #0a0a0c;
-  --bg-deep: #0c0c0e;
   --bg-card: #121216;
   --bg-element: #07070b;
   --bg-header: #5e6ad2;
@@ -155,29 +152,9 @@ body {
     background: var(--bg-element);
     
 }
-.addTaskDiv {
-            background: var(--bg-panel);
-          padding: 2.5rem;
-          height: 520px;
-          border-radius: 12px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          position: relative;
-          width: 444px;
-          text-align: left;
-          border-left: 2px solid rgba(255, 255, 255, 0.1);
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
 
-.taskInput {
-      background: var(--bg-deep);
-      height: 3.5rem;
-      display: flex;
-      margin-bottom: 8px;
-      align-items: center;
-      padding: 0 1rem;
-  }
+
+
 .confirmBtn {
               width: 100%;
           height: 3.5rem;
@@ -629,25 +606,7 @@ body {
   }
 }
 
-.modalOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
 
-.modal {
-  background: white;
-  padding: 24px;
-  border-radius: 16px;
-  width: 320px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
 
 .modalRow {
   display: flex;
@@ -669,28 +628,6 @@ body {
 }
 
 
-/* =========================
-   RESET
-   ========================= */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body {
-  height: 100%;
-}
-
-body {
-  font-family: 'Share Tech Mono', monospace;
-  color: var(--text-main);
-}
-
-/* =========================
-   FÄRGVARIABLER
-   ========================= */
 
 /* =========================
    APP LAYOUT (MOBILE FIRST)
@@ -1357,4 +1294,187 @@ body {
 .taskFilterSelect option:first-child {
     font-weight: bold;
     color: var(--accent-cyan); /* Ger det även en subtil färg så det sticker ut */
+}
+
+/* =========================
+   NYA TASK KONTROLLER
+   ========================= */
+
+/* Stil för både framåt- och bakåtpilar */
+.backBtn, .nextBtn {
+  background: var(--bg-element);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s ease;
+}
+
+.backBtn:hover { border-color: var(--accent-amber); color: var(--accent-amber); }
+.nextBtn:hover { border-color: var(--success); color: var(--success); }
+
+/* X-knappen för att stänga */
+.deleteTaskBtn {
+  background: var(--bg-element);
+  border: 1px solid var(--border);
+  color: var(--accent-crimson);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s ease;
+}
+
+.deleteTaskBtn:hover { background: rgba(248, 113, 113, 0.1); border-color: var(--accent-crimson); }
+
+/* Navigationskontroller */
+.taskControls {
+  display: flex;
+  gap: 8px;
+}
+
+.backBtn, .nextBtn, .deleteTaskBtn {
+  background: var(--bg-element);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.backBtn:hover { border-color: var(--accent-amber); color: var(--accent-amber); }
+.nextBtn:hover { border-color: var(--success); color: var(--success); }
+.deleteTaskBtn:hover { border-color: var(--accent-crimson); color: var(--accent-crimson); }
+
+/* Arkiv-styling */
+.archive-wrapper {
+  margin-top: 40px;
+  padding: 0 24px;
+}
+
+.archive-toggle-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.closed-tasks-archive {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 16px;
+  border: 1px dashed var(--border);
+  padding: 20px;
+}
+
+.closed-tasks-archive .listItem {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+.modalButtons {
+  display: flex;
+  gap: 12px; /* Ger luft mellan Avbryt och Spara */
+  margin-top: 10px;
+}
+/* Denna gör att bakgrunden täcker hela skärmen och centrerar rutan */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7); /* Mörkt lager som döljer det bakom */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* Se till att denna är högre än allt annat */
+}
+
+/* Själva rutan som innehåller formuläret */
+.modalCard {
+  background: var(--bg-card); /* Använd din mörka färg */
+  padding: 32px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border);
+}
+
+/* Styling för inputfälten så de ser ut som i resten av appen */
+.modalInput {
+  width: 100%;
+  padding: 12px;
+  background: var(--bg-element);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: inherit;
+}
+
+
+/* Styling för den nya knappen i menyn */
+.side-add-btn.addTaskFab {
+  position: static !important; /* Tar bort svävandet */
+  transform: none !important;
+  width: 100%;
+  height: 50px;
+  background: var(--accent-cyan) !important;
+  color: #000 !important;
+  border-radius: 12px;
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 16px;
+  margin: 0;
+  box-shadow: none;
+}
+
+.side-add-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+
+/* Säkerställ att datumväljaren i Chrome/Edge/Firefox syns ovanpå modalen */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(0.8); /* Gör ikonen ljusare i mörkt tema */
+}
+
+.modalOverlay {
+    /* Minska z-index något om det krockar med webbläsarens popups, 
+       men håll det högre än resten av appen */
+    z-index: 5000; 
+}
+
+/* Hindra modalen från att "fånga" klick som ska till datumväljaren */
+.modalInput {
+    position: relative;
+    z-index: 5001;
+}
+
+/* DEADLINE HIGHLIGHT */
+.deadline-highlight .meta-label,
+.deadline-highlight .meta-value {
+  color: var(--accent-amber); /* Din guldiga färg */
+  font-weight: bold;
 }
