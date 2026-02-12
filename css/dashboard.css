@@ -353,3 +353,10 @@
 .dashboard-box h3 {
   line-height: 1.2;
 }
+
+/* Gör det första alternativet (Teamnamnet) fett i alla dropdowns */
+.dashboard-select option:first-child,
+.taskFilterSelect option:first-child {
+    font-weight: bold;
+    color: var(--accent-cyan); /* Ger det även en subtil färg så det sticker ut */
+}

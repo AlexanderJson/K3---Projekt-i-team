@@ -14,9 +14,14 @@ export function renderDashboard(container) {
   const state = loadState();
   const tasks = state.tasks || [];
   const people = state.people || [];
+  
+  // Hämta det dynamiska teamnamnet från state (Subtask: visa teamnamn istället för statisk text)
+  const teamName = state.settings?.teamName || "Mitt Team";
 
   const favorites =
     JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+
+  let currentFilter = localStorage.getItem("dashboardViewFilter") || "Team";
 
   // ---------- UI WRAPPER ----------
   const wrapper = document.createElement("div");
@@ -26,13 +31,23 @@ export function renderDashboard(container) {
   title.textContent = "Dashboard";
   wrapper.append(title);
 
-  // ---------- DROPDOWN (tillfällig vy) ----------
+  // ---------- DROPDOWN (Med dynamiskt teamnamn) ----------
   const controls = document.createElement("div");
   controls.className = "dashboard-controls";
+  controls.style.marginBottom = "24px"; 
+
+  const filterLabel = document.createElement("span");
+  filterLabel.textContent = "Visa dashboard för: ";
+  filterLabel.style.marginRight = "8px";
 
   const select = document.createElement("select");
-  select.multiple = true;
-  select.className = "dashboard-select";
+  select.className = "taskFilterSelect"; 
+
+  // Dynamiskt team-alternativ baserat på inställningar
+  const teamOption = document.createElement("option");
+  teamOption.value = "Team";
+  teamOption.textContent = teamName; // Här används det sparade namnet, t.ex. "Team Malmö"
+  select.append(teamOption);
 
   people.forEach(person => {
     const option = document.createElement("option");
@@ -41,31 +56,25 @@ export function renderDashboard(container) {
     select.append(option);
   });
 
-  controls.append(select);
-  wrapper.append(controls);
+  select.value = currentFilter;
 
-  let selectedPeople = [];
-
-  select.addEventListener("change", () => {
-    selectedPeople = Array.from(select.selectedOptions).map(
-      o => o.value
-    );
+  select.addEventListener("change", (e) => {
+    localStorage.setItem("dashboardViewFilter", e.target.value);
     render();
   });
 
-  // ---------- RENDER DASHBOARDS ----------
-  function render() {
-    // rensa gamla boxar
-    wrapper
-      .querySelectorAll(".dashboard-box")
-      .forEach(b => b.remove());
+  controls.append(filterLabel, select);
+  wrapper.append(controls);
 
-    const visiblePeople = [
-      ...new Set([
-        ...favorites,
-        ...selectedPeople.filter(p => !favorites.includes(p))
-      ])
-    ];
+  // ---------- RENDER LOGIK ----------
+  function render() {
+    wrapper.querySelectorAll(".dashboard-box").forEach(b => b.remove());
+
+    const activeFilter = localStorage.getItem("dashboardViewFilter") || "Team";
+
+    const visiblePeople = activeFilter === "Team" 
+      ? favorites 
+      : [...new Set([activeFilter, ...favorites])];
 
     const dashboards = ["Team", ...visiblePeople];
 
@@ -73,15 +82,14 @@ export function renderDashboard(container) {
       const box = document.createElement("div");
       box.className = "dashboard-box";
 
-      // ----- HEADER -----
       const header = document.createElement("div");
       header.className = "dashboard-box-header";
 
       const heading = document.createElement("h3");
-      heading.textContent = name;
+      // Använd teamnamnet även som rubrik på dashboard-boxen
+      heading.textContent = name === "Team" ? teamName : name;
       header.append(heading);
 
-      // ----- STAR (endast personer) -----
       if (name !== "Team") {
         const star = document.createElement("button");
         star.className = "dashboard-star";
@@ -100,7 +108,6 @@ export function renderDashboard(container) {
 
       box.append(header);
 
-      // ----- DATA -----
       const relevantTasks =
         name === "Team"
           ? tasks
@@ -113,18 +120,12 @@ export function renderDashboard(container) {
       total.textContent = `Totalt antal uppgifter: ${totalCount}`;
       box.append(total);
 
-      // ----- STATUS -----
       STATUSES.forEach(status => {
         const statusTasks = relevantTasks.filter(
           t => t.status === status.key
         );
 
-        const percent =
-          totalCount === 0
-            ? 0
-            : Math.round(
-                (statusTasks.length / totalCount) * 100
-              );
+        const percent = totalCount === 0 ? 0 : Math.round((statusTasks.length / totalCount) * 100);
 
         const group = document.createElement("div");
         group.className = "status-group";
@@ -159,11 +160,19 @@ export function renderDashboard(container) {
         const list = document.createElement("ul");
         list.className = "status-list";
 
-        statusTasks.forEach(task => {
-          const li = document.createElement("li");
-          li.textContent = task.title;
-          list.append(li);
-        });
+        if (statusTasks.length === 0) {
+          const emptyItem = document.createElement("li");
+          emptyItem.textContent = "Inga uppgifter här";
+          emptyItem.style.fontStyle = "italic";
+          emptyItem.style.opacity = "0.5";
+          list.append(emptyItem);
+        } else {
+          statusTasks.forEach(task => {
+            const li = document.createElement("li");
+            li.textContent = task.title;
+            list.append(li);
+          });
+        }
 
         group.append(toggle, progressWrap, list);
         box.append(group);
@@ -173,21 +182,17 @@ export function renderDashboard(container) {
     });
   }
 
-  // ---------- FAVORIT-LOGIK ----------
   function toggleFavorite(name) {
     let updated;
+    const currentFavs = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
 
-    if (favorites.includes(name)) {
-      updated = favorites.filter(f => f !== name);
+    if (currentFavs.includes(name)) {
+      updated = currentFavs.filter(f => f !== name);
     } else {
-      updated = [...favorites, name];
+      updated = [...currentFavs, name];
     }
 
-    localStorage.setItem(
-      FAVORITES_KEY,
-      JSON.stringify(updated)
-    );
-
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated));
     renderDashboard(container);
   }
 

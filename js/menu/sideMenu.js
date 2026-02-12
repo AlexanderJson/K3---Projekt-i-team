@@ -1,6 +1,8 @@
 import { Btn } from "../comps/btn.js";
 import { setView } from "../views/viewController.js";
 import { toggleThemeBtn } from "../comps/themeBtn.js";
+import { loadState } from "../storage.js"; // Importerad för att hämta teamnamn
+
 // DEV ONLY - reset state
 function resetState() {
   const ok = confirm("DEV: Rensa all local state?");
@@ -11,8 +13,21 @@ function resetState() {
 }
 
 export const menu = () => {
+  const state = loadState();
+  const teamName = state.settings?.teamName || "Mitt Team";
+
   const div = document.createElement("div");
   div.classList.add("menu");
+
+  // --- TEAM NAMN (Huvudrubrik i menyn) ---
+  const brand = document.createElement("div");
+  brand.classList.add("menu-brand");
+  brand.style.padding = "16px"; // 8px-regeln
+  brand.style.fontWeight = "bold";
+  brand.style.borderBottom = "1px solid rgba(255,255,255,0.1)";
+  brand.style.marginBottom = "16px";
+  brand.textContent = teamName;
+  div.append(brand);
 
   // Övre menyval
   const mainButtons = document.createElement("div");
@@ -38,14 +53,18 @@ export const menu = () => {
       text: "Kontakter",
       className: "menu-btn",
       onClick: () => alert("Ej implementerat ännu")
+    },
+    // NY KNAPP: Inställningar
+    {
+      text: "Inställningar",
+      className: "menu-btn settings-link",
+      onClick: () => setView("settings")
     }
   ];
 
   mainMenuButtons.forEach(b => mainButtons.append(Btn(b)));
 
-
   const themeBtn = toggleThemeBtn();
-
 
   // Nedre DEV-knapp
   const devButtons = document.createElement("div");

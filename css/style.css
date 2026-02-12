@@ -1309,3 +1309,52 @@ body {
 .modalOverlay[hidden] {
   display: none !important;
 }
+
+/* ... behåll din befintliga reset och root ... */
+
+/* NY STIL FÖR DROPDOWNS – MATCHAR APPEN */
+.taskFilterSelect, .dashboard-select {
+  height: 40px; /* Delbart med 2 */
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-element);
+  color: var(--text-main);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%235e6ad2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  min-width: 200px;
+}
+
+.taskFilterSelect:hover, .dashboard-select:hover {
+  border-color: var(--text-muted);
+}
+
+.taskFilterContainer, .dashboard-controls {
+  padding: 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* TEAM BRANDING I MENYN */
+.menu-brand {
+  font-size: 18px;
+  letter-spacing: 1px;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* Gör det första alternativet (Teamnamnet) fett i alla dropdowns */
+.dashboard-select option:first-child,
+.taskFilterSelect option:first-child {
+    font-weight: bold;
+    color: var(--accent-cyan); /* Ger det även en subtil färg så det sticker ut */
+}
