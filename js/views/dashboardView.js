@@ -105,7 +105,8 @@ export function renderDashboard(container) {
     }
     box.append(header);
 
-    const relevantTasks = name === "Team" ? tasks : tasks.filter(t => t.assigned === name);
+    const filteredTasks = tasks.filter(t => t.status !== "Stängd" && t.status !== "CLOSED");
+const relevantTasks = name === "Team" ? filteredTasks : filteredTasks.filter(t => t.assigned === name);
     const totalCount = relevantTasks.length;
 
     const total = document.createElement("div");
@@ -141,6 +142,7 @@ export function renderDashboard(container) {
           const li = document.createElement("li");
           li.textContent = task.title;
           list.append(li);
+          li.className = "dashboard-item-text";
         });
       }
 

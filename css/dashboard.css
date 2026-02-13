@@ -16,6 +16,15 @@
   color: var(--text-main);
 }
 
+/* Ser till att långa titlar i dashboard-listan stannar på en rad */
+.dashboard-item-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    width: 100%;
+}
+
 /* =========================
    CONTROLS
    ========================= */
