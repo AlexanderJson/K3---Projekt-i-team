@@ -5,53 +5,54 @@ import { initViewController, rerenderActiveView, setView } from "./js/views/view
 import { initTheme } from "./js/theme.js";
 import { addTaskDialog } from "./js/comps/dialog.js";
 
-// 1. Initiera globala inställningar
+// Initiera tema (Mörkt/Ljust)
 initTheme();
 
-// 2. Skapa grundstrukturen (Layouten)
+// Grundstruktur för appen
 const app = document.getElementById("app");
 app.classList.add("app");
 
-// Sidomeny (Innehåller nu "+ Ny uppgift"-knappen)
+// Sidomeny
 const sideMenuDiv = document.createElement("div");
 sideMenuDiv.classList.add("left");
 sideMenuDiv.append(menu());
 
-// Huvudinnehåll (Vyer renderas här)
+// Huvudinnehåll
 const mainContent = document.createElement("div");
 mainContent.classList.add("center");
 
-// Montera huvudkomponenterna
 app.append(sideMenuDiv, mainContent);
 
-// 3. Initiera system
+// Initiera vy-hantering
 initViewController(mainContent);
-subscribe(() => rerenderActiveView()); // Uppdatera vyn automatiskt vid ändringar
 
-// 4. Ladda startdata och sätt startvy
+// Prenumerera på state-ändringar (The Observer Flow)
+subscribe(() => rerenderActiveView());
+
+// Startdata och initial vy
 initSeed();
 setView("dashboard");
 
 /**
- * LOGIK FÖR DIALOGRUTA (Event Delegation)
- * Vi lyssnar på hela dokumentet. Om användaren klickar på en knapp
- * med klassen .addTaskFab (som nu finns i din meny), öppnas dialogen.
+ * LOGIK FÖR ATT LÄGGA TILL UPPGIFTER
+ * Vi lyssnar på klick på hela dokumentet för att fånga upp plus-knappen 
+ * oavsett när den renderas i DOM:en.
  */
 document.addEventListener("click", (e) => {
-  const target = e.target.closest(".addTaskFab");
-  
-  if (target) {
-    // Rensa eventuella gamla modal-element som fastnat
+  // Kontrollera om klicket skedde på plus-knappen (FAB)
+  if (e.target.closest(".addTaskFab")) {
+    
+    // 1. Rensa bort gamla modal-overlays om de mot förmodan ligger kvar
     const existingModal = document.querySelector(".modalOverlay");
     if (existingModal) existingModal.remove();
 
-    // Skapa och returnera ett nytt Node-element från dialog-modulen
+    // 2. Skapa en ny dialog-instans genom att anropa funktionen
     const dialog = addTaskDialog();
     
-    // Lägg till dialogen i DOM:en
+    // 3. Lägg till den i bodyn så den hamnar överst
     document.body.appendChild(dialog);
     
-    // Säkerställ visibilitet
+    // 4. Säkerställ att den inte är dold (om din dialog-kod använder hidden)
     dialog.removeAttribute("hidden");
   }
 });

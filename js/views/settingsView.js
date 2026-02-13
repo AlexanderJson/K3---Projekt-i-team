@@ -1,5 +1,5 @@
 import { loadState, saveState } from "../storage.js";
-import { notify } from "../observer.js";
+import { notify } from "../observer.js"; // Nu används denna korrekt nedan
 import { renamePerson } from "../people/peopleService.js";
 
 export function renderSettings(container) {
@@ -9,111 +9,98 @@ export function renderSettings(container) {
   const teamName = state.settings?.teamName || "Mitt Team";
 
   const wrapper = document.createElement("div");
-  wrapper.className = "settings-view";
-  wrapper.style.padding = "24px";
+  wrapper.className = "settings-wrapper dashboard-fade-in";
 
-  // --- TEAM-INSTÄLLNINGAR ---
-  const teamSection = document.createElement("section");
-  teamSection.className = "settings-section";
-  teamSection.innerHTML = `<h3>Team-inställningar</h3><label>Teamets namn:</label>`;
+  // --- TEAM-INSTÄLLNINGAR (Bredare & Renare) ---
+  const teamCard = document.createElement("section");
+  teamCard.className = "settings-card tight-card";
+  teamCard.innerHTML = `
+    <h3 class="settings-title">Team-inställningar</h3>
+    <div class="settings-column">
+        <label class="meta-label">Teamets namn</label>
+        <div class="settings-field">
+            <input type="text" id="teamNameInput" value="${teamName}" class="modalInput settings-input main-team-input">
+            <button id="saveTeamName" class="confirmBtn small-btn">Uppdatera</button>
+        </div>
+    </div>
+  `;
   
-  const teamInput = document.createElement("input");
-  teamInput.type = "text";
-  teamInput.value = teamName;
-  teamInput.className = "modalInput";
-
-  const saveTeamBtn = document.createElement("button");
-  saveTeamBtn.textContent = "Uppdatera teamnamn";
-  saveTeamBtn.className = "confirmBtn";
-  saveTeamBtn.onclick = () => {
+  teamCard.querySelector("#saveTeamName").onclick = () => {
+    const name = teamCard.querySelector("#teamNameInput").value.trim();
     const currentState = loadState();
     if (!currentState.settings) currentState.settings = {};
-    currentState.settings.teamName = teamInput.value.trim();
+    currentState.settings.teamName = name;
     saveState(currentState);
-    notify();
-    alert("Teamnamnet har uppdaterats!");
+    notify(); // Fixar ESLint-varningen genom att faktiskt använda importen
+    alert("Teamnamnet har sparats!");
   };
 
-  teamSection.append(teamInput, saveTeamBtn);
-  wrapper.append(teamSection);
+  wrapper.append(teamCard);
 
-  // --- HANTERA ANVÄNDARE ---
-  const peopleSection = document.createElement("section");
-  peopleSection.innerHTML = `<h3>Hantera Teammedlemmar</h3>`;
-  const peopleList = document.createElement("div");
+  // --- HANTERA MEDLEMMAR (Proffsig lista) ---
+  const peopleCard = document.createElement("section");
+  peopleCard.className = "settings-card tight-card";
+  peopleCard.innerHTML = `<h3 class="settings-title">Teammedlemmar</h3>`;
+  
+  const list = document.createElement("div");
+  list.className = "settings-list-container";
 
   people.forEach((person) => {
-    const item = document.createElement("div");
-    item.className = "settings-person-item";
-    item.style.cssText = "display:flex; gap:10px; margin-bottom:12px; align-items:center;";
+    if (person === "Ingen") return;
 
-    const nameInput = document.createElement("input");
-    nameInput.type = "text";
-    nameInput.value = person;
-    nameInput.className = "modalInput";
-    nameInput.style.flex = "1";
+    const row = document.createElement("div");
+    row.className = "settings-row-premium";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = person;
+    input.className = "modalInput premium-input";
+
+    const actions = document.createElement("div");
+    actions.className = "row-actions";
 
     const saveBtn = document.createElement("button");
     saveBtn.textContent = "Spara";
-    saveBtn.className = "confirmBtn";
+    saveBtn.className = "confirmBtn xsmall-btn";
     saveBtn.onclick = () => {
-      renamePerson(person, nameInput.value.trim());
+      renamePerson(person, input.value.trim());
+      notify(); // Uppdaterar sidomenyn och andra vyer direkt
       renderSettings(container);
     };
 
-    const deleteBtn = document.createElement("button");
-    deleteBtn.textContent = "Ta bort";
-    deleteBtn.className = "cancelBtn";
-    
-    // HÄR ÄR FIXEN FÖR ATT BEHÅLLA NAMN VID RADERING
-    deleteBtn.onclick = () => {
-      if (confirm(`Vill du verkligen ta bort ${person}? Aktiva uppgifter blir lediga, men avslutade behåller historiken.`)) {
-        const currentState = loadState();
-        
-        // 1. Ta bort från personlistan
-        currentState.people = currentState.people.filter(p => p !== person);
-        
-        // 2. STÄDNING: Endast för aktiva uppgifter
-        if (currentState.tasks) {
-          currentState.tasks = currentState.tasks.map(task => {
-            // Vi kollar om tasken är "Att göra" eller "Pågår"
-            const isActive = task.status === "Att göra" || task.status === "Pågår"; 
-            
-            // Om den är aktiv och tillhör personen -> Sätt till "Ingen"
-            if (task.assigned === person && isActive) {
-              return { ...task, assigned: "Ingen" };
-            }
-            // Om den är "Klar" eller "Stängd" -> Låt namnet stå kvar för historik!
-            return task;
-          });
-        }
-        
-        saveState(currentState);
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "Radera";
+    delBtn.className = "cancelBtn xsmall-btn ghost-btn"; // "Ghost" gör den mindre skrikig
+    delBtn.onclick = () => {
+      if (confirm(`Vill du ta bort ${person}?`)) {
+        const s = loadState();
+        s.people = s.people.filter(p => p !== person);
+        saveState(s);
         notify();
         renderSettings(container);
       }
     };
 
-    item.append(nameInput, saveBtn, deleteBtn);
-    peopleList.append(item);
+    actions.append(saveBtn, delBtn);
+    row.append(input, actions);
+    list.append(row);
   });
 
-  const addPersonBtn = document.createElement("button");
-  addPersonBtn.textContent = "+ Lägg till medlem";
-  addPersonBtn.className = "confirmBtn";
-  addPersonBtn.style.background = "#2ecc71";
-  addPersonBtn.onclick = () => {
-    const newName = prompt("Namn:");
-    if (newName?.trim()) {
-      const currentState = loadState();
-      currentState.people.push(newName.trim());
-      saveState(currentState);
+  const addBtn = document.createElement("button");
+  addBtn.textContent = "+ Lägg till ny medlem";
+  addBtn.className = "confirmBtn secondary-btn full-width-btn";
+  addBtn.onclick = () => {
+    const n = prompt("Ange namn på den nya medlemmen:");
+    if (n?.trim()) {
+      const s = loadState();
+      s.people.push(n.trim());
+      saveState(s);
       notify();
       renderSettings(container);
     }
   };
 
-  peopleSection.append(peopleList, addPersonBtn);
-  wrapper.append(peopleSection);
+  peopleCard.append(list, addBtn);
+  wrapper.append(peopleCard);
   container.append(wrapper);
 }

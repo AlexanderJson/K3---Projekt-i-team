@@ -8,7 +8,7 @@ export const addTaskDialog = () => {
   const modal = document.createElement("div");
   modal.className = "modalCard"; 
 
-  const people = getPeople(); // Innehåller nu "Ingen" från service
+  const people = getPeople(); 
 
   modal.innerHTML = `
     <h2>Skapa ny uppgift</h2>
@@ -49,13 +49,25 @@ export const addTaskDialog = () => {
       deadline: modal.querySelector("#taskDeadline").value || 0,
       createdAt: new Date().toISOString(), 
       status: TASK_STATUSES.TODO,
-      assigned: assigned, // Kommer nu vara "Ingen" som standard
+      assigned: assigned, 
       completed: false,
       comment: ""
     };
 
+    // 1. Spara datan
     addState(newTask);
+
+    // 2. STÄNG MODALEN
     overlay.remove();
+
+    // 3. SKICKA SIGNALEN (Detta är den magiska raden!)
+    // Detta triggar window.addEventListener('renderApp') i din app.js
+    window.dispatchEvent(new CustomEvent('renderApp'));
+  };
+
+  // Stäng om man klickar på bakgrunden
+  overlay.onclick = (e) => {
+    if (e.target === overlay) overlay.remove();
   };
 
   modal.querySelector("#cancelTask").onclick = () => overlay.remove();

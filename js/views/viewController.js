@@ -1,6 +1,6 @@
 import { renderDashboard } from "./dashboardView.js";
 import { taskScreen } from "../taskList/taskScreen.js";
-import { renderSettings } from "./settingsView.js"; // Den nya importen
+import { renderSettings } from "./settingsView.js"; 
 import { loadState } from "../storage.js";
 
 let container = null;
@@ -22,20 +22,25 @@ export function rerenderActiveView() {
 function render() {
   if (!container) return;
 
+  // Rensa containern helt innan ny rendering för att undvika dubbla element
   container.innerHTML = "";
 
+  // Hämta ALLTID det senaste statet här för att garantera att nya tasks finns med
+  const state = loadState();
+
   if (activeView === "dashboard") {
-    renderDashboard(container);
+    // Vi skickar med state även här om dashboardView behöver det
+    renderDashboard(container, state); 
     return;
   }
 
   if (activeView === "tasks") {
-    const state = loadState();
-    container.append(taskScreen(state.tasks || []));
+    // Här skickar vi de faktiska uppgifterna från det laddade statet
+    const tasks = state.tasks || [];
+    container.append(taskScreen(tasks));
     return;
   }
 
-  // Nytt case för inställningar
   if (activeView === "settings") {
     renderSettings(container);
     return;

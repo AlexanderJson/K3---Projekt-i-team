@@ -2,140 +2,149 @@ import { updateTaskAssigned } from "./updateTaskAssigned.js";
 import { updateTaskStatus } from "./updateTaskStatus.js";
 import { TASK_STATUSES } from "../status.js";
 import { getPeople } from "../people/peopleService.js";
-import { removeById } from "../storage.js";
+import { removeById, saveState, loadState } from "../storage.js";
 
-/**
- * Formaterar datum till svensk standard: "12 feb 2026"
- */
 const formatDate = (dateStr) => {
   if (!dateStr || dateStr === 0 || dateStr === "Nyss") return "Nyss";
   const d = new Date(dateStr);
   return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('sv-SE', { 
-    day: 'numeric', 
-    month: 'short', 
-    year: 'numeric' 
+    day: 'numeric', month: 'short', year: 'numeric' 
   });
 };
 
+const moveTask = (id, direction) => {
+  const state = loadState();
+  const tasks = state.tasks || [];
+  const index = tasks.findIndex(t => String(t.id) === String(id));
+  if (index === -1) return;
+
+  const currentTask = tasks[index];
+  const sameStatusTasks = tasks.filter(t => t.status === currentTask.status);
+  const internalIndex = sameStatusTasks.findIndex(t => String(t.id) === String(id));
+  const targetInternalIndex = internalIndex + direction;
+
+  if (targetInternalIndex >= 0 && targetInternalIndex < sameStatusTasks.length) {
+    const targetTask = sameStatusTasks[targetInternalIndex];
+    const globalTargetIndex = tasks.findIndex(t => String(t.id) === String(targetTask.id));
+    const temp = tasks[index];
+    tasks[index] = tasks[globalTargetIndex];
+    tasks[globalTargetIndex] = temp;
+    saveState(state);
+  }
+};
+
 export const listItem = (task) => {
-  const isClosed = task.status === TASK_STATUSES.CLOSED;
+  const isTodo = task.status === TASK_STATUSES.TODO;
   const isDone = task.status === TASK_STATUSES.DONE;
-  // Lås redigering om uppgiften är klar eller arkiverad för att skydda historiken
-  const isLocked = isClosed || isDone;
+  const isClosed = task.status === TASK_STATUSES.CLOSED;
+  const isLocked = isDone || isClosed;
 
   const div = document.createElement("div");
-  div.className = `listItem ${isClosed ? "is-closed" : ""}`;
-  if (isLocked) div.classList.add("isLocked");
+  div.className = `listItem ${isClosed ? "is-closed" : ""} is-expandable`;
+  
+  div.onclick = (e) => {
+    if (e.target.closest('.taskControls') || e.target.closest('.assignedSelect')) return;
+    div.classList.toggle('is-expanded');
+  };
 
-  const leftCard = document.createElement("div");
-  leftCard.className = "leftCard";
+  // HEADER (Datum & Badge)
+  const headerRow = document.createElement("div");
+  headerRow.className = "card-header-row";
 
-  // --- STATUS BADGE ---
-  // Denna använder data-status så din CSS kan färglägga den (blå/gul/grön)
+  const dateColumn = document.createElement("div");
+  dateColumn.className = "date-column";
+
+  const createdBlock = document.createElement("div");
+  createdBlock.className = "meta-item";
+  createdBlock.innerHTML = `<span class="meta-label">SKAPAD</span><span class="meta-value">${formatDate(task.createdAt)}</span>`;
+  dateColumn.append(createdBlock);
+
+  if (task.deadline) {
+    const isUrgent = new Date(task.deadline) < new Date(Date.now() + 3*24*60*60*1000);
+    const deadlineBlock = document.createElement("div");
+    deadlineBlock.className = `meta-item ${isUrgent ? "deadline-alert" : ""}`;
+    deadlineBlock.innerHTML = `<span class="meta-label">DEADLINE</span><span class="meta-value">${formatDate(task.deadline)}</span>`;
+    dateColumn.append(deadlineBlock);
+  }
+
   const badge = document.createElement("div");
-  badge.className = "statusBadge";
+  badge.className = "statusBadge hero-badge"; 
   badge.setAttribute("data-status", task.status);
   badge.textContent = task.status;
+  headerRow.append(dateColumn, badge);
 
-  // --- META RAD (Datum & Deadline) ---
-  const metaRow = document.createElement("div");
-  metaRow.className = "task-meta-row";
-  
-  // Skapad datum
-  const createdDiv = document.createElement("div");
-  createdDiv.className = "meta-item";
-  createdDiv.innerHTML = `<span class="meta-label">Skapad:</span> <span class="meta-value">${formatDate(task.createdAt)}</span>`;
-  metaRow.append(createdDiv);
+  // CONTENT
+  const mainContent = document.createElement("div");
+  mainContent.className = "taskMainContent";
+  mainContent.innerHTML = `
+    <h3 class="taskTitle highlight-title">${task.title}</h3>
+    <p class="taskDescription">${task.description || "Ingen beskrivning tillgänglig."}</p>
+  `;
 
-  // Deadline (visas endast om den finns och blir röd via din CSS-klass)
-  if (task.deadline && task.deadline !== 0) {
-    const deadlineDiv = document.createElement("div");
-    deadlineDiv.className = "meta-item deadline-highlight";
-    deadlineDiv.innerHTML = `<span class="meta-label">Deadline:</span> <span class="meta-value">${formatDate(task.deadline)}</span>`;
-    metaRow.append(deadlineDiv);
+  // FOOTER
+  const footer = document.createElement("div");
+  footer.className = "taskFooter row-layout";
+
+  // Namnhantering: Om uppgiften är låst (Klar/Stängd) men personen är borttagen, visa namnet ändå.
+  const currentTeam = getPeople();
+  const personExists = currentTeam.includes(task.assigned);
+
+  if (isLocked && !personExists && task.assigned !== "Ingen") {
+    // Visa det historiska namnet som en snygg etikett istället för en tom select
+    const legacyName = document.createElement("div");
+    legacyName.className = "legacy-assigned-name";
+    legacyName.textContent = task.assigned;
+    footer.append(legacyName);
+  } else {
+    // Normal rullista för aktiva uppgifter eller existerande personer
+    const assignedSelect = document.createElement("select");
+    assignedSelect.className = "assignedSelect compact-select";
+    assignedSelect.disabled = isLocked;
+    
+    currentTeam.forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p; opt.textContent = p;
+      if (task.assigned === p) opt.selected = true;
+      assignedSelect.append(opt);
+    });
+
+    assignedSelect.onchange = (e) => {
+      e.stopPropagation();
+      updateTaskAssigned(task.id, assignedSelect.value);
+    };
+    footer.append(assignedSelect);
   }
 
-  // --- TITEL ---
-  const title = document.createElement("span");
-  title.className = "taskTitle";
-  title.textContent = task.title;
-
-  // --- PERSONVAL (Dropdown) ---
-  const assignedSelect = document.createElement("select");
-  assignedSelect.className = "assignedSelect";
-  
-  if (isLocked) {
-    assignedSelect.disabled = true;
-    assignedSelect.style.opacity = "0.7";
-  }
-
-  const people = getPeople();
-  
-  // FIX: Behåll namn på personer som raderats (t.ex. Alex) om uppgiften är historisk
-  if (!people.includes(task.assigned) && task.assigned !== "Ingen") {
-    const oldOpt = document.createElement("option");
-    oldOpt.value = task.assigned;
-    oldOpt.textContent = task.assigned;
-    oldOpt.selected = true;
-    assignedSelect.append(oldOpt);
-  }
-
-  people.forEach(p => {
-    const opt = document.createElement("option");
-    opt.value = p; 
-    opt.textContent = p;
-    if (task.assigned === p) opt.selected = true;
-    assignedSelect.append(opt);
-  });
-
-  assignedSelect.onchange = () => updateTaskAssigned(task.id, assignedSelect.value);
-
-  // --- KONTROLLER (Pilar & Radera) ---
   const controls = document.createElement("div");
-  controls.className = "taskControls";
+  controls.className = "taskControls dynamic-grid";
 
-  // Visa pilar endast om uppgiften inte är stängd/arkiverad
-  if (!isClosed) {
-    // Bakåt-pil
-    if (task.status !== TASK_STATUSES.TODO) {
-      const b = document.createElement("button"); 
-      b.className = "backBtn"; 
-      b.innerHTML = "←";
-      b.onclick = () => updateTaskStatus(task.id, isDone ? TASK_STATUSES.IN_PROGRESS : TASK_STATUSES.TODO);
-      controls.append(b);
-    }
-    // Framåt-pil
-    if (task.status !== TASK_STATUSES.DONE) {
-      const n = document.createElement("button"); 
-      n.className = "nextBtn"; 
-      n.innerHTML = "→";
-      n.onclick = () => updateTaskStatus(task.id, task.status === TASK_STATUSES.TODO ? TASK_STATUSES.IN_PROGRESS : TASK_STATUSES.DONE);
-      controls.append(n);
-    }
+  const addBtn = (text, action, className = "") => {
+    const btn = document.createElement("button");
+    btn.className = `controlBtn large-control ${className}`;
+    btn.innerHTML = text;
+    btn.onclick = (e) => { e.stopPropagation(); action(); };
+    controls.append(btn);
+  };
+
+  addBtn("↑", () => moveTask(task.id, -1));
+  addBtn("↓", () => moveTask(task.id, 1));
+
+  if (!isTodo && !isClosed) {
+    const prevStatus = isDone ? TASK_STATUSES.IN_PROGRESS : TASK_STATUSES.TODO;
+    addBtn("←", () => updateTaskStatus(task.id, prevStatus));
+  }
+  if (!isDone && !isClosed) {
+    const nextStatus = isTodo ? TASK_STATUSES.IN_PROGRESS : TASK_STATUSES.DONE;
+    addBtn("→", () => updateTaskStatus(task.id, nextStatus));
   }
 
-  // Radera/Arkivera-knapp (X)
-  const delBtn = document.createElement("button");
-  delBtn.className = "deleteTaskBtn"; 
-  delBtn.innerHTML = "✕";
-  delBtn.onclick = (e) => {
-    e.stopPropagation();
-    if (isClosed) {
-      if (confirm("Vill du radera denna uppgift permanent från arkivet?")) {
-        removeById(task.id);
-      }
-    } else {
-      const reason = prompt("Ange anledning till att uppgiften stängs:");
-      if (reason?.trim()) {
-        updateTaskStatus(task.id, TASK_STATUSES.CLOSED, reason.trim());
-      }
-    }
-  };
-  controls.append(delBtn);
+  addBtn("✕", () => {
+    if (isClosed) { if (confirm("Radera permanent?")) removeById(task.id); }
+    else { const c = prompt("Anledning:"); if (c?.trim()) updateTaskStatus(task.id, TASK_STATUSES.CLOSED, c.trim()); }
+  }, "delete-btn");
 
-  // --- MONTERING ---
-  leftCard.append(badge, metaRow, title, assignedSelect);
-  div.append(leftCard, controls);
-
+  footer.append(controls);
+  div.append(headerRow, mainContent, footer);
+  
   return div;
 };

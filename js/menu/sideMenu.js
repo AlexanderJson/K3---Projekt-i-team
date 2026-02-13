@@ -3,15 +3,6 @@ import { setView } from "../views/viewController.js";
 import { toggleThemeBtn } from "../comps/themeBtn.js";
 import { loadState } from "../storage.js";
 
-// DEV ONLY - reset state
-function resetState() {
-  const ok = confirm("DEV: Rensa all local state?");
-  if (!ok) return;
-
-  localStorage.removeItem("state");
-  location.reload();
-}
-
 export const menu = () => {
   const state = loadState();
   const teamName = state.settings?.teamName || "Mitt Team";
@@ -19,78 +10,71 @@ export const menu = () => {
   const div = document.createElement("div");
   div.classList.add("menu");
 
-  // --- TEAM NAMN ---
+  // --- BRANDING ---
   const brand = document.createElement("div");
   brand.classList.add("menu-brand");
-  brand.style.padding = "16px"; 
-  brand.style.fontWeight = "bold";
-  brand.style.borderBottom = "1px solid rgba(255,255,255,0.1)";
+  brand.style.padding = "24px 16px"; 
+  brand.style.fontWeight = "900";
+  brand.style.fontSize = "1.2rem";
+  brand.style.letterSpacing = "1px";
+  brand.style.borderBottom = "1px solid var(--border)";
   brand.style.marginBottom = "16px";
-  brand.textContent = teamName;
+  brand.style.color = "var(--accent-cyan)";
+  brand.textContent = teamName.toUpperCase();
   div.append(brand);
 
-  // --- ÖVRE MENYVAL ---
+  // --- HUVUDNAVIGERING ---
   const mainButtons = document.createElement("div");
   mainButtons.classList.add("menu-main");
 
   const mainMenuButtons = [
-    {
-      text: "Dashboard",
-      className: "menu-btn",
-      onClick: () => setView("dashboard")
-    },
-    {
-      text: "Uppgifter",
-      className: "menu-btn",
-      onClick: () => setView("tasks")
-    },
-    {
-      text: "Schema",
-      className: "menu-btn",
-      onClick: () => alert("Ej implementerat ännu")
-    },
-    {
-      text: "Kontakter",
-      className: "menu-btn",
-      onClick: () => alert("Ej implementerat ännu")
-    },
-    {
-      text: "Inställningar",
-      className: "menu-btn settings-link",
-      onClick: () => setView("settings")
-    }
+    { text: "Dashboard", icon: "📊", view: "dashboard" },
+    { text: "Uppgifter", icon: "📋", view: "tasks" },
+    { text: "Schema",    icon: "📅", view: "schedule" },
+    { text: "Kontakter", icon: "👥", view: "contacts" },
+    { text: "Inställningar", icon: "⚙️", view: "settings" }
   ];
 
-  mainMenuButtons.forEach(b => mainButtons.append(Btn(b)));
+  mainMenuButtons.forEach(b => {
+    const btnElement = Btn({
+      // Vi lägger ikon och text i en container för CSS-kontroll
+      text: `<span class="nav-icon">${b.icon}</span> <span class="nav-text">${b.text}</span>`,
+      className: `menu-btn ${b.view === "settings" ? "settings-link" : ""}`,
+      onClick: () => {
+        if (b.view === "schedule" || b.view === "contacts") {
+          alert("Kommer snart!");
+        } else {
+          setView(b.view);
+        }
+      }
+    });
+    mainButtons.append(btnElement);
+  });
 
-  // --- NY SEKTION: LÄGG TILL UPPGIFT (Samma stil som themeBtn) ---
+  // --- ACTION SEKTION (Ny uppgift) ---
   const addSection = document.createElement("div");
-  addSection.style.padding = "24px 12px"; // Ger luft mellan navigering och dev-del
+  addSection.classList.add("menu-action-section");
+  addSection.style.padding = "32px 12px";
   
   const addBtn = Btn({
-    text: "+ Ny uppgift",
-    className: "side-add-btn addTaskFab", // Klassen addTaskFab krävs för klick-lyssnaren i app.js
-    onClick: () => {} // Logiken hanteras centralt i app.js via event delegation
+    text: `<span class="add-icon">+</span> <span class="nav-text">Ny uppgift</span>`,
+    className: "side-add-btn addTaskFab", 
+    onClick: () => {} // Hanteras via app.js
   });
   
   addSection.append(addBtn);
 
-  // --- NEDRE SEKTION (DEV & THEME) ---
-  const themeBtn = toggleThemeBtn();
-  const devButtons = document.createElement("div");
-  devButtons.classList.add("menu-dev");
+  // --- FOOTER (Endast Tema) ---
+  const footerSection = document.createElement("div");
+  footerSection.classList.add("menu-footer");
+  footerSection.style.marginTop = "auto";
+  footerSection.style.padding = "16px";
+  footerSection.style.borderTop = "1px solid var(--border)";
 
-  devButtons.append(
-    Btn({
-      text: "DEV: Reset state",
-      className: "menu-btn dev",
-      onClick: resetState
-    }),
-    themeBtn
-  );
+  footerSection.append(toggleThemeBtn());
 
-  // Lägg till alla delar i huvudmenyn
-  div.append(mainButtons, addSection, devButtons);
+  // Bygg ihop allt
+  div.append(mainButtons, addSection, footerSection);
   
   return div;
 };
