@@ -400,6 +400,22 @@ body {
   margin-top: 4px;
 }
 
+/* Styling för namn på borttagna personer i avslutade uppgifter */
+.legacy-assigned-name {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    min-width: 100px;
+    display: flex;
+    align-items: center;
+    font-style: italic; /* Markera att det är historisk data */
+}
+
+/* Behåll resten av din CSS som tidigare... */
+
 /* =========================
    TASK TITLE
    ========================= */

@@ -5,20 +5,41 @@ export const taskList = (status, tasks) => {
   container.className = "task-column";
 
   const header = document.createElement("div");
-  header.className = "task-column-header";
-  header.innerHTML = `<h3>${status} <span class="task-count">${tasks.length}</span></h3>`;
+  header.className = "taskHeader clickable-header";
   
-  const list = document.createElement("div");
-  list.className = "task-list-items";
+  header.innerHTML = `
+    <h1>
+      <span class="taskArrow">▼</span>
+      ${status} 
+      <span class="taskCount">${tasks.length}</span>
+    </h1>
+  `;
+
+  const listItemsContainer = document.createElement("div");
+  listItemsContainer.className = "task-list-items";
+  listItemsContainer.style.display = "flex";
+  listItemsContainer.style.flexDirection = "column";
+  listItemsContainer.style.gap = "16px";
+
+  // Kolumn-expansion/kollaps
+  header.onclick = () => {
+    const isCollapsed = container.classList.toggle("collapsed");
+    const arrow = header.querySelector(".taskArrow");
+    arrow.style.transform = isCollapsed ? "rotate(-90deg)" : "rotate(0deg)";
+    listItemsContainer.style.display = isCollapsed ? "none" : "flex";
+  };
 
   if (tasks.length === 0) {
-    list.innerHTML = `<p class="empty-msg">Inga uppgifter</p>`;
+    const empty = document.createElement("p");
+    empty.className = "emptyState";
+    empty.textContent = "Inga uppgifter";
+    listItemsContainer.append(empty);
   } else {
     tasks.forEach(task => {
-      list.append(listItem(task));
+      listItemsContainer.append(listItem(task));
     });
   }
 
-  container.append(header, list);
+  container.append(header, listItemsContainer);
   return container;
 };

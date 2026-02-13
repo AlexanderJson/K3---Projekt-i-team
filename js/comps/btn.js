@@ -1,12 +1,12 @@
-
-
-// WIP - har ej använt ännu 
-
+// js/comps/btn.js
 
 export function Btn({text, className, onClick})
 {
     const btn = document.createElement("button");
-    btn.textContent = text;
+    
+    // ÄNDRA HÄR: Från .textContent till .innerHTML
+    btn.innerHTML = text; 
+    
     btn.className = className;
     btn.addEventListener("click", onClick);
     return btn;

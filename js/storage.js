@@ -14,33 +14,27 @@ export function loadState() {
 
 export function saveState(state) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  // Viktigt: notify() gör att appen ritar om vyn direkt vid varje ändring
+  notify(); 
 }
 
-export function addState(value) {
+export function addState(task) {
   const state = loadState();
   if (!Array.isArray(state.tasks)) {
     state.tasks = [];
   }
-
-  state.tasks.push(value);
+  state.tasks.push(task);
   saveState(state);
-  notify();
 }
 
-/**
- * Raderar en uppgift permanent från localStorage
- */
 export function removeById(id) {
   const state = loadState();
-  
-  // Filtrera bort uppgiften med det specifika ID:t
-  state.tasks = state.tasks.filter(task => task.id !== id);
-  
+  // String() säkerställer att id-matchningen fungerar oavsett om det är siffror eller text
+  state.tasks = state.tasks.filter(task => String(task.id) !== String(id));
   saveState(state);
-  notify();
 }
 
 export function getTasks() {
   const state = loadState();
-  return state.tasks || [];
+  return Array.isArray(state.tasks) ? state.tasks : [];
 }

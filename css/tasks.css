@@ -1,0 +1,162 @@
+
+/* ==========================================================================
+    2. KANBAN LAYOUT
+   ========================================================================== */
+.taskBoard {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding-bottom: 100px;
+    max-width: 1200px; 
+    margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+    .taskBoard {
+        grid-template-columns: repeat(3, minmax(300px, 400px));
+        justify-content: center;
+        align-items: start;
+    }
+}
+
+.taskWrapper {
+    background: rgba(25, 23, 30, 0.4);
+    border: 1px solid var(--border);
+    border-left: 4px solid transparent;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.taskWrapper[data-status="Att göra"] { border-left-color: var(--accent-todo); }
+.taskWrapper[data-status="Pågår"]   { border-left-color: var(--accent-amber); }
+.taskWrapper[data-status="Klar"]    { border-left-color: var(--success); }
+
+/* ==========================================================================
+    3. LIST ITEM (KORTET) - STANDARDISERAD STORLEK
+   ========================================================================== */
+.listItem {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    gap: 12px;
+    
+    height: 320px;
+    min-height: 320px;
+    max-height: 320px;
+    
+    position: relative;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.listItem.is-expanded {
+    height: auto;
+    min-height: 320px;
+    max-height: none;
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 25px rgba(0,0,0,0.5);
+    z-index: 10;
+}
+
+/* ==========================================================================
+    4. INNEHÅLL (TITEL & BESKRIVNING - STRIKT 2 RADER)
+   ========================================================================== */
+.taskMainContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+    overflow: hidden; /* Förhindrar att texten spiller ut åt sidorna */
+}
+
+.highlight-title {
+    font-size: 20px;
+    font-weight: 800;
+    border-left: 4px solid var(--accent-cyan);
+    padding-left: 14px;
+    margin: 10px 0;
+    color: var(--text-main);
+    
+    /* Radbrytning - Max 2 rader */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2; /* Standard-egenskap för kompatibilitet */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word; /* Bryter långa ord */
+}
+
+.taskDescription {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    
+    /* Radbrytning - Max 2 rader */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2; /* Standard-egenskap för kompatibilitet */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+}
+
+/* Uppdatera dina textbegränsningar så här */
+.highlight-title, 
+.taskDescription {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; /* Behåller 2 rader som önskat */
+    line-clamp: 2;         /* Lägg till denna rad för att få bort varningen */
+    overflow: hidden;
+    word-break: break-word;
+}
+
+/* Uppdatera även när kortet expanderas */
+.listItem.is-expanded .highlight-title,
+.listItem.is-expanded .taskDescription {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: initial;
+    line-clamp: initial; /* Lägg till även här */
+}
+
+/* ==========================================================================
+    5. METADATA & DEADLINE (PLACERING I KANTEN)
+   ========================================================================== */
+.card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+.date-column {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+}
+
+.meta-item { display: flex; flex-direction: column; }
+.meta-label { font-size: 9px; font-weight: 800; color: var(--text-dim); letter-spacing: 0.8px; }
+.meta-value { font-size: 12px; font-weight: 600; color: var(--text-main); }
+
+.deadline-alert .meta-label {
+    color: var(--accent-crimson) !important;
+}
+
+/* ==========================================================================
+    6. STATUS BADGES (STÖRRE & UPPE I HÖGRET)
+   ========================================================================== */
+.hero-badge {
+    font-size: 11px !important;
+    padding: 8px 14px !important;
+    margin-top: -4px; /* Finjusterar badge-placering mot datumet */
+}

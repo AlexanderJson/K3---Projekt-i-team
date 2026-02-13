@@ -3,40 +3,34 @@ import { taskList } from "../taskList/taskList.js";
 import { TASK_STATUSES } from "../status.js";
 
 export const taskScreen = () => {
-  // Hämta data
+  // Vi hämtar statet inuti huvudfunktionen varje gång den anropas
   const state = loadState();
-  const tasks = state.tasks || [];
   const people = state.people || [];
   
-  // Hämta filter från localStorage
   let currentFilter = localStorage.getItem("taskViewFilter") || "Team";
 
   const screenWrapper = document.createElement("div");
   screenWrapper.classList.add("taskScreenWrapper");
 
-  // Skapa en behållare för själva innehållet (board + arkiv)
-  // Detta gör att vi kan uppdatera listorna utan att röra dropdown-menyn
   const contentArea = document.createElement("div");
   contentArea.classList.add("taskContentArea");
 
-  // ---------- 1. FILTERKONTROLLER (Högst upp) ----------
+  // ---------- FILTERKONTROLLER ----------
   const filterContainer = document.createElement("div");
   filterContainer.classList.add("taskFilterContainer");
 
   const filterLabel = document.createElement("span");
+  filterLabel.classList.add("filterLabel");
   filterLabel.textContent = "Visa uppgifter för: ";
-  filterLabel.style.marginRight = "12px";
 
   const select = document.createElement("select");
   select.classList.add("taskFilterSelect");
 
-  // Skapa Team-alternativ
   const teamOption = document.createElement("option");
   teamOption.value = "Team";
   teamOption.textContent = "Hela Teamet";
   select.append(teamOption);
 
-  // Skapa Person-alternativ
   people.forEach(person => {
     const option = document.createElement("option");
     option.value = person;
@@ -45,26 +39,34 @@ export const taskScreen = () => {
     select.append(option);
   });
 
-  // RENDERING-LOGIK (Denna körs varje gång vi byter person)
+  // RENDERING-LOGIK
   const updateView = (selectedPerson) => {
-    contentArea.innerHTML = ""; // Rensa nuvarande vy
+    contentArea.innerHTML = ""; 
 
-    // Filtrera tasks
+    // VIKTIGT: Hämta de allra senaste uppgifterna från LocalStorage här
+    const latestState = loadState();
+    const tasks = latestState.tasks || [];
+
     const filteredTasks = selectedPerson === "Team" 
       ? tasks 
       : tasks.filter(t => t.assigned === selectedPerson);
 
-    // Skapa Board
     const board = document.createElement("div");
     board.classList.add("taskBoard");
 
     const activeStatuses = [TASK_STATUSES.TODO, TASK_STATUSES.IN_PROGRESS, TASK_STATUSES.DONE];
+    
     activeStatuses.forEach(status => {
+      const columnWrapper = document.createElement("section");
+      columnWrapper.classList.add("taskWrapper");
+      columnWrapper.setAttribute("data-status", status);
+
       const columnTasks = filteredTasks.filter(t => t.status === status);
-      board.append(taskList(status, columnTasks));
+      columnWrapper.append(taskList(status, columnTasks));
+      board.append(columnWrapper);
     });
 
-    // Skapa Arkiv
+    // ---------- ARKIV-SEKTION ----------
     const archiveWrapper = document.createElement("div");
     archiveWrapper.className = "archive-wrapper";
 
@@ -76,8 +78,13 @@ export const taskScreen = () => {
     archiveContainer.className = "closed-tasks-archive";
     archiveContainer.style.display = "none";
 
+    const archiveColumnWrapper = document.createElement("div");
+    archiveColumnWrapper.classList.add("taskWrapper");
+    archiveColumnWrapper.setAttribute("data-status", TASK_STATUSES.CLOSED);
+
     const closedTasks = filteredTasks.filter(t => t.status === TASK_STATUSES.CLOSED);
-    archiveContainer.append(taskList(TASK_STATUSES.CLOSED, closedTasks));
+    archiveColumnWrapper.append(taskList(TASK_STATUSES.CLOSED, closedTasks));
+    archiveContainer.append(archiveColumnWrapper);
 
     toggleBtn.addEventListener("click", () => {
       const isHidden = archiveContainer.style.display === "none";
@@ -89,14 +96,12 @@ export const taskScreen = () => {
     contentArea.append(board, archiveWrapper);
   };
 
-  // Event listener för dropdown
   select.addEventListener("change", (e) => {
     const newPerson = e.target.value;
     localStorage.setItem("taskViewFilter", newPerson);
-    updateView(newPerson); // Uppdaterar vyn direkt utan att ladda om sidan!
+    updateView(newPerson);
   });
 
-  // Initial körning
   updateView(currentFilter);
 
   filterContainer.append(filterLabel, select);
