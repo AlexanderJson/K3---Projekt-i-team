@@ -60,10 +60,19 @@ export const listItem = (task) => {
   dateColumn.append(createdBlock);
 
   if (task.deadline) {
-    const isUrgent = new Date(task.deadline) < new Date(Date.now() + 3*24*60*60*1000);
+    // Kollar om datumet har passerat (igår eller tidigare)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const deadlineDate = new Date(task.deadline);
+    const isOverdue = deadlineDate < today && task.status !== TASK_STATUSES.DONE && task.status !== TASK_STATUSES.CLOSED;
+
     const deadlineBlock = document.createElement("div");
-    deadlineBlock.className = `meta-item ${isUrgent ? "deadline-alert" : ""}`;
-    deadlineBlock.innerHTML = `<span class="meta-label">DEADLINE</span><span class="meta-value">${formatDate(task.deadline)}</span>`;
+    // Vi lägger till klassen deadline-overdue om isOverdue är sant
+    deadlineBlock.className = `meta-item ${isOverdue ? "deadline-overdue" : ""}`;
+    deadlineBlock.innerHTML = `
+      <span class="meta-label">DEADLINE</span>
+      <span class="meta-value">${formatDate(task.deadline)}</span>
+    `;
     dateColumn.append(deadlineBlock);
   }
 

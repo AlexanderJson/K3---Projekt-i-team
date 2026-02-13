@@ -25,7 +25,9 @@ export const taskList = (status, tasks) => {
   header.onclick = () => {
     const isCollapsed = container.classList.toggle("collapsed");
     const arrow = header.querySelector(".taskArrow");
-    arrow.style.transform = isCollapsed ? "rotate(-90deg)" : "rotate(0deg)";
+    if (arrow) {
+        arrow.style.transform = isCollapsed ? "rotate(-90deg)" : "rotate(0deg)";
+    }
     listItemsContainer.style.display = isCollapsed ? "none" : "flex";
   };
 
