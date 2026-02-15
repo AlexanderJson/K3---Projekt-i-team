@@ -2,17 +2,19 @@ import { listItem } from "./listItem.js";
 
 export const taskList = (status, tasks) => {
   const container = document.createElement("div");
-  container.className = "task-column";
+  
+  // Sätter klassen till closed-tasks-archive om status är Stängd för att få röd styling
+  container.className = status === "Stängd" ? "closed-tasks-archive" : "task-column";
 
   const header = document.createElement("div");
   header.className = "taskHeader clickable-header";
   
   header.innerHTML = `
-    <h1>
+    <div class="header-content">
       <span class="taskArrow">▼</span>
-      ${status} 
-      <span class="taskCount">${tasks.length}</span>
-    </h1>
+      <span class="status-text">${status}</span>
+    </div>
+    <span class="taskCount">${tasks.length}</span>
   `;
 
   const listItemsContainer = document.createElement("div");
@@ -20,6 +22,17 @@ export const taskList = (status, tasks) => {
   listItemsContainer.style.display = "flex";
   listItemsContainer.style.flexDirection = "column";
   listItemsContainer.style.gap = "16px";
+
+  // Hanterar ordningen på elementen och lägger till beskrivningen för arkivet
+  if (status === "Stängd") {
+    const description = document.createElement("p");
+    description.className = "archive-description";
+    description.textContent = "Här sparas uppgifter som inte längre är aktuella, har avbrutits eller arkiverats för att hålla din aktiva tavla ren.";
+    
+    container.append(header, description, listItemsContainer); 
+  } else {
+    container.append(header, listItemsContainer);
+  }
 
   // Kolumn-expansion/kollaps
   header.onclick = () => {
@@ -31,6 +44,7 @@ export const taskList = (status, tasks) => {
     listItemsContainer.style.display = isCollapsed ? "none" : "flex";
   };
 
+  // Renderar kort eller tomma tillstånd
   if (tasks.length === 0) {
     const empty = document.createElement("p");
     empty.className = "emptyState";
@@ -42,6 +56,5 @@ export const taskList = (status, tasks) => {
     });
   }
 
-  container.append(header, listItemsContainer);
   return container;
 };

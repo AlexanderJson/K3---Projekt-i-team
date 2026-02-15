@@ -51,36 +51,34 @@ export const listItem = (task) => {
   const headerRow = document.createElement("div");
   headerRow.className = "card-header-row";
 
-  const dateColumn = document.createElement("div");
-  dateColumn.className = "date-column";
+  // Ny behållare för rader av datum
+  const dateRow = document.createElement("div");
+  dateRow.className = "date-row";
 
   const createdBlock = document.createElement("div");
   createdBlock.className = "meta-item";
   createdBlock.innerHTML = `<span class="meta-label">SKAPAD</span><span class="meta-value">${formatDate(task.createdAt)}</span>`;
-  dateColumn.append(createdBlock);
+  dateRow.append(createdBlock);
 
   if (task.deadline) {
-    // Kollar om datumet har passerat (igår eller tidigare)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const deadlineDate = new Date(task.deadline);
     const isOverdue = deadlineDate < today && task.status !== TASK_STATUSES.DONE && task.status !== TASK_STATUSES.CLOSED;
 
     const deadlineBlock = document.createElement("div");
-    // Vi lägger till klassen deadline-overdue om isOverdue är sant
     deadlineBlock.className = `meta-item ${isOverdue ? "deadline-overdue" : ""}`;
-    deadlineBlock.innerHTML = `
-      <span class="meta-label">DEADLINE</span>
-      <span class="meta-value">${formatDate(task.deadline)}</span>
-    `;
-    dateColumn.append(deadlineBlock);
+    deadlineBlock.innerHTML = `<span class="meta-label">DEADLINE</span><span class="meta-value">${formatDate(task.deadline)}</span>`;
+    dateRow.append(deadlineBlock);
   }
 
   const badge = document.createElement("div");
   badge.className = "statusBadge hero-badge"; 
   badge.setAttribute("data-status", task.status);
   badge.textContent = task.status;
-  headerRow.append(dateColumn, badge);
+  
+  // Vi lägger till dateRow istället för dateColumn
+  headerRow.append(dateRow, badge);
 
   // CONTENT
   const mainContent = document.createElement("div");
