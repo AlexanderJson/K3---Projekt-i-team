@@ -1,43 +1,127 @@
 /* ==========================================================================
-   GLOBAL BASE STYLES (style.css)
+    GLOBAL BASE STYLES (Komplett style.css)
    ========================================================================== */
 
 /* RESET - Grundinställningar */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%; font-family: 'Share Tech Mono', monospace; background: var(--bg-header); color: var(--text-main); }
-
-
-/* APP LAYOUT - Ramverket för appen */
-.app { display: flex; flex-direction: column; min-height: 100vh; }
-
-@media (min-width: 1024px) {
-    .app {
-        display: grid;
-        grid-template-columns: 280px 1fr; /* Sidomeny + Innehåll */
-        width: 100vw;
-    }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
 }
 
-/* SIDEMENU - Menyn som alltid syns till vänster */
-.left { display: none; position: relative; border-right: 2px solid var(--border); z-index: 10; background: var(--bg-deep); }
-@media (min-width: 1024px) { .left { display: block; } }
+html, body { 
+    height: 100%; 
+    font-family: 'Share Tech Mono', monospace; 
+    background: var(--bg-main); 
+    color: var(--text-main); 
+    /* Mjuk övergång vid temabyte */
+    transition: background 0.3s ease, color 0.3s ease;
+}
 
-.menu { display: flex; flex-direction: column; padding: 24px; height: 100%; }
-.menu-btn { background: none; border: none; font-size: 32px; text-align: left; cursor: pointer; color: var(--text-dim); }
+/* ==========================================================================
+    APP LAYOUT - MOBIL FÖRST
+   ========================================================================== */
+.app { 
+    display: flex; 
+    flex-direction: column-reverse; /* Menyn hamnar i botten på mobilen */
+    min-height: 100vh; 
+}
 
-/* CENTER CONTENT - Den stora ytan där vyerna ritas */
+/* SIDEMENU CONTAINER (Mobil rad i botten) */
+.left { 
+    display: block; 
+    position: fixed; /* Låst vid botten */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70px; 
+    background: var(--bg-deep); 
+    border-top: 4px double var(--border); 
+    z-index: 2000; 
+}
+
+/* CENTER CONTENT (Huvudyta på mobil) */
 .center {
     flex: 1;
     background: var(--bg-main);
-    padding: 24px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 24px;
     width: 100%;
 }
 
-/* GLOBAL MODAL - Används av alla vyer */
-.modalOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 5000; }
-.modalCard { background: var(--bg-card); padding: 32px; border-radius: 16px; width: 100%; max-width: 440px; border: 1px solid var(--border); }
-.confirmBtn { background: var(--accent-cyan); color: #000; font-weight: bold; width: 100%; height: 46px; border-radius: 12px; cursor: pointer; }
-.cancelBtn { background: var(--bg-element); color: var(--text-main); width: 100%; height: 46px; border-radius: 12px; cursor: pointer; }
+/* ==========================================================================
+    DESKTOP LAYOUT (Skärmar > 1024px)
+   ========================================================================== */
+@media (min-width: 1024px) {
+    .app {
+        display: grid;
+        grid-template-columns: 280px 1fr; /* Sidomeny + Innehåll */
+        width: 100vw;
+        flex-direction: row; /* Återställer rad-layout */
+        transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* När menyn är kollapsad via JS-klassen på body */
+    body.menu-is-collapsed .app {
+        grid-template-columns: 45px 1fr;
+    }
+
+    .left {
+        display: block;
+        position: relative; /* Inte längre låst vid botten på desktop */
+        height: 100vh;
+        width: 100%;
+        border-top: none;
+        border-right: none; /* Ramen sköts av menu.css för dubbel-border */
+    }
+
+    .center {
+        padding: 32px;
+        padding-bottom: 32px;
+    }
+}
+
+/* ==========================================================================
+    MODALER & KNAPPAR (Globala)
+   ========================================================================== */
+.modalOverlay { 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(0,0,0,0.7); 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 5000; 
+}
+
+.modalCard { 
+    background: var(--bg-card); 
+    padding: 32px; 
+    border-radius: 16px; 
+    width: 100%; 
+    max-width: 440px; 
+    border: 1px solid var(--border); 
+}
+
+.confirmBtn { 
+    background: var(--accent-cyan); 
+    color: #000; 
+    font-weight: bold; 
+    width: 100%; 
+    height: 46px; 
+    border-radius: 12px; 
+    border: none;
+    cursor: pointer; 
+}
+
+.cancelBtn { 
+    background: var(--bg-element); 
+    color: var(--text-main); 
+    width: 100%; 
+    height: 46px; 
+    border-radius: 12px; 
+    border: 1px solid var(--border);
+    cursor: pointer; 
+}

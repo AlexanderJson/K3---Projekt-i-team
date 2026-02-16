@@ -1,35 +1,5 @@
 /* ==========================================================================
-   GLOBAL ADD TASK BUTTON (FAB)
-   ========================================================================== */
-.addTaskFab {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: var(--accent-cyan);
-  color: #000;
-  border: none;
-  font-size: 36px;
-  font-weight: 600;
-  cursor: pointer;
-  z-index: 999;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-
-.addTaskFab:hover {
-  transform: translateX(-50%) translateY(-2px);
-  box-shadow: 0 14px 36px rgba(0,0,0,0.3);
-}
-
-/* ==========================================================================
-   MODAL DIALOG (CREATE/EDIT TASK)
+   MODAL DIALOG (Skapa/Redigera uppgift)
    ========================================================================== */
 .modalOverlay {
   position: fixed;
@@ -38,7 +8,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 5000; /* Högt z-index för att ligga över allt [cite: 111] */
+  z-index: 5000;
 }
 
 .modalCard {
@@ -69,113 +39,7 @@
 }
 
 /* ==========================================================================
-   MENU & NAVIGATION BUTTONS
-   ========================================================================== */
-.menu-btn {
-    font-family: 'Share Tech Mono', monospace;
-    transition: all 0.2s ease;
-    border: none;
-    background: none;
-    cursor: pointer;
-    color: var(--text-dim);
-}
-
-.menu-btn.dev {
-    background: #ffffff; 
-    color: #000;
-    border: 1px solid #000;
-    padding: 4px 8px;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 4px;
-}/* ==========================================================================
-   MENU & NAVIGATION BUTTONS (UPPDATERAD)
-   ========================================================================== */
-.menu-btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    width: 100%;
-    font-family: 'Share Tech Mono', monospace;
-    transition: all 0.2s ease;
-    border: none;
-    background: none;
-    cursor: pointer;
-    color: var(--text-dim);
-    border-radius: 8px;
-}
-
-.menu-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-main);
-}
-
-.nav-icon {
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-}
-
-.nav-text {
-    font-size: 16px;
-}
-
-/* Mobil-menyrad (Bottom Nav) */
-@media (max-width: 768px) {
-    .menu {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 70px;
-        flex-direction: row !important;
-        background: var(--bg-card);
-        border-top: 1px solid var(--border);
-        z-index: 1000;
-        justify-content: space-around;
-        align-items: center;
-        padding: 0 10px;
-    }
-
-    .menu-main {
-        flex-direction: row !important;
-        width: 100%;
-        justify-content: space-around;
-    }
-
-    .nav-text, .menu-brand {
-        display: none; /* Dölj text på mobil för att spara plats */
-    }
-
-    .menu-btn {
-        width: auto;
-        padding: 10px;
-    }
-}
-
-/* ==========================================================================
-   THEME TOGGLE (DARK/LIGHT MODE)
-   ========================================================================== */
-.theme-btn-outer {
-    background: #ffffff;
-    border-radius: 4px;
-    padding: 4px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    border: 1px solid var(--border);
-}
-
-.theme-btn-outer .material-symbols-rounded {
-    font-size: 24px;
-    color: #000;
-}
-
-/* ==========================================================================
-   CARD FOOTER CONTROLS
+   CARD FOOTER CONTROLS (Knapparna inuti dina Task-kort)
    ========================================================================== */
 .taskFooter {
   display: flex;
@@ -190,13 +54,19 @@
 .assignedSelect {
   flex: 1;
   max-width: 60%;
-  background: var(--bg-element);
+  background: var(--bg-card);
   color: var(--text-main);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 8px;
+  padding: 6px 10px;
   font-family: inherit;
+  font-size: 14px;
   cursor: pointer;
+  outline: none;
+}
+
+.assignedSelect:focus {
+  border-color: var(--accent-cyan);
 }
 
 .controlBtn {

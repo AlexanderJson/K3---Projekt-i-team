@@ -13,10 +13,10 @@ export function renderDashboard(container) {
 
   const state = loadState();
   const tasks = state.tasks || [];
-  const people = state.people || []; 
+  // FILTRERING: Ta bort "Ingen" från listan över personer som ska visas
+  const people = (state.people || []).filter(p => p !== "Ingen"); 
   const teamName = state.settings?.teamName || "Mitt Team";
 
-  // Städning av favoriter för att undvika tomma sektioner
   let favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
   favorites = favorites.filter(name => people.includes(name));
   localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
@@ -37,7 +37,6 @@ export function renderDashboard(container) {
   const select = document.createElement("select");
   select.className = "taskFilterSelect";
 
-  // Proffsigt namn för standardvalet i dropdown
   const teamOption = document.createElement("option");
   teamOption.value = "Team";
   teamOption.textContent = `${teamName} & Favoriter`;
@@ -48,6 +47,7 @@ export function renderDashboard(container) {
   allOption.textContent = "--- Visa alla dashboards ---";
   select.append(allOption);
 
+  // Här renderas nu endast riktiga personer (Ingen är bortfiltrerad ovan)
   people.forEach(person => {
     const option = document.createElement("option");
     option.value = person;
@@ -73,6 +73,7 @@ export function renderDashboard(container) {
   } else if (activeFilter === "Team") {
     dashboardsToShow = ["Team", ...favorites];
   } else {
+    // Säkerställ att vi bara visar valda filter om personen fortfarande finns
     const combined = [activeFilter, ...favorites].filter(name => people.includes(name));
     dashboardsToShow = ["Team", ...new Set(combined)];
   }
@@ -85,7 +86,6 @@ export function renderDashboard(container) {
     header.className = "dashboard-box-header";
 
     const heading = document.createElement("h3");
-    // Nu visas Teamnamnet som rubrik på huvudkortet
     heading.textContent = name === "Team" ? `${teamName}` : name;
     header.append(heading);
 
@@ -106,7 +106,7 @@ export function renderDashboard(container) {
     box.append(header);
 
     const filteredTasks = tasks.filter(t => t.status !== "Stängd" && t.status !== "CLOSED");
-const relevantTasks = name === "Team" ? filteredTasks : filteredTasks.filter(t => t.assigned === name);
+    const relevantTasks = name === "Team" ? filteredTasks : filteredTasks.filter(t => t.assigned === name);
     const totalCount = relevantTasks.length;
 
     const total = document.createElement("div");
@@ -125,7 +125,6 @@ const relevantTasks = name === "Team" ? filteredTasks : filteredTasks.filter(t =
       toggle.className = "status-toggle";
       toggle.innerHTML = `<span class="dot ${status.css}"></span><span>${status.key}: ${statusTasks.length}</span><span class="chevron">▾</span>`;
       
-      // Gör raden klickbar för att fälla ut listan
       toggle.addEventListener("click", () => group.classList.toggle("open"));
 
       const progressWrap = document.createElement("div");
@@ -141,8 +140,8 @@ const relevantTasks = name === "Team" ? filteredTasks : filteredTasks.filter(t =
         statusTasks.forEach(task => {
           const li = document.createElement("li");
           li.textContent = task.title;
-          list.append(li);
           li.className = "dashboard-item-text";
+          list.append(li);
         });
       }
 
