@@ -1,5 +1,4 @@
 import { loadState, saveState } from "./storage.js";
-import { notify } from "./observer.js";
 
 // Central definition av tillåtna statusar
 export const TASK_STATUSES = Object.freeze({
