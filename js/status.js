@@ -59,5 +59,4 @@ export function updateTaskStatus(taskId, newStatus, comment = "") {
   }
 
   saveState(state);
-  notify(); // Triggar re-render av vyn
-}
+ }
