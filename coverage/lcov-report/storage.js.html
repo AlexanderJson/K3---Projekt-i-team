@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">6.25% </span>
+                <span class="strong">93.75% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/16</span>
+                <span class='fraction'>15/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">66.66% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>4/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">6.66% </span>
+                <span class="strong">93.33% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/15</span>
+                <span class='fraction'>14/15</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -107,8 +107,8 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -117,37 +117,37 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { notify } from "./observer.js";
 &nbsp;
 const STORAGE_KEY = "state"; 
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >loadState(</span>) {
-  const raw = <span class="cstat-no" title="statement not covered" >localStorage.getItem(STORAGE_KEY);</span>
-<span class="cstat-no" title="statement not covered" >  return raw</span>
+export function loadState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  return raw
   ? JSON.parse(raw)
   : {
       tasks: [],
@@ -155,31 +155,31 @@ export function <span class="fstat-no" title="function not covered" >loadState(<
     };
 }
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >saveState(</span>state) {
-<span class="cstat-no" title="statement not covered" >  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));</span>
+export function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   // Viktigt: notify() gör att appen ritar om vyn direkt vid varje ändring
-<span class="cstat-no" title="statement not covered" >  notify(); </span>
+  notify(); 
 }
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >addState(</span>task) {
-  const state = <span class="cstat-no" title="statement not covered" >loadState();</span>
-<span class="cstat-no" title="statement not covered" >  if (!Array.isArray(state.tasks)) {</span>
+export function addState(task) {
+  const state = loadState();
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (!Array.isArray(state.tasks)) {
 <span class="cstat-no" title="statement not covered" >    state.tasks = [];</span>
   }
-<span class="cstat-no" title="statement not covered" >  state.tasks.push(task);</span>
-<span class="cstat-no" title="statement not covered" >  saveState(state);</span>
+  state.tasks.push(task);
+  saveState(state);
 }
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >removeById(</span>id) {
-  const state = <span class="cstat-no" title="statement not covered" >loadState();</span>
+export function removeById(id) {
+  const state = loadState();
   // String() säkerställer att id-matchningen fungerar oavsett om det är siffror eller text
-<span class="cstat-no" title="statement not covered" >  state.tasks = state.tasks.filter(<span class="fstat-no" title="function not covered" >ta</span>sk =&gt; <span class="cstat-no" title="statement not covered" >String(task.id) !== String(id))</span>;</span>
-<span class="cstat-no" title="statement not covered" >  saveState(state);</span>
+  state.tasks = state.tasks.filter(task =&gt; String(task.id) !== String(id));
+  saveState(state);
 }
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >getTasks(</span>) {
-  const state = <span class="cstat-no" title="statement not covered" >loadState();</span>
-<span class="cstat-no" title="statement not covered" >  return Array.isArray(state.tasks) ? state.tasks : [];</span>
+export function getTasks() {
+  const state = loadState();
+  return Array.isArray(state.tasks) ? state.tasks : <span class="branch-1 cbranch-no" title="branch not covered" >[];</span>
 }</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -187,7 +187,7 @@ export function <span class="fstat-no" title="function not covered" >getTasks(</
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-16T02:25:27.516Z
+                at 2026-02-16T06:01:18.169Z
             </div>
         <script src="prettify.js"></script>
         <script>
