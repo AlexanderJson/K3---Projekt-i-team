@@ -225,28 +225,44 @@
     margin-bottom: 8px;
 }
 
+.date-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+}
+
 .meta-label {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 800;
-    color: var(--text-dim);
+    color: var(--accent-cyan);
     text-transform: uppercase;
-    margin-right: 8px;
+    min-width: 65px;
     display: inline-block;
-    /* Lägg till denna rad för perfekt linjering: */
-    min-width: 65px; 
 }
 
 .meta-value {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-main);
+}
+
+.deadline-overdue .meta-value, 
+.deadline-overdue .meta-label {
+    color: #ff4444 !important;
 }
 
 /* STATUS BADGE */
 .statusBadge {
     font-size: 14px;
     font-weight: 700;
-    padding: 6px 12px;
+    padding: 8px 10px;
     border-radius: 30px;
     text-transform: uppercase;
 
@@ -354,12 +370,6 @@
     overflow: visible;
     -webkit-line-clamp: initial;
     line-clamp: initial;
-}
-
-.deadline-overdue .meta-label,
-.deadline-overdue .meta-value {
-    color: #ff4444 !important;
-    font-weight: 800;
 }
 
 /* ==========================================================================

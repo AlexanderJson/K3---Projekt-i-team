@@ -36,20 +36,18 @@ export const menu = () => {
   const mainButtons = document.createElement("div");
   mainButtons.classList.add("menu-main");
 
-  // Alla knappar inkl Tema ligger nu i samma lista för att linjera på mobil
   const mainMenuButtons = [
-    { text: "Kalender",     icon: "📅", view: "schedule" }, 
-    { text: "Dashboard",    icon: "📊", view: "dashboard" },
-    { text: "Uppgifter",    icon: "📋", view: "tasks" },
-    { text: "Kontakter",    icon: "👥", view: "contacts" },
-    { text: "Inställningar", icon: "⚙️", view: "settings" },
-    { text: "Tema",         icon: "🌗", view: "theme" } 
+    { text: "Kalender",     icon: "calendar_month", view: "schedule" }, 
+    { text: "Dashboard",    icon: "dashboard",      view: "dashboard" },
+    { text: "Uppgifter",    icon: "assignment",     view: "tasks" },
+    { text: "Kontakter",    icon: "group",          view: "contacts" },
+    { text: "Inställningar", icon: "settings",       view: "settings" },
+    { text: "Tema",         icon: "contrast",       view: "theme" } 
   ];
 
   mainMenuButtons.forEach((b, index) => {
     const btnElement = Btn({
-      // Vi behåller span-taggarna men döljer texten via CSS för en ren ikon-look
-      text: `<span class="nav-icon">${b.icon}</span> <span class="nav-text">${b.text}</span>`, 
+      text: `<span class="nav-icon material-symbols-rounded">${b.icon}</span> <span class="nav-text">${b.text}</span>`, 
       className: `menu-btn ${b.view === "settings" ? "settings-link" : ""}`,
       onClick: () => {
         if (b.view === "theme") {
@@ -65,24 +63,19 @@ export const menu = () => {
     
     mainButtons.append(btnElement);
 
-    // Infogar Ny Uppgift efter index 2 (Uppgifter)
     if (index === 2) {
       const addBtn = Btn({
-        text: `<span class="nav-icon">+</span>`,
+        text: `<span class="nav-icon material-symbols-rounded">add_circle</span><span class="nav-text">Lägg till uppgift</span>`,
         className: "menu-btn addTaskFab",
-        onClick: () => {
-          console.log("Öppna Ny Uppgift Modal");
-        }
+        onClick: () => {}
       });
       mainButtons.append(addBtn);
     }
   });
 
-  // Vi döljer footerSection på mobil helt och hållet
   const footerSection = document.createElement("div");
   footerSection.className = "menu-footer";
   footerSection.style.marginTop = "auto"; 
-  // Vi lämnar denna tom eller döljer den via CSS för desktop-pilen
 
   div.append(mainButtons, footerSection);
   

@@ -34,7 +34,10 @@ export const taskScreen = () => {
   people.forEach(person => {
     const option = document.createElement("option");
     option.value = person;
-    option.textContent = person;
+    
+    // Ändrar visningstexten för "Ingen" till "Lediga uppgifter"
+    option.textContent = (person === "Ingen") ? "🟢 Lediga uppgifter" : person;
+    
     if (person === currentFilter) option.selected = true;
     select.append(option);
   });
