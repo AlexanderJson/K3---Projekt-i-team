@@ -1,4 +1,4 @@
-#Lia-ner
+# Lianer
 
 A project planner made to aid students in finding LIA together. 
 Users of this website can add teammembers and track project progress with
