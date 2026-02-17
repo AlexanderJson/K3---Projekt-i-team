@@ -16,7 +16,7 @@ omvandla till en map (eller set? kolla upp skillnaderna).
 Denna logik sker helt internt utanför dom. Så ingen del av vår DOM kommunicerar
 med StateStore. Endast med sina respektive service klasser. 
 
-Istället kommer DOM:en få datan ur vår map/set, (mindre hämtning från LS, mindre JSON parsing + map/set är O(1) noterat) 
+Istället kommer DOM:en få datan ur vår map/set, (mindre hämtning från LS, mindre JSON parsing ) 
 Så hämtning av data kommer lbi sjukt mycket snabbare..!
 
 Det enda vi då måste få med är ett sätt att signalera till service att data uppdateras. 

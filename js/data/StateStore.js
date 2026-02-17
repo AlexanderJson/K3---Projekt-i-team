@@ -1,13 +1,4 @@
 
-const task = {
-  id,
-  title,
-  completed,
-  assigned,
-  status
-}
-
-
 
 /**
  * This class is responsible for statemanagent.
@@ -17,14 +8,17 @@ const task = {
  * then used for all CRUD functions
  */
 
-class StateStore 
+export class StateStore 
 {
   constructor(key)
   {
     this.key = key;
   }
 
-  _read()
+
+
+
+  load() 
   {
     const raw = localStorage.getItem(this.key);
     try
@@ -37,18 +31,9 @@ class StateStore
     }
   }
 
-  _write(data)
+  save(data)
   {
     localStorage.setItem(this.key, JSON.stringify(data));
-  }
-
-
-  add(data)
-  {
-    const data = this.read();
-    data.push(item);
-    this._write(data);
-    return item;
   }
 
   clear()
