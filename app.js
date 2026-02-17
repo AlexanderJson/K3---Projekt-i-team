@@ -56,3 +56,22 @@ document.addEventListener("click", (e) => {
     dialog.removeAttribute("hidden");
   }
 });
+
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
+    try {
+      const registration = await navigator.serviceWorker.register("/service-worker.js");
+      console.log("Service Worker registered");
+
+      // Registrera Background Sync när SW är redo
+      if ("sync" in registration) {
+        await registration.sync.register("sync-data");
+        console.log("Background Sync registered");
+      }
+    } catch (err) {
+      console.error("Service Worker registration failed:", err);
+    }
+  });
+}
+
