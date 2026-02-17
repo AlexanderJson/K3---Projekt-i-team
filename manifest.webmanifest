@@ -1,0 +1,40 @@
+{
+  "id": "/",
+  "name": "Lianer - Responsive Project Management Dashboard",
+  "short_name": "Lianer",
+  "description": "Lianer is a lightweight, offline-capable project management dashboard built for seamless team collaboration. From idea to done.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait",
+  "lang": "en",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "categories": [
+    "productivity",
+    "business",
+    "developer"
+  ],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
