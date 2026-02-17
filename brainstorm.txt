@@ -1,0 +1,115 @@
+optimeringstankar:
+
+
+1. 
+problem: 
+Just nu hämtar vi tasks om och om igen i appen. Både vid omrendering och vid byte av sida. 
+Om vi lägger till ny data måste vi hämta HELA localstorage datan från den nyckeln. inte bra 
+
+ ide: 
+
+Exempeol:
+Sidan laddas. Första request att få tasks sker. 
+Service klass begär tasks från Store, och använder sedan reducer för att
+omvandla till en map (eller set? kolla upp skillnaderna). 
+
+Denna logik sker helt internt utanför dom. Så ingen del av vår DOM kommunicerar
+med StateStore. Endast med sina respektive service klasser. 
+
+Istället kommer DOM:en få datan ur vår map/set, (mindre hämtning från LS, mindre JSON parsing + map/set är O(1) noterat) 
+Så hämtning av data kommer lbi sjukt mycket snabbare..!
+
+Det enda vi då måste få med är ett sätt att signalera till service att data uppdateras. 
+då får service signalen och begär en ny hämtning av localstorage datan igen. 
+
+så basically: 
+
+
+store(key) -> repo -> service(repo) -> ..app.js 
+
+
+
+service:
+(map med data)
+
+// denna uppdaterar map vid signal (kolla om diff kostar mer elr midnre)
+updateDataMap(data)
+clearDataMap()
+
+
+// till DOM
+getTasks() -> denna hämtar då från map
+getTaskById -> hämtar från map
+getTaskByAssigned -> hämtar från map
+// ifall vi bara ska hämra antal 
+getTasksPage(num)
+// ifall vi ska hämta på period
+getTasksPeriod(p1,p2)
+
+notes: kolla bästa sätt att signal. Antingen manuell call eller proxy kanske? överkomplicera dock inte det.
+
+localStorage -> Repository -> Service: Map(id,task), Map<userId, Set<taskId>, Map<status, Set<taskId>
+
+DOM hämtar från maps. 
+
+
+
+
+
+
+
+
+GAMMAL IDE - ANVÄND EJ 
+
+
+ide 2:
+
+Just nu lagrar vi tasks med nyckeln STORE. 
+Detta är väldigt dåligt. Vi inprincip hämtar  HELA databasen vid varje rerender.
+
+Om vi skulle lagra enligt klassisk relationell db (tasks, people) så är det inte heller bra. 
+Eftersom vi bara kan hämta all data på en localstorage call, vi kan inte hämta enskild data som sql.
+
+Men om vi istället då lagrar varje objekt genom att bygga nycklar för varje objekt istället, kan vi crud enskild data
+utan att röra i hela databasen. 
+
+Exempel: 
+
+Task identifieras som = "ta-" (enums sen kske?)
+
+Så vi vet att allt som är en task i LS har "ta-" prefix
+
+Task metadata:
+id,
+title,
+desc,
+assignedTo,
+status,
+
+byggide:
+
+assignedTo = people.id
+status = [0,1,2,3]  // backlog, todo, in_progress,done
+
+Alexanders id = "75" 
+
+byggd nyckel: 
+
+obj: taskId = "_tId-12", assignedto = "_uId-75" , status = "_st-0"
+
+
+(taskPrefix + name + assignedTo + status)toLower();
+output:
+key= 
+"ta-_tId-12-uId-75_st-0"
+
+användsningsexempel: 
+
+ska vi hämta alla task där alxander är med
+kan vi regex efter
+_uId
+
+
+
+
+
