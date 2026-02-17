@@ -55,12 +55,17 @@ body {
         margin-bottom: 90px; 
         display: flex;
         align-items: center; 
-        justify-content: space-between;
+        justify-content: center;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     /* Kollapsat läge för desktop */
     .menu.collapsed { width: 58px; }
+
+    /* Tar bort padding i collapsed så barnen kan centras perfekt */
+    .menu.collapsed .menu-main {
+        padding: 0 !important;
+    }
     
     .menu.collapsed .menu-brand {
         padding: 60px 0 40px 0; 
@@ -92,6 +97,27 @@ body {
     .menu.collapsed .menu-btn:hover .nav-text {
         opacity: 1;
         left: 55px;
+    }
+
+    /* Centrerar ALLA knappar (inklusive Add Task) i collapsed läge */
+    .menu.collapsed .menu-btn,
+    .menu.collapsed .addTaskFab {
+        justify-content: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        width: 100%;
+    }
+
+
+    .menu.collapsed .addTaskFab .nav-icon {
+        margin: 0 !important;
+        min-width: 0 !important;
+    }   
+
+    .addTaskFab {
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease-in-out;
     }
 }
 
@@ -143,24 +169,6 @@ body {
         display: none !important;
     }
 
-    /* Den stora flytande Plus-knappen */
-    .menu-btn.addTaskFab {
-        flex: 0 0 65px !important;
-        height: 65px !important;
-        background: var(--accent-cyan) !important;
-        color: #000 !important;
-        border: none !important;
-        border-radius: 50% !important;
-        transform: translateY(-25px) !important; /* Lyfter upp knappen */
-        box-shadow: 0 8px 20px rgba(34, 211, 238, 0.4) !important;
-        z-index: 10001;
-    }
-
-    .addTaskFab .nav-icon {
-        font-size: 2.2rem !important;
-        margin: 0 !important;
-    }
-
     /* Döljer desktop-element på mobil */
     .menu-brand, .menu-toggle-btn, .menu-footer {
         display: none !important;
@@ -202,7 +210,7 @@ body {
 
 /* Speciell styling för branding-texten (Desktop) */
 .menu-brand .nav-text {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     font-weight: 900;
     letter-spacing: 1.5px;
     color: #ffffff;
@@ -383,4 +391,49 @@ body {
 .btn-save-main:hover, .btn-cancel-main:hover {
     transform: translateY(-2px);
     filter: brightness(1.1);
+}
+
+
+
+
+/* Styling för den snygga cirkel-ikonen */
+.addTaskFab .nav-icon.material-symbols-rounded {
+    font-size: 2.6rem !important; /* Gör den lite större så cirkeln syns tydligt */
+    color: var(--accent-cyan) !important;
+    /* 'FILL' 0 ger en snygg kontur som på din bild */
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'grad' 0, 'opsz' 24;
+    filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.4));
+    transition: all 0.3s ease;
+}
+
+/* Hover-effekt: cirkeln lyser upp och växer */
+.addTaskFab:hover .nav-icon.material-symbols-rounded {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 15px rgba(34, 211, 238, 0.8));
+    color: #ffffff !important;
+}
+
+/* Säkerställ att texten bredvid fortfarande ligger rakt */
+.addTaskFab {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.addTaskFab .nav-text {
+    font-size: 1.4rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Dölj texten i utfällt läge för addTaskFab om du bara vill ha ikonen där */
+.menu:not(.collapsed) .addTaskFab .nav-text {
+    display: none;
+}
+
+/* Visa som tooltip vid hover i stängt läge (ärvs från din befintliga tooltip-logik) */
+.menu.collapsed .addTaskFab:hover .nav-text {
+    opacity: 1;
+    left: 55px;
 }

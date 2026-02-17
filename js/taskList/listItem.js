@@ -3,6 +3,7 @@ import { updateTaskStatus } from "./updateTaskStatus.js";
 import { TASK_STATUSES } from "../status.js";
 import { getPeople } from "../people/peopleService.js";
 import { removeById, saveState, loadState } from "../storage.js";
+import { addTaskDialog } from "../comps/dialog.js";
 
 const formatDate = (dateStr) => {
   if (!dateStr || dateStr === 0 || dateStr === "Nyss") return "Nyss";
@@ -110,7 +111,11 @@ export const listItem = (task) => {
     
     currentTeam.forEach(p => {
       const opt = document.createElement("option");
-      opt.value = p; opt.textContent = p;
+      opt.value = p; 
+      
+      // Om namnet är "Ingen", visa "Ledig uppgift" istället
+      opt.textContent = (p === "Ingen") ? "🟢 Ledig uppgift" : p;
+      
       if (task.assigned === p) opt.selected = true;
       assignedSelect.append(opt);
     });
@@ -149,6 +154,15 @@ export const listItem = (task) => {
     if (isClosed) { if (confirm("Radera permanent?")) removeById(task.id); }
     else { const c = prompt("Anledning:"); if (c?.trim()) updateTaskStatus(task.id, TASK_STATUSES.CLOSED, c.trim()); }
   }, "delete-btn");
+
+  addBtn(
+  `<span class="material-symbols-rounded">edit</span>`,
+  () => {
+    const dialog = addTaskDialog(task);
+    document.body.append(dialog);
+  },
+  "edit-btn"
+);
 
   footer.append(controls);
   div.append(headerRow, mainContent, footer);
