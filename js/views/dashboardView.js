@@ -1,5 +1,5 @@
 import { loadState } from "../storage.js";
-
+import { testBtn } from "../comps/testBtn.js";
 const FAVORITES_KEY = "dashboard:favorites";
 
 const STATUSES = [
@@ -23,6 +23,7 @@ export function renderDashboard(container) {
 
   let currentFilter = localStorage.getItem("dashboardViewFilter") || "Team";
 
+  const bbtn = testBtn();
   const wrapper = document.createElement("div");
   wrapper.className = "dashboard";
 
@@ -87,7 +88,7 @@ export function renderDashboard(container) {
 
     const heading = document.createElement("h3");
     heading.textContent = name === "Team" ? `${teamName}` : name;
-    header.append(heading);
+    header.append(heading, bbtn);
 
     if (name !== "Team") {
       const star = document.createElement("button");
