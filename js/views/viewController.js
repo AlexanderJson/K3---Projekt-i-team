@@ -42,7 +42,7 @@ function render() {
   }
 
   if (activeView === "settings") {
-    renderSettings(container);
+    renderSettings(container, rerenderActiveView);
     return;
   }
 }

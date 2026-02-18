@@ -29,10 +29,29 @@ export function updateTaskStatus(taskId, newStatus, comment = "") {
   }
 
   task.status = newStatus;
-  task.completed = newStatus === TASK_STATUSES.DONE;
+  
+  const isCompleted = (newStatus === TASK_STATUSES.DONE || newStatus === TASK_STATUSES.CLOSED);
+  task.completed = isCompleted;
 
-  if (newStatus === TASK_STATUSES.CLOSED) {
-    task.comment = comment;
+  // Sätt datum när den blir klar (eller ta bort om den flyttas tillbaka)
+  if (isCompleted && !task.completedDate) {
+    task.completedDate = new Date().toISOString();
+  } else if (!isCompleted) {
+    task.completedDate = null;
+  }
+  
+  if (newStatus === TASK_STATUSES.CLOSED && comment) {
+    const today = new Date().toLocaleDateString('sv-SE');
+    
+    // Skapa noteringen (Utan namn, bara datum och kommentar)
+    const closeNote = `\n\n[STÄNGD ${today}]: ${comment}`;
+    
+    // Lägg till i beskrivningen
+    task.description = (task.description || "") + closeNote;
+    
+    // task.comment behövs egentligen inte längre om vi sparar i beskrivningen, 
+    // men vi kan låta den vara eller ta bort den. Jag tar bort den för att inte ha dubbeldata.
+    // task.comment = comment; 
   }
 
   saveState(state);
