@@ -26,8 +26,35 @@ describe("taskService", () =>
 
     test("addTask should add task to memory and save to storage", () => 
         {
-
+          service.addTask(tasks);
+          expect(service.getTasks().length).toBe(1);
+          expect(store.save).toHaveBeenCalledWith([tasks]);
         })
+
+    test("init should load tasks from store", () => 
+        {
+            store.load.mockReturnValue(tasks);
+            service.init();
+            expect(service.getTasks().length).toBe(2);
+            expect(service.getTaskById("2").title).toBe("Task 2")
+        })
+
+    test("getTaskById should return matching task to id", () => 
+        {
+            store.load.mockReturnValue(tasks);
+            service.init();
+            const result = service.getTaskById("2");
+            expect(result.title).toBe("Task 2");
+
+        });
+    }
+
+    
+)
+
+
+
+/*
 
     test("init should load tasks from store", () => 
         {
@@ -46,11 +73,12 @@ describe("taskService", () =>
 
     test("byAssigned should return matching task to assigned", () => 
         {
-            
+
         })
 
 
     
 
-    }
-)
+
+*/
+
