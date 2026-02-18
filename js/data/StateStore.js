@@ -10,17 +10,21 @@
 
 export class StateStore 
 {
-  constructor(key)
+  constructor(key="STATE")
   {
     this.key = key;
   }
 
 
+  _getStorage()
+  { 
+    return localStorage.getItem(this.key);
+  }
 
 
   load() 
   {
-    const raw = localStorage.getItem(this.key);
+    const raw = this._getStorage();
     try
     {
       return raw? JSON.parse(raw) : [];
@@ -40,7 +44,4 @@ export class StateStore
   {
     localStorage.removeItem(this.key);
   }
-
-
-
 }
