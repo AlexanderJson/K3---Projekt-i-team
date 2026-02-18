@@ -8,8 +8,12 @@ import { addTaskDialog } from "../comps/dialog.js";
 const formatDate = (dateStr) => {
   if (!dateStr || dateStr === 0 || dateStr === "Nyss") return "Nyss";
   const d = new Date(dateStr);
-  return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('sv-SE', { 
-    day: 'numeric', month: 'short', year: 'numeric' 
+  if (isNaN(d.getTime())) return dateStr;
+
+  return d.toLocaleDateString('sv-SE', { 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: '2-digit' 
   });
 };
 
@@ -89,6 +93,16 @@ export const listItem = (task) => {
     <p class="taskDescription">${task.description || "Ingen beskrivning tillgänglig."}</p>
   `;
 
+  if (isClosed && task.closedReason) {
+    const reasonBox = document.createElement("div");
+    reasonBox.className = "closed-reason-display";
+    reasonBox.innerHTML = `
+      <span class="meta-label">STÄNGNINGSORSAK</span>
+      <p class="reason-text">${task.closedReason}</p>
+    `;
+    mainContent.append(reasonBox);
+  }
+
   // FOOTER
   const footer = document.createElement("div");
   footer.className = "taskFooter row-layout";
@@ -155,14 +169,16 @@ export const listItem = (task) => {
     else { const c = prompt("Anledning:"); if (c?.trim()) updateTaskStatus(task.id, TASK_STATUSES.CLOSED, c.trim()); }
   }, "delete-btn");
 
-  addBtn(
-  `<span class="material-symbols-rounded">edit</span>`,
-  () => {
-    const dialog = addTaskDialog(task);
-    document.body.append(dialog);
-  },
-  "edit-btn"
-);
+  if (!isClosed) {
+    addBtn(
+      `<span class="material-symbols-rounded">edit</span>`,
+      () => {
+        const dialog = addTaskDialog(task);
+        document.body.append(dialog);
+      },
+      "edit-btn"
+    );
+  }
 
   footer.append(controls);
   div.append(headerRow, mainContent, footer);

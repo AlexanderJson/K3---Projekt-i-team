@@ -3,7 +3,6 @@ import { taskList } from "../taskList/taskList.js";
 import { TASK_STATUSES } from "../status.js";
 
 export const taskScreen = () => {
-  // Vi hämtar statet inuti huvudfunktionen varje gång den anropas
   const state = loadState();
   const people = state.people || [];
   
@@ -26,77 +25,82 @@ export const taskScreen = () => {
   const select = document.createElement("select");
   select.classList.add("taskFilterSelect");
 
+  // 1. Hela teamet
   const teamOption = document.createElement("option");
   teamOption.value = "Team";
   teamOption.textContent = "Hela Teamet";
   select.append(teamOption);
 
+  // 3. SEPARATOR (En inaktiverad option som fungerar som linje)
+  const teamSeparator = document.createElement("option");
+  teamSeparator.disabled = true;
+  teamSeparator.textContent = "────────────────";
+  select.append(teamSeparator);
+
+  // 2. Alla medlemmar (inklusive Lediga uppgifter)
   people.forEach(person => {
     const option = document.createElement("option");
     option.value = person;
-    
-    // Ändrar visningstexten för "Ingen" till "Lediga uppgifter"
-    option.textContent = (person === "Ingen") ? "🟢 Lediga uppgifter" : person;
-    
+    option.textContent = (person === "Ingen") ? "Lediga uppgifter" : person;
     if (person === currentFilter) option.selected = true;
     select.append(option);
   });
 
-  // RENDERING-LOGIK
+  // 3. SEPARATOR (En inaktiverad option som fungerar som linje)
+  const archiveSeparator = document.createElement("option");
+  archiveSeparator.disabled = true;
+  archiveSeparator.textContent = "────────────────";
+  select.append(archiveSeparator);
+
+  // 4. ARKIVET (Längst ner)
+  const archiveOption = document.createElement("option");
+  archiveOption.value = "Arkiv";
+  archiveOption.textContent = "📁 Visa Stängda Uppgifter";
+  if (currentFilter === "Arkiv") archiveOption.selected = true;
+  select.append(archiveOption);
+
+  // ---------- RENDERING-LOGIK ----------
   const updateView = (selectedPerson) => {
     contentArea.innerHTML = ""; 
 
-    // VIKTIGT: Hämta de allra senaste uppgifterna från LocalStorage här
     const latestState = loadState();
     const tasks = latestState.tasks || [];
-
-    const filteredTasks = selectedPerson === "Team" 
-      ? tasks 
-      : tasks.filter(t => t.assigned === selectedPerson);
 
     const board = document.createElement("div");
     board.classList.add("taskBoard");
 
-    const activeStatuses = [TASK_STATUSES.TODO, TASK_STATUSES.IN_PROGRESS, TASK_STATUSES.DONE];
-    
-    activeStatuses.forEach(status => {
-      const columnWrapper = document.createElement("section");
-      columnWrapper.classList.add("taskWrapper");
-      columnWrapper.setAttribute("data-status", status);
+    // LOGIK FÖR ARKIV-VY
+    if (selectedPerson === "Arkiv") {
+      const archiveColumn = document.createElement("section");
+      // Använder klasserna för korrekt röd styling och kolumnstruktur
+      archiveColumn.className = "taskWrapper closed-tasks-archive";
+      
+      // I arkiv-vyn visar vi ALLA stängda uppgifter oavsett vem de var tilldelade
+      const closedTasks = tasks.filter(t => t.status === TASK_STATUSES.CLOSED);
+      archiveColumn.append(taskList(TASK_STATUSES.CLOSED, closedTasks));
+      
+      board.append(archiveColumn);
+    } 
+    // LOGIK FÖR VANLIG KANBAN-VY (TEAM ELLER PERSON)
+    else {
+      const filteredTasks = selectedPerson === "Team" 
+        ? tasks 
+        : tasks.filter(t => t.assigned === selectedPerson);
 
-      const columnTasks = filteredTasks.filter(t => t.status === status);
-      columnWrapper.append(taskList(status, columnTasks));
-      board.append(columnWrapper);
-    });
+      const activeStatuses = [TASK_STATUSES.TODO, TASK_STATUSES.IN_PROGRESS, TASK_STATUSES.DONE];
+      
+      activeStatuses.forEach(status => {
+        const columnWrapper = document.createElement("section");
+        columnWrapper.classList.add("taskWrapper");
+        columnWrapper.setAttribute("data-status", status);
 
-    // ---------- ARKIV-SEKTION ----------
-    const archiveWrapper = document.createElement("div");
-    archiveWrapper.className = "archive-wrapper";
+        const columnTasks = filteredTasks.filter(t => t.status === status);
+        columnWrapper.append(taskList(status, columnTasks));
+        board.append(columnWrapper);
+      });
+    }
 
-    const toggleBtn = document.createElement("button");
-    toggleBtn.className = "archive-toggle-btn";
-    toggleBtn.textContent = "Visa stängda uppgifter";
-
-    const archiveContainer = document.createElement("div");
-    archiveContainer.className = "closed-tasks-archive";
-    archiveContainer.style.display = "none";
-
-    const archiveColumnWrapper = document.createElement("div");
-    archiveColumnWrapper.classList.add("taskWrapper");
-    archiveColumnWrapper.setAttribute("data-status", TASK_STATUSES.CLOSED);
-
-    const closedTasks = filteredTasks.filter(t => t.status === TASK_STATUSES.CLOSED);
-    archiveColumnWrapper.append(taskList(TASK_STATUSES.CLOSED, closedTasks));
-    archiveContainer.append(archiveColumnWrapper);
-
-    toggleBtn.addEventListener("click", () => {
-      const isHidden = archiveContainer.style.display === "none";
-      archiveContainer.style.display = isHidden ? "block" : "none";
-      toggleBtn.textContent = isHidden ? "Dölj stängda uppgifter" : "Visa stängda uppgifter";
-    });
-
-    archiveWrapper.append(toggleBtn, archiveContainer);
-    contentArea.append(board, archiveWrapper);
+    contentArea.append(board);
   };
 
   select.addEventListener("change", (e) => {
@@ -105,6 +109,7 @@ export const taskScreen = () => {
     updateView(newPerson);
   });
 
+  // Initial rendering
   updateView(currentFilter);
 
   filterContainer.append(filterLabel, select);

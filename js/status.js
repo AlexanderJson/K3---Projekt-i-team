@@ -52,8 +52,16 @@ export function updateTaskStatus(taskId, newStatus, comment = "") {
   // En uppgift räknas som färdig i statistiken om den är Klar ELLER Stängd
   task.completed = (newStatus === TASK_STATUSES.DONE || newStatus === TASK_STATUSES.CLOSED);
 
-  // Om den stängs, spara anledningen
-  if (newStatus === TASK_STATUSES.CLOSED) {
+  // Om den stängs, spara anledningen i beskrivningen
+  if (newStatus === TASK_STATUSES.CLOSED && comment) {
+    const today = new Date().toLocaleDateString('sv-SE');
+    // Lägg till en tydlig avgränsare och datumstämpel
+    const closeNote = `\n\n[STÄNGD ${today}]: ${comment}`;
+    
+    // Om beskrivning saknas, skapa den. Annars lägg till.
+    task.description = (task.description || "") + closeNote;
+    
+    // Vi kan också spara den i task.comment för bakåtkompatibilitet om det behövs, men beskrivningen är det synliga stället.
     task.comment = comment;
   }
 

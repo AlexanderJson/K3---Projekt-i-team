@@ -41,8 +41,7 @@
   min-width: 220px;
   padding: 10px 14px;
   border-radius: 12px;
-  border: 4px double var(--border); 
-  /* Tonar ner bakgrunden något för att slippa "hårt" vitt */
+    border: 4px double var(--border);
   background: var(--bg-card); 
   color: var(--text-main);
   font-size: 14px;
@@ -84,12 +83,12 @@
   background: var(--bg-card);
   border: 6px double var(--border);
   border-radius: 24px;
-  padding: 35px;
-  min-height: 450px;
+  padding: 20px;
+  min-height: 350px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: 20px;
+  gap: 8px;
   /* Mer markerad skugga för att skapa lyft i mörkt läge */
   box-shadow: 0 10px 30px rgba(0,0,0,0.15);
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
@@ -114,7 +113,19 @@
   letter-spacing: 0.4px;
   color: var(--text-main);
   text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  margin-bottom: 5px;
+  color: var(--text-main);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  margin-bottom: 0;
+}
+
+/* TEAM LOGO i Dashboard Header */
+.dashboard-team-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px double var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
 }
 
 /* =========================
@@ -149,9 +160,9 @@
   font-size: 16px;
   font-weight: 700;
   color: var(--text-main);
-  margin-bottom: 15px;
+  margin-bottom: 4px;
   display: block;
-  font-family: 'Share Tech Mono', monospace; 
+  font-family: 'Share Tech Mono', monospace;
   letter-spacing: 0.5px;
 }
 

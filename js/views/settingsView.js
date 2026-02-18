@@ -1,7 +1,8 @@
 import { loadState, saveState } from "../storage.js";
 import { notify } from "../observer.js";
 
-export function renderSettings(container) {
+// Vi tar emot rerenderCallback från viewController för att synka appen
+export function renderSettings(container, rerenderCallback) {
   container.innerHTML = "";
   const state = loadState();
   const people = state.people || [];
@@ -16,13 +17,19 @@ export function renderSettings(container) {
   header.textContent = "Inställningar";
   wrapper.append(header);
 
-  // --- TEAM-SEKTION ---
+  // --- TEAM-SEKTION (Grid Layout) ---
   const teamSection = document.createElement("section");
   teamSection.className = "settings-section"; 
   teamSection.innerHTML = `
-    <label class="meta-label">Teamets namn</label>
-    <div class="settings-row-flex"> 
-        <input type="text" id="teamNameInput" value="${teamName}" class="settings-input main-input" spellcheck="false">
+    <div class="settings-grid">
+        <div class="settings-col">
+            <label class="meta-label">TEAMETS NAMN</label>
+            <input type="text" id="teamNameInput" value="${teamName}" class="settings-input main-input" spellcheck="false">
+        </div>
+        <div class="settings-col">
+            <label class="meta-label">VECKOMÅL</label>
+            <input type="number" id="weeklyTargetInput" value="${state.settings?.weeklyTarget || 5}" class="settings-input main-input" min="1" max="100">
+        </div>
     </div>
   `;
   wrapper.append(teamSection);
@@ -30,10 +37,15 @@ export function renderSettings(container) {
   // --- MEDLEMS-SEKTION ---
   const peopleSection = document.createElement("section");
   peopleSection.className = "settings-section";
-  peopleSection.innerHTML = `<label class="meta-label">Teammedlemmar</label>`;
+  peopleSection.style.flex = "1"; // Låt den ta upp kvarvarande plats
+  peopleSection.style.display = "flex";
+  peopleSection.style.flexDirection = "column";
+
+  peopleSection.innerHTML = `<label class="meta-label">TEAMMEDLEMMAR</label>`;
   
   const list = document.createElement("div");
   list.className = "members-container-scroll"; 
+  list.style.flex = "1"; // Låt listan växa
 
   let memberRows = [];
 
@@ -45,7 +57,6 @@ export function renderSettings(container) {
         <button class="settings-btn btn-delete-small">RADERA</button>
     `;
 
-    // Hantera radering visuellt och i referenslistan
     row.querySelector(".btn-delete-small").onclick = () => {
         row.remove(); 
         memberRows = memberRows.filter(r => r !== row);
@@ -54,7 +65,7 @@ export function renderSettings(container) {
     return row;
   };
 
-  // 1. RENDERA EXISTERANDE MEDLEMMAR - Filtrera bort "Ingen" så den aldrig syns i listan
+  // 1. RENDERA EXISTERANDE MEDLEMMAR
   people.forEach((person) => {
     if (person === "Ingen") return;
     const row = createMemberRow(person);
@@ -63,50 +74,59 @@ export function renderSettings(container) {
   });
 
   const addBtn = document.createElement("button");
-  addBtn.textContent = "+ LÄGG TILL MEDLEM";
+  addBtn.textContent = "+ LÄGG TILL NY MEDLEM";
   addBtn.className = "settings-btn btn-add-full";
   addBtn.onclick = () => {
     const row = createMemberRow("");
     list.append(row);
     memberRows.push(row);
-    
-    // Autofokus på den nya radens input för snabbare editering
     const newInput = row.querySelector("input");
     newInput.focus();
+    // Scrolla ner till botten
+    list.scrollTop = list.scrollHeight;
   };
 
   peopleSection.append(list, addBtn);
   wrapper.append(peopleSection);
 
-  // --- FOOTER (Spara / Avbryt) ---
+  // --- FOOTER (Håller knapparna nere till höger) ---
   const footer = document.createElement("div");
   footer.className = "settings-footer";
 
   const saveBtn = document.createElement("button");
-  saveBtn.textContent = "SPARA ÄNDRINGAR";
+  saveBtn.textContent = "SPARA";
   saveBtn.className = "settings-btn btn-save-main";
   saveBtn.onclick = () => {
     const s = loadState();
     
-    // 1. Spara teamnamn
+    // 1. Spara teamnamn och veckomål
     const newTeamName = document.getElementById("teamNameInput").value.trim();
+    const newWeeklyTarget = parseInt(document.getElementById("weeklyTargetInput").value) || 5;
+
     if (!s.settings) s.settings = {};
     s.settings.teamName = newTeamName;
+    s.settings.weeklyTarget = newWeeklyTarget;
 
-    // 2. Samla namn från rader och rensa tomma samt förhindra manuell skapelse av "Ingen"
+    // 2. Samla namn från rader
     const newPeople = memberRows
       .map(r => r.querySelector("input").value.trim())
       .filter(n => n !== "" && n.toLowerCase() !== "ingen");
     
-    // 3. SYSTEMKRISTISK FIX: Säkerställ att "Ingen" alltid finns i datan men förblir dold för användaren
+    // 3. Säkerställ "Ingen"
     if (!newPeople.includes("Ingen")) {
         newPeople.unshift("Ingen");
     }
     
     s.people = newPeople;
     saveState(s);
-    notify(); // Triggar sidomenyn och andra vyer att uppdatera sig
-    renderSettings(container);
+    notify(); 
+
+    // Använd callbacken från viewController istället för lokal rendering
+    if (rerenderCallback) {
+      rerenderCallback(); 
+    } else {
+      renderSettings(container, rerenderCallback);
+    }
   };
 
   const cancelBtn = document.createElement("button");
@@ -114,11 +134,11 @@ export function renderSettings(container) {
   cancelBtn.className = "settings-btn btn-cancel-main";
   cancelBtn.onclick = () => {
     if (confirm("Vill du förkasta dina ändringar?")) {
-        renderSettings(container);
+        if (rerenderCallback) rerenderCallback();
     }
   };
 
-  footer.append(saveBtn, cancelBtn);
+  footer.append(cancelBtn, saveBtn); // Avbryt till vänster, Spara till höger
   wrapper.append(footer);
   container.append(wrapper);
 }
