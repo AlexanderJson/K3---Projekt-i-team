@@ -1,4 +1,4 @@
-import { createTask } from "./tasks.js";
+import { createTask } from "../data/tasks.js";
 import { TASK_STATUSES } from "../status.js";
 import { saveState, loadState } from "../storage.js";
 
@@ -32,6 +32,8 @@ const initialTasks = [
     assigned: "Person 1"
   })
 ];
+
+
 
 const defaultPeople = ["Person 1", "Person 2"];
 

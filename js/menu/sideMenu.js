@@ -112,7 +112,7 @@ export const menu = () => {
       className: `menu-btn ${b.view === "settings" ? "settings-link" : ""}`,
       onClick: () => {
         if (b.view === "theme") {
-          const actualBtn = toggleThemeBtn(); 
+          const actualBtn = toggleThemeBtn();
           actualBtn.click();
         } else if (b.view === "schedule") {
           alert("Kommer snart!");
@@ -121,7 +121,7 @@ export const menu = () => {
         }
       }
     });
-    
+
     mainButtons.append(btnElement);
 
     if (index === 2) {
@@ -139,6 +139,6 @@ export const menu = () => {
   footerSection.style.marginTop = "auto"; 
 
   div.append(mainButtons, footerSection);
-  
+
   return div;
 };

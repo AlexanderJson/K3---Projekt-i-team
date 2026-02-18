@@ -1,0 +1,22 @@
+
+GUIDE:
+
+Ha ovanför klasser/funktioner
+
+/**
+ * Short summary (one sentence).
+ *
+ * Longer explanation describing:
+ * - responsibility
+ * - behavior
+ * - important implementation details
+ * - when this should be used
+ *
+ * @param {Type} name - Description
+ * @param {Type} name - Description
+ * @returns {Type} Description of return value
+ * @throws {ErrorType} When this fails
+ *
+ * @example
+ * exampleCode();
+ */

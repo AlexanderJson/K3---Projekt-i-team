@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: comps/dialog.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: comps/dialog.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { addState, loadState, saveState } from "../storage.js";
+import { TASK_STATUSES } from "../status.js";
+import { getPeople } from "../people/peopleService.js";
+
+/**
+ * Återanvändbar dialog för att både skapa och redigera uppgifter.
+ * @param {Object|null} taskToEdit - Om ett task-objekt skickas med går modalen in i redigeringsläge.
+ */
+export const addTaskDialog = (taskToEdit = null) => {
+  const overlay = document.createElement("div");
+  overlay.className = "modalOverlay"; 
+  const modal = document.createElement("div");
+  modal.className = "modalCard"; 
+
+  const people = getPeople(); 
+  const isEdit = !!taskToEdit;
+  const titleText = isEdit ? "Redigera uppgift" : "Skapa ny uppgift";
+  const btnText = isEdit ? "Spara ändringar" : "Spara";
+
+  modal.innerHTML = `
+    &lt;h2>${titleText}&lt;/h2>
+    &lt;div class="modal-body">
+      &lt;input type="text" id="taskTitle" placeholder="Vad ska göras?" class="modalInput">
+      &lt;textarea id="taskDesc" placeholder="Beskrivning..." class="modalInput" style="min-height: 100px; resize: none;">&lt;/textarea>
+      
+      &lt;div class="modal-field">
+        &lt;label class="modal-label">Ansvarig:&lt;/label>
+        &lt;select id="taskAssigned" class="modalInput">
+          ${people.map(person => {
+            // Om vi redigerar, kolla om denna person är den som är assigned
+            const isSelected = isEdit &amp;&amp; taskToEdit.assigned === person;
+            // Om vi skapar ny, sätt "Ingen" som default
+            const isDefault = !isEdit &amp;&amp; person === "Ingen";
+            
+            return `&lt;option value="${person}" ${isSelected || isDefault ? "selected" : ""}>
+              ${person === "Ingen" ? "🟢 Ledig uppgift" : person}
+            &lt;/option>`;
+          }).join("")}
+        &lt;/select>
+      &lt;/div>
+
+      &lt;div class="modal-field">
+        &lt;label class="modal-label">Deadline:&lt;/label>
+        &lt;input type="date" id="taskDeadline" class="modalInput">
+      &lt;/div>
+    &lt;/div>
+    &lt;div class="modalButtons">
+      &lt;button id="cancelTask" class="cancelBtn">Avbryt&lt;/button>
+      &lt;button id="saveTask" class="confirmBtn">${btnText}&lt;/button>
+    &lt;/div>
+  `;
+
+  // --- POPULERA FÄLT VID REDIGERING ---
+  if (isEdit) {
+    modal.querySelector("#taskTitle").value = taskToEdit.title;
+    modal.querySelector("#taskDesc").value = taskToEdit.description || "";
+    modal.querySelector("#taskAssigned").value = taskToEdit.assigned;
+    // Deadline kräver formatet YYYY-MM-DD för att visas i input[type="date"]
+    if (taskToEdit.deadline) {
+        modal.querySelector("#taskDeadline").value = taskToEdit.deadline;
+    }
+  }
+
+  modal.querySelector("#saveTask").onclick = () => {
+    const title = modal.querySelector("#taskTitle").value.trim();
+    const description = modal.querySelector("#taskDesc").value.trim();
+    const assigned = modal.querySelector("#taskAssigned").value;
+    const deadline = modal.querySelector("#taskDeadline").value || 0;
+
+    if (!title) return alert("Titeln får inte vara tom!");
+
+    if (isEdit) {
+      // --- UPPDATERA EXISTERANDE STATE ---
+      const state = loadState();
+      const index = state.tasks.findIndex(t => String(t.id) === String(taskToEdit.id));
+      
+      if (index !== -1) {
+        state.tasks[index] = {
+          ...taskToEdit, // Behåll id, status, createdAt, comment osv.
+          title,
+          description,
+          assigned,
+          deadline
+        };
+        saveState(state);
+      }
+    } else {
+      // --- SKAPA NYTT STATE ---
+      const newTask = {
+        id: Date.now(),
+        title,
+        description,
+        deadline,
+        createdAt: new Date().toISOString(), 
+        status: TASK_STATUSES.TODO,
+        assigned, 
+        completed: false,
+        comment: ""
+      };
+      addState(newTask);
+    }
+
+    overlay.remove();
+    // Signalera till appen att rita om vyer
+    window.dispatchEvent(new CustomEvent('renderApp'));
+  };
+
+  // Stäng-logik
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  modal.querySelector("#cancelTask").onclick = () => overlay.remove();
+  
+  overlay.append(modal);
+  return overlay; 
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addTaskDialog">addTaskDialog</a></li><li><a href="global.html#updateTaskStatus">updateTaskStatus</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Feb 17 2026 16:38:09 GMT+0100 (GMT+01:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 import { renderDashboard } from "./dashboardView.js";
+import { renderCalendar } from "./calendarView.js";
 import { taskScreen } from "../taskList/taskScreen.js";
 import { renderSettings } from "./settingsView.js"; 
 import { renderContacts } from "./contactsView.js";
@@ -32,7 +33,12 @@ function render() {
 
   if (activeView === "dashboard") {
     // Vi skickar med state även här om dashboardView behöver det
-    renderDashboard(container, state); 
+    renderDashboard(container, state);
+    return;
+  }
+
+  if (activeView === "schedule") {
+    renderCalendar(container);
     return;
   }
 
