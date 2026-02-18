@@ -33,6 +33,8 @@ const initialTasks = [
   })
 ];
 
+
+
 const defaultPeople = ["Person 1", "Person 2"];
 
 export function initSeed() {
