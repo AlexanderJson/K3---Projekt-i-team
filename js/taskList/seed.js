@@ -1,4 +1,4 @@
-import { createTask } from "./tasks.js";
+import { createTask } from "../data/tasks.js";
 import { TASK_STATUSES } from "../status.js";
 import { saveState, loadState } from "../storage.js";
 

@@ -1,6 +1,7 @@
 import { renderDashboard } from "./dashboardView.js";
+import { renderCalendar } from "./calendarView.js";
 import { taskScreen } from "../taskList/taskScreen.js";
-import { renderSettings } from "./settingsView.js"; 
+import { renderSettings } from "./settingsView.js";
 import { loadState } from "../storage.js";
 
 let container = null;
@@ -30,7 +31,12 @@ function render() {
 
   if (activeView === "dashboard") {
     // Vi skickar med state även här om dashboardView behöver det
-    renderDashboard(container, state); 
+    renderDashboard(container, state);
+    return;
+  }
+
+  if (activeView === "schedule") {
+    renderCalendar(container);
     return;
   }
 
