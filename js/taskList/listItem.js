@@ -4,6 +4,7 @@ import { TASK_STATUSES } from "../status.js";
 import { getPeople } from "../people/peopleService.js";
 import { removeById, saveState, loadState } from "../storage.js";
 import { addTaskDialog } from "../comps/dialog.js";
+import { setView } from "../views/viewController.js";
 
 const formatDate = (dateStr) => {
   if (!dateStr || dateStr === 0 || dateStr === "Nyss") return "Nyss";
@@ -88,10 +89,68 @@ export const listItem = (task) => {
   // CONTENT
   const mainContent = document.createElement("div");
   mainContent.className = "taskMainContent";
+  // Helper för att göra kontaktnamn klickbara
+  const formatDescription = (desc) => {
+    if (!desc) return "Ingen beskrivning tillgänglig.";
+    
+    // Ladda kontakter
+    const state = loadState(); 
+    const contacts = state.contacts || [];
+    
+    // Valid Contacts Check
+    if (!contacts || contacts.length === 0) return desc;
+
+    let formatted = desc;
+    contacts.forEach(contact => {
+        if (!contact.name || contact.name.length < 2) return; // Skip invalid/short names
+        
+        try {
+            // Escape special regex chars in name
+            const safeName = contact.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`\\b${safeName}\\b`, 'g');
+            formatted = formatted.replace(regex, `<span class="contact-link" data-id="${contact.id}">${contact.name}</span>`);
+        } catch (e) {
+            console.error("Regex fail for contact", contact.name, e);
+        }
+    });
+    return formatted;
+  };
+
+  let rawTitle = task.title ? String(task.title).trim() : "";
+  if (rawTitle.length === 0) rawTitle = "Utan titel";
+  
+  // Use plain title to avoid layout issues with HTML/line-clamp
+  const titleText = rawTitle;
+  const descHTML = formatDescription(task.description);
+
   mainContent.innerHTML = `
-    <h3 class="taskTitle highlight-title">${task.title}</h3>
-    <p class="taskDescription">${task.description || "Ingen beskrivning tillgänglig."}</p>
+    <h3 class="taskTitle highlight-title">${titleText}</h3>
+    <p class="taskDescription">${descHTML}</p>
   `;
+
+  // EXPLICIT LINKED CONTACT
+  if (task.contactId && task.contactName) {
+      const linkDiv = document.createElement("div");
+      linkDiv.className = "task-contact-explicit";
+      linkDiv.style.cssText = "margin-top: 10px; padding: 6px 10px; background: rgba(34,211,238,0.1); border-radius: 4px; color: var(--accent-cyan); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: bold; border: 1px solid rgba(34,211,238,0.2);";
+      linkDiv.innerHTML = `<span>👤</span> ${task.contactName} <span style="opacity:0.6;font-size:10px;">↗</span>`;
+      
+      linkDiv.onclick = (e) => {
+        e.stopPropagation();
+        setView('contacts', { highlightId: task.contactId });
+      };
+      
+      mainContent.append(linkDiv);
+  }
+
+  // Lägg till klick-handlers för länkarna
+  mainContent.querySelectorAll('.contact-link').forEach(link => {
+      link.onclick = (e) => {
+          e.stopPropagation(); // Hindra att kortet expanderar/kollapsar
+          const id = link.dataset.id;
+          setView('contacts', { highlightId: id });
+      };
+  });
 
   if (isClosed && task.closedReason) {
     const reasonBox = document.createElement("div");

@@ -4,8 +4,27 @@
 
 .dashboard {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
+  grid-template-columns: 1fr; /* Standard för mobil: en kolumn */
+  gap: 30px;
+  width: 100%;        /* Se till att den tar 100% av containern */
+  max-width: none;    /* TA BORT 1400px-begränsningen */
+  margin: 0;          /* Kan vara 0 om du vill att den ska gå kant i kant */
+}
+
+.dashboard-row {
+  display: contents; /* Allow children to flow into the .dashboard grid directly */
+}
+
+@media (min-width: 1024px) {
+  .dashboard {
+    grid-template-columns: 1fr 1fr; /* Två exakt lika breda kolumner */
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
 }
 
 .dashboard h2 {
@@ -211,6 +230,8 @@
 .dot.todo { background: var(--accent-todo); }
 .dot.progress { background: var(--accent-amber); }
 .dot.done { background: var(--success); }
+.dot.lost { background: #ef4444; }
+.dot.callback { background: #a855f7; }
 
 .progress-wrap {
   height: 12px;
@@ -232,6 +253,8 @@
 .progress-bar.todo { background: var(--accent-todo); }
 .progress-bar.progress { background: var(--accent-amber); }
 .progress-bar.done { background: var(--success); }
+.progress-bar.lost { background: #ef4444; box-shadow: 0 0 5px #ef4444; }
+.progress-bar.callback { background: #a855f7; box-shadow: 0 0 5px #a855f7; }
 
 /* =========================
     LISTS & MEDIA
