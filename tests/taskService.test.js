@@ -45,8 +45,28 @@ describe("taskService", () =>
             service.init();
             const result = service.getTaskById("2");
             expect(result.title).toBe("Task 2");
-
         });
+
+    test("byStatus should return matching task to status", () => 
+        {
+            store.load.mockReturnValue(tasks);
+            service.init();
+
+            const result = service.byStatus("TODO");
+            expect(result.length).toBe(1);
+            expect(result[0].id).toBe("1");
+        })
+        
+    test("byAssigned should return matching task to assigned", () => 
+        {
+            store.load.mockReturnValue(tasks);
+            service.init();
+            const result = service.byAssigned("B");
+            expect(result.length).toBe(1);
+            expect(result[0].id).toBe("2");
+        })
+    
+    
     }
 
     
