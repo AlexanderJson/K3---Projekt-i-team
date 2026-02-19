@@ -1,7 +1,7 @@
 # <p align="center">Lianer — Project Planner</p>
 
 <p align="center">
-  <img src="docs/banner.png" alt="Lianer Banner" width="800">
+  <img src="gdocs/banner.png" alt="Lianer Banner" width="800">
 </p>
 
 <p align="center">
@@ -56,7 +56,7 @@ Lianer allows teams to collaborate effectively using a classic **SCRUM-board** s
   - High-contrast accessibility (Black on White).
 
 <p align="center">
-  <img src="docs/menu.png" alt="Interface Preview" width="600">
+  <img src="gdocs/menu.png" alt="Interface Preview" width="600">
 </p>
 
 
