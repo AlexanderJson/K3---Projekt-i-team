@@ -1,4 +1,4 @@
-const createTaskItem = (data) => {
+export const createTaskItem = (data) => {
     const { 
         ID, Title, Description, Status, Assignee, 
         Created, Updated, Started, Completed, 

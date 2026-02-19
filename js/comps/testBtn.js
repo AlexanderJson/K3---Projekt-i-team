@@ -18,6 +18,8 @@ export const testBtn = () =>
         const file = input.files[0];
         if(!file) return;
         const contents = await returnContents(file);
+
+
         console.log("CSV contents:", contents);
 
     });
