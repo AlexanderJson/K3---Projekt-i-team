@@ -10,7 +10,7 @@ export class dashboardState
     }
 
 
-    
+    //podsflds
     loadFavorites()
     {
     return JSON.parse(localStorage.getItem(this.FAVORITES_KEY) || "[]");
