@@ -64,11 +64,7 @@ export class dashboardState
 
     getTasksByStatus()
     {
-        return this.getTasks().filter
-        (
-        t => t.status !== "Stängd" 
-        && t.status !== "CLOSED"
-        );
+        return this.getTasks().filter(t => t.status !== "Stängd" && t.status !== "CLOSED");
     }
 
     getUnassignedCount(tasks)
@@ -99,10 +95,7 @@ export class dashboardState
 
       const filteredTasks = this.getTasksByStatus();
       return name === "Team" ? 
-      filteredTasks : filteredTasks.filter
-      (
-        t => t.assigned === name
-      );
+      filteredTasks : filteredTasks.filter(t => t.assigned === name);
     } 
 
     getTargetPercentage(completedThisWeek,weeklyTarget)
