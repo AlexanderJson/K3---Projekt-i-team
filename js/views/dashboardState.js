@@ -61,6 +61,57 @@ export class dashboardState
         return this.state.settings?.teamName || placeholder;
     }
 
+
+    getTasksByStatus()
+    {
+        return this.getTasks().filter
+        (
+        t => t.status !== "Stängd" 
+        && t.status !== "CLOSED"
+        );
+    }
+
+    getUnassignedCount(tasks)
+    {
+      return tasks.filter(t => t.assigned === "Ingen").length;
+    }
+
+
+  getCompletedThisWeek(relevantTasks)
+  {
+    // Räkna ut startdatum för denna vecka (Måndag 00:00)
+    const now = new Date();
+    const day = now.getDay() || 7; // Söndag=0 -> 7
+    const startOfWeek = new Date(now);
+    startOfWeek.setHours(0, 0, 0, 0);
+    startOfWeek.setDate(now.getDate() - day + 1);
+
+   return relevantTasks.filter(t => {
+        if (!t.completedDate) return false;
+        return new Date(t.completedDate) >= startOfWeek;
+    }).length;
+  }
+
+
+
+  getFilteredTasks(name)
+    {
+
+      const filteredTasks = this.getTasksByStatus();
+      return name === "Team" ? 
+      filteredTasks : filteredTasks.filter
+      (
+        t => t.assigned === name
+      );
+    } 
+
+    getTargetPercentage(completedThisWeek,weeklyTarget)
+    {
+        if (!weeklyTarget) return 0;
+        // Skapa Progress för målet
+        return Math.min(100, Math.round((completedThisWeek / weeklyTarget) * 100));
+    }
+
     getState()
     {
     const tasks = this.getTasks();
@@ -73,3 +124,4 @@ export class dashboardState
     return {tasks,people,teamName,favorites,currentFilter}
     }
 }
+

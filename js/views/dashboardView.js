@@ -1,12 +1,14 @@
 import { loadState } from "../storage.js";
 import { testBtn } from "../comps/testBtn.js";
-import { dashboardState } from "../state/dashboardState.js";
-
+import { dashboardState } from "./dashboardState.js";
 const STATUSES = [
   { key: "Att göra", css: "todo" },
   { key: "Pågår", css: "progress" },
   { key: "Klar", css: "done" }
 ];
+
+
+
 
 
 
@@ -16,12 +18,13 @@ export function renderDashboard(container) {
   const state = loadState();
   const stateManager = new dashboardState(state);
   const {
-    tasks,
     people,
     teamName,
     favorites,
     currentFilter
   } = stateManager.getState();
+
+
 
 
 
@@ -105,10 +108,20 @@ export function renderDashboard(container) {
       header.append(star);
     }
     box.append(header);
-
-    const filteredTasks = tasks.filter(t => t.status !== "Stängd" && t.status !== "CLOSED");
-    const relevantTasks = name === "Team" ? filteredTasks : filteredTasks.filter(t => t.assigned === name);
+    const relevantTasks = stateManager.getFilteredTasks(name);
     const totalCount = relevantTasks.length;
+    const unassignedCount = stateManager.getUnassignedCount(relevantTasks);
+    const completedThisWeek = stateManager.getCompletedThisWeek(relevantTasks);
+    // --- VECKOMÅL / SPRINT MÅL (Som en egen "status-bar") ---
+    // Hämta målet från inställningar (default 5)
+    const weeklyTarget = stateManager.getWeeklyTarget();
+    // Skapa Progress för målet
+    const targetPercent = stateManager.getTargetPercentage(completedThisWeek,weeklyTarget);
+
+
+
+
+
 
     const total = document.createElement("div");
     total.className = "dashboard-total";
@@ -120,7 +133,6 @@ export function renderDashboard(container) {
       // Justera marginalen på totalen för att få dem tajtare
       total.style.marginBottom = "0px";
 
-      const unassignedCount = relevantTasks.filter(t => t.assigned === "Ingen").length;
       const unassignedDiv = document.createElement("div");
       unassignedDiv.className = "dashboard-total"; 
       
@@ -131,25 +143,9 @@ export function renderDashboard(container) {
       box.append(unassignedDiv);
     }
     
-    // --- VECKOMÅL / SPRINT MÅL (Som en egen "status-bar") ---
-    // Hämta målet från inställningar (default 5)
-    const weeklyTarget = stateManager.getWeeklyTarget();
 
-    // Räkna ut startdatum för denna vecka (Måndag 00:00)
-    const now = new Date();
-    const day = now.getDay() || 7; // Söndag=0 -> 7
-    const startOfWeek = new Date(now);
-    startOfWeek.setHours(0, 0, 0, 0);
-    startOfWeek.setDate(now.getDate() - day + 1);
 
-    const completedThisWeek = relevantTasks.filter(t => {
-        if (!t.completedDate) return false;
-        return new Date(t.completedDate) >= startOfWeek;
-    }).length;
 
-    // Skapa Progress för målet
-    const targetPercent = Math.min(100, Math.round((completedThisWeek / weeklyTarget) * 100));
-    
     // Återanvänd status-group strukturen för att matcha de andra exakt
     const targetGroup = document.createElement("div");
     targetGroup.className = "status-group open"; // Alltid öppen kanske? Eller valbart.
