@@ -2,10 +2,6 @@ import { loadState } from "../storage.js";
 import { dashboardState } from "./dashboardState.js";
 import { dashboardControls } from "./dashboardController.js";
 import { dashboardBoxes } from "./dashboardBoxes.js";
-
-
-
-
 export function renderDashboard(container) {
   container.innerHTML = "";
 
@@ -28,8 +24,6 @@ export function renderDashboard(container) {
     currentFilter,
     onChange: () => renderDashboard(container)
   });
-
-
   wrapper.append(controls);
 
   // ---------- RENDERING AV KORT ----------
