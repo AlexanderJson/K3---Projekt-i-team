@@ -1,6 +1,8 @@
 import { loadState } from "../storage.js";
 import { testBtn } from "../comps/testBtn.js";
-import { dashboardState } from "../state/dashboardState.js";
+const FAVORITES_KEY = "dashboard:favorites";
+
+const teamPlaceholder = "Mitt Team";
 
 const STATUSES = [
   { key: "Att göra", css: "todo" },
@@ -9,30 +11,45 @@ const STATUSES = [
 ];
 
 
-
-export function renderDashboard(container) {
-  container.innerHTML = "";
-
-  const state = loadState();
-  const stateManager = new dashboardState(state);
-  const {
-    tasks,
-    people,
-    teamName,
-    favorites,
-    currentFilter
-  } = stateManager.getState();
+// STATE relaterad logik
 
 
+// Persistence relaterad lgik
 
-  const wrapper = document.createElement("div");
-  wrapper.className = "dashboard";
+// UI interaktiva elemwnt
 
-  const title = document.createElement("h2");
-  title.textContent = "Dashboard";
-  wrapper.append(title);
+// beräkningar från state resultat 
+
+
+//TODO: flytta över till en egen klass som hanterar user settings
+function getFavorites(people)
+{
+  const raw  = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+  const favorites = raw.filter(name => people.includes(name));
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+  return favorites;
+}
+
+function toogleFavorite(name)
+{
+  const current = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+  const updated = current.includes(namme) 
+  ? current.filter(f => f !== name)
+  : [...current, name];
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+}
+
+
+
+
+function filterDashboard()
+{
+   return localStorage.getItem("dashboardViewFilter") || "Team";
+}
 
   // ---------- KONTROLLER ----------
+const dashboardControls = () =>
+{
   const controls = document.createElement("div");
   controls.className = "dashboard-controls";
 
@@ -59,25 +76,82 @@ export function renderDashboard(container) {
 
   select.value = currentFilter;
   select.addEventListener("change", () => {
-    stateManager.saveCurrentFilter(select.value);
+    localStorage.setItem("dashboardViewFilter", select.value);
     renderDashboard(container);
   });
 
   controls.append(select);
+  return controls;
+}
+
+export function renderDashboard(container) {
+  container.innerHTML = "";
+
+
+
+  // Denna del hämtar data från state till UI -> kommer ta från service sen
+  const state = loadState(); // ändra
+  const tasks = state.tasks || []; //service sen
+  // FILTRERING: Ta bort "Ingen" från listan över personer som ska visas
+  const people = (state.people || []).filter(p => p !== "Ingen"); 
+  // öndrade - så vi tar en const istället för skriva manuellt
+  const teamName = state.settings?.teamName || teamPlaceholder;
+  
+
+  // main div
+  const wrapper = document.createElement("div");
+  wrapper.className = "dashboard";
+
+  const title = document.createElement("h2");
+  title.textContent = "Dashboard";
+  wrapper.append(title);
+
+  // hämtar kontroll modul
+  const controls = dashboardControls();
+
   wrapper.append(controls);
 
+
+
+
+
+
+
+
+
+
+
   // ---------- RENDERING AV KORT ----------
+  const activeFilter = localStorage.getItem("dashboardViewFilter") || "Team";
   let dashboardsToShow = ["Team"];
 
-  if (currentFilter === "ALLA") {
+  if (activeFilter === "ALLA") {
     dashboardsToShow = ["Team", ...people];
-  } else if (currentFilter === "Team") {
+  } else if (activeFilter === "Team") {
     dashboardsToShow = ["Team", ...favorites];
   } else {
     // Säkerställ att vi bara visar valda filter om personen fortfarande finns
-    const combined = [currentFilter, ...favorites].filter(name => people.includes(name));
+    const combined = [activeFilter, ...favorites].filter(name => people.includes(name));
     dashboardsToShow = ["Team", ...new Set(combined)];
   }
+
+
+
+
+
+
+
+
+
+
+  export const dashboardCards =  ({...props}) =>
+  {
+
+  }
+
+
+
+
 
   dashboardsToShow.forEach(name => {
     const box = document.createElement("div");
@@ -88,32 +162,60 @@ export function renderDashboard(container) {
 
     const heading = document.createElement("h3");
     heading.textContent = name === "Team" ? `${teamName}` : name;
-    header.append(heading);
+    header.append(heading, bbtn);
 
     if (name !== "Team") {
       const star = document.createElement("button");
       star.className = `dashboard-star ${favorites.includes(name) ? "is-active" : ""}`;
       star.innerHTML = favorites.includes(name) ? "★" : "☆";
       star.onclick = () => {
-        const currentFavs = stateManager.loadFavorites();
+        const currentFavs = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
         const updated = currentFavs.includes(name) 
           ? currentFavs.filter(f => f !== name) 
           : [...currentFavs, name];
-        stateManager.saveFavorites(updated);
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated));
         renderDashboard(container);
       };
       header.append(star);
     }
+
+
+
+
+    
     box.append(header);
 
     const filteredTasks = tasks.filter(t => t.status !== "Stängd" && t.status !== "CLOSED");
     const relevantTasks = name === "Team" ? filteredTasks : filteredTasks.filter(t => t.assigned === name);
     const totalCount = relevantTasks.length;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Total ui 
+
+
+
     const total = document.createElement("div");
     total.className = "dashboard-total";
     total.textContent = `Totalt: ${totalCount}`;
     box.append(total);
+
+
+
+    // Weekly goals :
 
     // NYTT: Visa antal lediga uppgifter om det är Team-kortet
     if (name === "Team") {
@@ -133,7 +235,7 @@ export function renderDashboard(container) {
     
     // --- VECKOMÅL / SPRINT MÅL (Som en egen "status-bar") ---
     // Hämta målet från inställningar (default 5)
-    const weeklyTarget = stateManager.getWeeklyTarget();
+    const weeklyTarget = state.settings?.weeklyTarget || 5;
 
     // Räkna ut startdatum för denna vecka (Måndag 00:00)
     const now = new Date();
@@ -150,6 +252,21 @@ export function renderDashboard(container) {
     // Skapa Progress för målet
     const targetPercent = Math.min(100, Math.round((completedThisWeek / weeklyTarget) * 100));
     
+
+
+
+
+
+
+
+
+
+
+// DOM FÖR WEEKLY GOAL
+
+
+
+
     // Återanvänd status-group strukturen för att matcha de andra exakt
     const targetGroup = document.createElement("div");
     targetGroup.className = "status-group open"; // Alltid öppen kanske? Eller valbart.

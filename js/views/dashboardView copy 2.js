@@ -1,6 +1,6 @@
 import { loadState } from "../storage.js";
 import { testBtn } from "../comps/testBtn.js";
-import { dashboardState } from "../state/dashboardState.js";
+const FAVORITES_KEY = "dashboard:favorites";
 
 const STATUSES = [
   { key: "Att göra", css: "todo" },
@@ -14,17 +14,17 @@ export function renderDashboard(container) {
   container.innerHTML = "";
 
   const state = loadState();
-  const stateManager = new dashboardState(state);
   const {
     tasks,
     people,
     teamName,
     favorites,
     currentFilter
-  } = stateManager.getState();
+  } = dashboardState(state);
 
+  
 
-
+  const bbtn = testBtn();
   const wrapper = document.createElement("div");
   wrapper.className = "dashboard";
 
@@ -59,7 +59,7 @@ export function renderDashboard(container) {
 
   select.value = currentFilter;
   select.addEventListener("change", () => {
-    stateManager.saveCurrentFilter(select.value);
+    localStorage.setItem("dashboardViewFilter", select.value);
     renderDashboard(container);
   });
 
@@ -67,15 +67,16 @@ export function renderDashboard(container) {
   wrapper.append(controls);
 
   // ---------- RENDERING AV KORT ----------
+  const activeFilter = localStorage.getItem("dashboardViewFilter") || "Team";
   let dashboardsToShow = ["Team"];
 
-  if (currentFilter === "ALLA") {
+  if (activeFilter === "ALLA") {
     dashboardsToShow = ["Team", ...people];
-  } else if (currentFilter === "Team") {
+  } else if (activeFilter === "Team") {
     dashboardsToShow = ["Team", ...favorites];
   } else {
     // Säkerställ att vi bara visar valda filter om personen fortfarande finns
-    const combined = [currentFilter, ...favorites].filter(name => people.includes(name));
+    const combined = [activeFilter, ...favorites].filter(name => people.includes(name));
     dashboardsToShow = ["Team", ...new Set(combined)];
   }
 
@@ -88,18 +89,18 @@ export function renderDashboard(container) {
 
     const heading = document.createElement("h3");
     heading.textContent = name === "Team" ? `${teamName}` : name;
-    header.append(heading);
+    header.append(heading, bbtn);
 
     if (name !== "Team") {
       const star = document.createElement("button");
       star.className = `dashboard-star ${favorites.includes(name) ? "is-active" : ""}`;
       star.innerHTML = favorites.includes(name) ? "★" : "☆";
       star.onclick = () => {
-        const currentFavs = stateManager.loadFavorites();
+        const currentFavs = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
         const updated = currentFavs.includes(name) 
           ? currentFavs.filter(f => f !== name) 
           : [...currentFavs, name];
-        stateManager.saveFavorites(updated);
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated));
         renderDashboard(container);
       };
       header.append(star);
@@ -133,7 +134,7 @@ export function renderDashboard(container) {
     
     // --- VECKOMÅL / SPRINT MÅL (Som en egen "status-bar") ---
     // Hämta målet från inställningar (default 5)
-    const weeklyTarget = stateManager.getWeeklyTarget();
+    const weeklyTarget = state.settings?.weeklyTarget || 5;
 
     // Räkna ut startdatum för denna vecka (Måndag 00:00)
     const now = new Date();
