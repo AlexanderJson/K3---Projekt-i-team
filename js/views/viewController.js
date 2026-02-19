@@ -37,7 +37,7 @@ function render() {
   }
 
   if (activeView === "schedule") {
-    container.append(testScreen());  
+    testScreen(container);  
     return;
   }
 
