@@ -3,7 +3,6 @@ import { renderCalendar } from "./calendarView.js";
 import { taskScreen } from "../taskList/taskScreen.js";
 import { renderSettings } from "./settingsView.js";
 import { loadState } from "../storage.js";
-import {testScreen} from '../comps/testScreen.js';
 
 let container = null;
 let activeView = "dashboard";
@@ -37,7 +36,7 @@ function render() {
   }
 
   if (activeView === "schedule") {
-    testScreen(container);  
+    renderCalendar(container);
     return;
   }
 

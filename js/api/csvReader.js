@@ -1,4 +1,3 @@
-import {createTaskItem} from '../data/project.js';
 
 
 const validateCSV = (file) => 
@@ -87,7 +86,6 @@ const taskHeader = [
     });
     
     console.table(filteredTable.slice(0, 10));
-    const data= filteredTable.slice(1);
     return convert(filteredTable)
 };
 
