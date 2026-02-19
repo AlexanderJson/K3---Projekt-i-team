@@ -3,6 +3,7 @@ import { renderCalendar } from "./calendarView.js";
 import { taskScreen } from "../taskList/taskScreen.js";
 import { renderSettings } from "./settingsView.js";
 import { loadState } from "../storage.js";
+import {testScreen} from '../comps/testScreen.js';
 
 let container = null;
 let activeView = "dashboard";
@@ -36,9 +37,11 @@ function render() {
   }
 
   if (activeView === "schedule") {
-    renderCalendar(container);
+    container.append(testScreen());  
     return;
   }
+
+  
 
   if (activeView === "tasks") {
     // Här skickar vi de faktiska uppgifterna från det laddade statet

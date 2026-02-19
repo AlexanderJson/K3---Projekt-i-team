@@ -52,7 +52,7 @@ const readFile = (file) =>
 const convert = (table) => 
 {
     const headers = table[0].map(h => h.trim().toLowerCase());
-    const rows = headers.slice(1);
+    const rows = table.slice(1);
     return rows.map(r => {
         const obj = {};
         headers.forEach((header,index) =>
@@ -86,10 +86,9 @@ const taskHeader = [
         return indices.map(index => row[index]);
     });
     
-    console.log("Antal kolumner efter tvätt:", filteredTable[0].length);
-    console.log("Matchade rubriker:", filteredTable[0]);
     console.table(filteredTable.slice(0, 10));
-    return filteredTable.slice(1);
+    const data= filteredTable.slice(1);
+    return convert(filteredTable)
 };
 
 
@@ -101,9 +100,7 @@ export const returnContents = async (file) =>
     {
         const data = await readFile(file);
         const f = normalize(data);
-        const compared = compare(f);
-        const objects = convert(compared);
-        return objects;
+        return compare(f);;
 
     }
     catch(e)
