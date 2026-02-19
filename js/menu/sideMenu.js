@@ -114,7 +114,7 @@ export const menu = () => {
         if (b.view === "theme") {
           const actualBtn = toggleThemeBtn();
           actualBtn.click();
-        } else if (b.view === "contacts") {
+        } else if (b.view === "schedule") {
           alert("Kommer snart!");
         } else {
           setView(b.view);

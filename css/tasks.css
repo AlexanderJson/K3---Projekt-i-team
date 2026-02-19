@@ -276,9 +276,9 @@ body.menu-is-collapsed .taskFilterContainer {
     gap: 12px;
     
     /* KOMPAKT LÄGE (Standard) */
-    height: 275px;
-    min-height: 275px; 
-    max-height: 275px;
+    height: 350px;
+    min-height: 350px; 
+    max-height: 350px;
     
     overflow: hidden;
     position: relative;
@@ -431,10 +431,23 @@ body.menu-is-collapsed .taskFilterContainer {
     padding-left: 10px;
     line-height: 1.3;
     
-    /* 1 RADER MAX */
-    white-space: nowrap;
+    /* 2 RADER MAX */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: normal;
+}
+
+.contact-link {
+    color: var(--accent-cyan);
+    font-weight: 800;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 2px;
 }
 
 .taskDescription {

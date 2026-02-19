@@ -83,7 +83,7 @@ body {
     }
 
     .center {
-        padding: 32px;
+        padding: 16px; /* Reduced from 32px for more space */
         padding-bottom: 32px;
         overflow-y: auto;
     }
@@ -701,6 +701,31 @@ body {
     background: rgba(255, 255, 255, 0.05);
 }
 
+/* Highlight animation for contacts */
+@keyframes highlightPulse {
+    0% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.7); border-color: var(--accent-cyan); }
+    70% { box-shadow: 0 0 20px 10px rgba(34, 211, 238, 0); border-color: var(--accent-cyan); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
+}
+
+.highlight-card {
+    animation: highlightPulse 2s ease-out;
+    border-color: var(--accent-cyan) !important;
+}
+
+.contact-link {
+    color: var(--accent-cyan);
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+}
+
+.contact-link:hover {
+    color: #fff;
+    text-shadow: 0 0 5px var(--accent-cyan);
+}
+
 /* ==========================================================================
    6. VIEW: CALENDAR
    ========================================================================== */
@@ -963,3 +988,4 @@ body {
         gap: 10px;
     }
 }
+

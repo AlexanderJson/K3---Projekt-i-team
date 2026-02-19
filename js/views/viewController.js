@@ -1,7 +1,8 @@
 import { renderDashboard } from "./dashboardView.js";
 import { renderCalendar } from "./calendarView.js";
 import { taskScreen } from "../taskList/taskScreen.js";
-import { renderSettings } from "./settingsView.js";
+import { renderSettings } from "./settingsView.js"; 
+import { renderContacts } from "./contactsView.js";
 import { loadState } from "../storage.js";
 
 let container = null;
@@ -11,8 +12,9 @@ export function initViewController(target) {
   container = target;
 }
 
-export function setView(view) {
+export function setView(view, params = null) {
   activeView = view;
+  if (params) window.viewParams = params;
   render();
 }
 
@@ -49,6 +51,13 @@ function render() {
 
   if (activeView === "settings") {
     renderSettings(container, rerenderActiveView);
+    return;
+  }
+
+  if (activeView === "contacts") {
+    const params = window.viewParams;
+    window.viewParams = null; // Rensa direkt (params redan kopierad)
+    renderContacts(container, params);
     return;
   }
 }

@@ -27,8 +27,12 @@ export function renderSettings(container, rerenderCallback) {
             <input type="text" id="teamNameInput" value="${teamName}" class="settings-input main-input" spellcheck="false">
         </div>
         <div class="settings-col">
-            <label class="meta-label">VECKOMÅL</label>
+            <label class="meta-label">VECKOMÅL (UPPGIFTER)</label>
             <input type="number" id="weeklyTargetInput" value="${state.settings?.weeklyTarget || 5}" class="settings-input main-input" min="1" max="100">
+        </div>
+        <div class="settings-col">
+            <label class="meta-label">VECKOMÅL (CRM)</label>
+            <input type="number" id="weeklyCRMTargetInput" value="${state.settings?.weeklyCRMTarget || 5}" class="settings-input main-input" min="1" max="100">
         </div>
     </div>
   `;
@@ -102,10 +106,12 @@ export function renderSettings(container, rerenderCallback) {
     // 1. Spara teamnamn och veckomål
     const newTeamName = document.getElementById("teamNameInput").value.trim();
     const newWeeklyTarget = parseInt(document.getElementById("weeklyTargetInput").value) || 5;
+    const newWeeklyCRMTarget = parseInt(document.getElementById("weeklyCRMTargetInput").value) || 5;
 
     if (!s.settings) s.settings = {};
     s.settings.teamName = newTeamName;
     s.settings.weeklyTarget = newWeeklyTarget;
+    s.settings.weeklyCRMTarget = newWeeklyCRMTarget;
 
     // 2. Samla namn från rader
     const newPeople = memberRows
