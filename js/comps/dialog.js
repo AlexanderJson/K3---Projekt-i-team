@@ -1,55 +1,96 @@
+/**
+ * @file dialog.js
+ * @description Modal-dialog för att skapa/redigera uppgifter.
+ * Inkluderar: titel, beskrivning, deadline, teamtilldelning,
+ * kontakt-autocomplete, och tidsstämplad noteringslogg.
+ * WCAG 2.1 AA: role="dialog", aria-modal, :focus-visible, JSDoc.
+ */
 import { addState, loadState, saveState } from "../storage.js";
 import { TASK_STATUSES } from "../status.js";
 import { getPeople } from "../people/peopleService.js";
 
 /**
- * Återanvändbar dialog för att både skapa och redigera uppgifter.
- * @param {Object|null} taskToEdit - Om ett task-objekt skickas med går modalen in i redigeringsläge.
+ * Öppnar en modal för att skapa eller redigera en uppgift.
+ * @param {Object|null} taskToEdit - Befintlig uppgift att redigera, eller null för ny.
+ * @returns {HTMLElement} Overlay-elementet.
  */
 export const addTaskDialog = (taskToEdit = null) => {
   const overlay = document.createElement("div");
   overlay.className = "modalOverlay"; 
+  overlay.setAttribute("role", "presentation");
+
   const modal = document.createElement("div");
-  modal.className = "modalCard"; 
+  modal.className = "modalCard modalCard-expanded"; 
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  modal.setAttribute("aria-label", taskToEdit ? "Redigera uppgift" : "Skapa ny uppgift");
 
   const people = getPeople(); 
   const isEdit = !!taskToEdit;
-  const titleText = isEdit ? "Redigera uppgift" : "Skapa ny uppgift";
-  const btnText = isEdit ? "Spara ändringar" : "Spara";
+  
+  const titleText = isEdit ? "Redigera uppgift" : "Skapa uppgift";
+  const btnText = isEdit ? "Spara ändringar" : "Skapa uppgift";
   
   let selectedContact = isEdit && taskToEdit.contactId ? { id: taskToEdit.contactId, name: taskToEdit.contactName } : null;
+  
+  let selectedAssignees = [];
+  if (isEdit) {
+    if (taskToEdit.assignedTo && Array.isArray(taskToEdit.assignedTo)) {
+      selectedAssignees = taskToEdit.assignedTo;
+    } else if (taskToEdit.assigned) {
+      selectedAssignees = [taskToEdit.assigned];
+    }
+  }
 
   modal.innerHTML = `
     <h2>${titleText}</h2>
-    <div class="modal-body">
-      <textarea id="taskTitle" placeholder="Vad ska göras?" class="modalInput" style="height: 54px; min-height: 54px; resize: none; overflow: hidden; padding-top: 12px; line-height: 1.4;"></textarea>
-      <textarea id="taskDesc" placeholder="Beskrivning..." class="modalInput" style="min-height: 100px; resize: none;"></textarea>
-      
-      <!-- Visual indicator for linked contact -->
-      <div id="linkedContactBadge" style="display:none;align-items:center;gap:6px;background:rgba(34,211,238,0.1);border:1px solid var(--accent-cyan);padding:6px 10px;border-radius:6px;margin-bottom:10px;color:var(--accent-cyan);font-size:12px;">
-        <span>🔗 Länkad till: <strong id="linkedContactName"></strong></span>
-        <span id="removeLink" style="cursor:pointer;opacity:0.7;margin-left:auto;">✕</span>
-      </div>
-      <div class="modal-field">
-        <label class="modal-label">Ansvarig:</label>
-        <select id="taskAssigned" class="modalInput">
-          ${people.map(person => {
-            // Om vi redigerar, kolla om denna person är den som är assigned
-            const isSelected = isEdit && taskToEdit.assigned === person;
-            // Om vi skapar ny, sätt "Ingen" som default
-            const isDefault = !isEdit && person === "Ingen";
-            
-            return `<option value="${person}" ${isSelected || isDefault ? "selected" : ""}>
-              ${person === "Ingen" ? "🟢 Ledig uppgift" : person}
-            </option>`;
-          }).join("")}
-        </select>
+    <div class="modal-body ${isEdit ? "modal-split" : ""}">
+      <div class="modal-col-left">
+        <label for="taskTitle" class="sr-only">Titel</label>
+        <textarea id="taskTitle" placeholder="Vad ska göras? (t.ex. Kontakta Axis)" class="modalInput" style="height: 54px; min-height: 54px; resize: none; overflow: hidden; padding-top: 12px; line-height: 1.4;"></textarea>
+        
+        <label for="taskDesc" class="sr-only">Beskrivning</label>
+        <textarea id="taskDesc" placeholder="Beskrivning av uppgiften..." class="modalInput" style="min-height: 80px; resize: none;"></textarea>
+        
+        <div id="linkedContactBadge" style="display:none;align-items:center;gap:6px;background:rgba(34,211,238,0.1);border:1px solid var(--accent-cyan);padding:6px 10px;border-radius:6px;margin-bottom:10px;color:var(--accent-cyan);font-size:12px;">
+          <span>🔗 Länkad till: <strong id="linkedContactName"></strong></span>
+          <span id="removeLink" style="cursor:pointer;opacity:0.7;margin-left:auto;">✕</span>
+        </div>
+
+        <div class="modal-field">
+          <label class="modal-label">Vilka i teamet är ansvariga?</label>
+          <div class="assignee-selector-grid" role="group" aria-label="Teammedlemmar">
+            ${people.map(personName => {
+              const isChecked = selectedAssignees.includes(personName) ? "checked" : "";
+              const displayName = personName === "Ingen" ? "🟢 Ledig uppgift" : personName;
+              return `
+                <label class="assignee-chip">
+                  <input type="checkbox" value="${personName}" ${isChecked}>
+                  <span class="chip-text">${displayName}</span>
+                </label>
+              `;
+            }).join("")}
+          </div>
+        </div>
+
+        <div class="modal-field">
+          <label class="modal-label">Deadline:</label>
+          <input type="date" id="taskDeadline" class="modalInput">
+        </div>
       </div>
 
-      <div class="modal-field">
-        <label class="modal-label">Deadline:</label>
-        <input type="date" id="taskDeadline" class="modalInput">
+      ${isEdit ? `
+      <div class="modal-col-right">
+        <div class="modal-field modal-notes-section">
+          <label class="modal-label">📝 Noteringslogg</label>
+          <div class="modal-notes-input-row">
+            <textarea id="taskNoteInput" placeholder="Skriv en notering..." class="modalInput task-note-input" style="min-height:50px;resize:none;"></textarea>
+            <button type="button" id="addNoteBtn" class="confirmBtn task-note-btn" aria-label="Lägg till notering">+ Notera</button>
+          </div>
+          <div id="notesLog" class="modal-notes-log" role="log" aria-label="Noteringshistorik"></div>
+        </div>
       </div>
+      ` : ""}
     </div>
     <div class="modalButtons">
       <button id="cancelTask" class="cancelBtn">Avbryt</button>
@@ -57,17 +98,16 @@ export const addTaskDialog = (taskToEdit = null) => {
     </div>
   `;
 
-  // --- POPULERA FÄLT VID REDIGERING ---
+  // Populate values
   if (isEdit) {
-    modal.querySelector("#taskTitle").value = taskToEdit.title;
+    modal.querySelector("#taskTitle").value = taskToEdit.title || "";
     modal.querySelector("#taskDesc").value = taskToEdit.description || "";
-    modal.querySelector("#taskAssigned").value = taskToEdit.assigned;
-    // Deadline kräver formatet YYYY-MM-DD för att visas i input[type="date"]
     if (taskToEdit.deadline) {
         modal.querySelector("#taskDeadline").value = taskToEdit.deadline;
     }
   }
   
+  // Contact badge
   const badge = modal.querySelector("#linkedContactBadge");
   const badgeName = modal.querySelector("#linkedContactName");
   const removeLink = modal.querySelector("#removeLink");
@@ -85,36 +125,115 @@ export const addTaskDialog = (taskToEdit = null) => {
       selectedContact = null;
       updateBadge();
   };
-  
-  updateBadge(); // Init
+  updateBadge();
 
+  // --- Exclusive checkbox logic ---
+  const checkboxes = modal.querySelectorAll('.assignee-chip input[type="checkbox"]');
+  const ingenCb = Array.from(checkboxes).find(cb => cb.value === "Ingen");
+
+  checkboxes.forEach(cb => {
+      cb.addEventListener('change', (e) => {
+          if (e.target.value === "Ingen" && e.target.checked) {
+              checkboxes.forEach(other => {
+                  if (other.value !== "Ingen") other.checked = false;
+              });
+          } else if (e.target.value !== "Ingen" && e.target.checked) {
+              if (ingenCb) ingenCb.checked = false;
+          }
+      });
+  });
+
+  // --- Notes Log (only for edit mode) ---
+  if (isEdit) {
+    const notesLog = modal.querySelector("#notesLog");
+    const noteInput = modal.querySelector("#taskNoteInput");
+    const addNoteBtn = modal.querySelector("#addNoteBtn");
+
+    /**
+     * Renderar noteringsloggen i modalen.
+     */
+    const renderNotes = () => {
+      notesLog.innerHTML = "";
+      const notes = taskToEdit.notes || [];
+      if (notes.length === 0) {
+        notesLog.innerHTML = `<div class="notes-empty">Ingen historik ännu.</div>`;
+        return;
+      }
+      // Kronologisk, nyast först
+      [...notes].reverse().forEach(note => {
+        const item = document.createElement("div");
+        item.className = `notes-item ${note.type === "status" ? "notes-status" : ""}`;
+        const dateStr = new Date(note.date).toLocaleString("sv-SE").slice(0, 16);
+        item.innerHTML = `
+          <div class="notes-meta">
+            <span class="notes-date">${dateStr}</span>
+            ${note.author ? `<span class="notes-author">${note.author}</span>` : ""}
+          </div>
+          <div class="notes-text">${escapeHtml(note.text)}</div>
+        `;
+        notesLog.append(item);
+      });
+    };
+
+    addNoteBtn.onclick = () => {
+      const text = noteInput.value.trim();
+      if (!text) return;
+      if (!taskToEdit.notes) taskToEdit.notes = [];
+      taskToEdit.notes.push({
+        text,
+        date: new Date().toISOString(),
+        type: "note",
+        author: "" // Could be current user if auth exists
+      });
+      noteInput.value = "";
+      renderNotes();
+    };
+
+    renderNotes();
+  }
+
+  // --- Save ---
   modal.querySelector("#saveTask").onclick = () => {
     const title = modal.querySelector("#taskTitle").value.trim();
     const description = modal.querySelector("#taskDesc").value.trim();
-    const assigned = modal.querySelector("#taskAssigned").value;
     const deadline = modal.querySelector("#taskDeadline").value || 0;
+
+    const assignedTo = Array.from(modal.querySelectorAll('.assignee-chip input:checked')).map(cb => cb.value);
+    const primaryAssignee = assignedTo.length > 0 ? assignedTo[0] : "Ingen";
 
     if (!title) return alert("Titeln får inte vara tom!");
 
     if (isEdit) {
-      // --- UPPDATERA EXISTERANDE STATE ---
       const state = loadState();
       const index = state.tasks.findIndex(t => String(t.id) === String(taskToEdit.id));
       
       if (index !== -1) {
+        const oldStatus = state.tasks[index].status;
         state.tasks[index] = {
-          ...taskToEdit, // Behåll id, status, createdAt, comment osv.
+          ...taskToEdit,
           title,
           description,
-          assigned,
+          assigned: primaryAssignee, 
+          assignedTo, 
           deadline,
+          notes: taskToEdit.notes || [],
           contactId: selectedContact ? selectedContact.id : null,
           contactName: selectedContact ? selectedContact.name : null
         };
+
+        // Log status change as note
+        if (oldStatus !== state.tasks[index].status) {
+          if (!state.tasks[index].notes) state.tasks[index].notes = [];
+          state.tasks[index].notes.push({
+            text: `Status ändrad: ${oldStatus} → ${state.tasks[index].status}`,
+            date: new Date().toISOString(),
+            type: "status"
+          });
+        }
+
         saveState(state);
       }
     } else {
-      // --- SKAPA NYTT STATE ---
       const newTask = {
         id: Date.now(),
         title,
@@ -122,135 +241,123 @@ export const addTaskDialog = (taskToEdit = null) => {
         deadline,
         createdAt: new Date().toISOString(), 
         status: TASK_STATUSES.TODO,
-        assigned, 
+        assigned: primaryAssignee, 
+        assignedTo, 
         contactId: selectedContact ? selectedContact.id : null,
         contactName: selectedContact ? selectedContact.name : null,
         completed: false,
-        comment: ""
+        comment: "",
+        notes: []
       };
       addState(newTask);
     }
 
     overlay.remove();
-    // Signalera till appen att rita om vyer
     window.dispatchEvent(new CustomEvent('renderApp'));
   };
 
-  // Stäng-logik
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
   modal.querySelector("#cancelTask").onclick = () => overlay.remove();
   
   overlay.append(modal);
-    // --- AUTOCOMPLETE LOGIC ---
-    // Fetch from IndexedDB async
-    import("../utils/contactsDb.js").then(({ getAllContacts, initContactsDB }) => {
-        initContactsDB().then(() => {
-            getAllContacts().then(contacts => {
-                if (contacts && contacts.length > 0) {
-                    const attachAutocomplete = (inputEl) => {
-                        inputEl.setAttribute("autocomplete", "off");
 
-                        const wrapper = document.createElement("div");
-                        wrapper.style.position = "relative";
-                        inputEl.parentNode.insertBefore(wrapper, inputEl);
-                        wrapper.append(inputEl);
+  // --- Autocomplete ---
+  import("../utils/contactsDb.js").then(({ getAllContacts, initContactsDB }) => {
+      initContactsDB().then(() => {
+          getAllContacts().then(contacts => {
+              if (contacts && contacts.length > 0) {
+                  const attachAutocomplete = (inputEl) => {
+                      inputEl.setAttribute("autocomplete", "off");
+                      const wrapper = document.createElement("div");
+                      wrapper.style.position = "relative";
+                      inputEl.parentNode.insertBefore(wrapper, inputEl);
+                      wrapper.append(inputEl);
 
-                        const box = document.createElement("div");
-                        box.className = "autocomplete-suggestions";
-                        Object.assign(box.style, {
-                          position: "absolute",
-                          top: "100%",
-                          left: "0",
-                          right: "0",
-                          zIndex: "6000",
-                          display: "none",
-                          background: "var(--bg-deep, #111)",
-                          border: "1px solid var(--accent-cyan)",
-                          borderRadius: "0 0 8px 8px",
-                          boxShadow: "0 8px 20px rgba(0,0,0,0.5)",
-                          maxHeight: "160px",
-                          overflowY: "auto"
-                        });
-                        wrapper.append(box);
+                      const box = document.createElement("div");
+                      box.className = "autocomplete-suggestions";
+                      Object.assign(box.style, {
+                          position: "absolute", top: "100%", left: "0", right: "0", zIndex: "6000",
+                          display: "none", background: "var(--bg-deep, #111)", border: "1px solid var(--accent-cyan)",
+                          borderRadius: "0 0 8px 8px", boxShadow: "0 8px 20px rgba(0,0,0,0.5)",
+                          maxHeight: "160px", overflowY: "auto"
+                      });
+                      wrapper.append(box);
 
-                        inputEl.addEventListener("input", () => {
+                      inputEl.addEventListener("input", () => {
                           const val = inputEl.value;
                           const cursorPos = inputEl.selectionStart;
                           const before = val.slice(0, cursorPos);
-                          // Split by spaces but also handle empty input
                           const words = before.split(/\s+/);
                           const word = words[words.length - 1];
 
                           if (word.length < 2) { box.style.display = "none"; return; }
 
-                          const matches = contacts.filter(c =>
-                            c.name.toLowerCase().startsWith(word.toLowerCase())
-                          );
-
+                          const matches = contacts.filter(c => c.name.toLowerCase().startsWith(word.toLowerCase()));
                           if (matches.length === 0) { box.style.display = "none"; return; }
 
                           box.innerHTML = "";
-
                           const label = document.createElement("div");
                           label.textContent = "📇 Kontakter";
                           label.style.cssText = "padding:6px 12px;font-size:11px;color:var(--accent-cyan);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.08);";
                           box.append(label);
 
                           matches.forEach(m => {
-                            const item = document.createElement("div");
-                            item.style.cssText = "padding:10px 14px;cursor:pointer;color:var(--text-main);display:flex;align-items:center;gap:8px;transition:background 0.15s;";
+                              const item = document.createElement("div");
+                              item.style.cssText = "padding:10px 14px;cursor:pointer;color:var(--text-main);display:flex;align-items:center;gap:8px;transition:background 0.15s;";
 
-                            const nameSpan = document.createElement("span");
-                            nameSpan.textContent = m.name;
-                            nameSpan.style.fontWeight = "bold";
+                              const nameSpan = document.createElement("span");
+                              nameSpan.textContent = m.name;
+                              nameSpan.style.fontWeight = "bold";
 
-                            const roleSpan = document.createElement("span");
-                            roleSpan.textContent = m.role || m.company || "";
-                            roleSpan.style.cssText = "font-size:12px;color:var(--text-dim);margin-left:auto;";
+                              const roleSpan = document.createElement("span");
+                              roleSpan.textContent = m.role || m.company || "";
+                              roleSpan.style.cssText = "font-size:12px;color:var(--text-dim);margin-left:auto;";
 
-                            item.append(nameSpan, roleSpan);
-                            item.onmouseover = () => { item.style.background = "rgba(34,211,238,0.1)"; };
-                            item.onmouseout = () => { item.style.background = "transparent"; };
+                              item.append(nameSpan, roleSpan);
+                              item.onmouseover = () => { item.style.background = "rgba(34,211,238,0.1)"; };
+                              item.onmouseout = () => { item.style.background = "transparent"; };
 
-                            item.onclick = () => {
-                              // 1. Insert Text
-                              const after = val.slice(cursorPos);
-                              const beforeWord = before.slice(0, -word.length);
-                              inputEl.value = beforeWord + m.name + " " + after;
-                              box.style.display = "none";
-                              inputEl.focus();
-                              
-                              // 2. Link Contact
-                              selectedContact = m;
-                              updateBadge();
-                            };
-                            box.append(item);
+                              item.onclick = () => {
+                                  const after = val.slice(cursorPos);
+                                  const beforeWord = before.slice(0, -word.length);
+                                  inputEl.value = beforeWord + m.name + " " + after;
+                                  box.style.display = "none";
+                                  inputEl.focus();
+                                  
+                                  selectedContact = m;
+                                  updateBadge();
+                              };
+                              box.append(item);
                           });
-
                           box.style.display = "block";
-                        });
+                      });
 
-                        // Stäng vid klick utanför
-                        const closeHandler = (e) => {
-                          if (e.target !== inputEl && !box.contains(e.target)) {
-                            box.style.display = "none";
-                          }
-                        };
-                        // Attach to window/overlay instead of just overlay to catch all clicks?
-                        // But overlay is modal, so clicks outside are overlay clicks.
-                        overlay.addEventListener("click", closeHandler);
-                    };
+                      const closeHandler = (e) => {
+                          if (e.target !== inputEl && !box.contains(e.target)) box.style.display = "none";
+                      };
+                      overlay.addEventListener("click", closeHandler);
+                  };
 
-                    // Applicera på BÅDA fälten
-                    const titleInput = modal.querySelector("#taskTitle");
-                    const descInput = modal.querySelector("#taskDesc");
-                    
-                    if (titleInput) attachAutocomplete(titleInput);
-                    if (descInput) attachAutocomplete(descInput);
-                }
-            });
-        });
-    });
+                  const titleInput = modal.querySelector("#taskTitle");
+                  const descInput = modal.querySelector("#taskDesc");
+                  
+                  if (titleInput) attachAutocomplete(titleInput);
+                  if (descInput) attachAutocomplete(descInput);
+              }
+          });
+      });
+  });
 
   return overlay; 
 };
+
+/**
+ * Escape HTML-tecken för säker rendering.
+ * @param {string} str
+ * @returns {string}
+ */
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
