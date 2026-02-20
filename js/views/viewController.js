@@ -37,7 +37,7 @@ function render() {
     return;
   }
 
-  if (activeView === "schedule") {
+  if (activeView === "calendar") {
     renderCalendar(container);
     return;
   }

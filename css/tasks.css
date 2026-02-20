@@ -76,10 +76,10 @@ body.menu-is-collapsed .taskFilterContainer {
     transition: all 0.2s ease;
 }
 
-/* Ändrar textfärgen på det första alternativet i listan till vit */
-.taskFilterSelect option:first-child {
-    color: var(--text-main); 
-    background-color: var(--bg-card);
+.taskFilterSelect option {
+    background-color: var(--bg-card); 
+    color: var(--text-main);          
+    padding: 8px;                     
 }
 
 .taskFilterSelect:hover {
@@ -87,8 +87,10 @@ body.menu-is-collapsed .taskFilterContainer {
     transform: translateY(-1px);
 }
 
+/* Stilar till de linjer (separatorer) vi lade till */
 .taskFilterSelect option[disabled] {
-    color: var(--border);
+    color: var(--text-dim, #888888);
+    background-color: var(--bg-element, #111111);
     font-size: 10px;
     padding: 5px 0;
 }
@@ -126,11 +128,29 @@ body.menu-is-collapsed .taskFilterContainer {
     }
 
 
-@media (min-width: 601px) and (max-width: 1023px) {
+@media (min-width: 768px) and (max-width: 1023px) {
     .taskBoard {
         grid-template-columns: repeat(2, 1fr); 
         gap: 20px;
         padding: 20px;
+    }
+}
+
+/* Mobil: tvinga 1 kolumn och full bredd */
+@media (max-width: 767px) {
+    .taskBoard {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+        padding: 12px;
+        width: 100% !important;
+        max-width: 100vw !important;
+        box-sizing: border-box;
+    }
+
+    .taskBoard > * {
+        width: 100% !important;
+        min-width: 0;
+        box-sizing: border-box;
     }
 }
 
@@ -194,6 +214,15 @@ body.menu-is-collapsed .taskFilterContainer {
    ========================================================================== */
 
 .taskHeader {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: none;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    color: inherit;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -269,20 +298,17 @@ body.menu-is-collapsed .taskFilterContainer {
     display: flex;
     flex-direction: column;
     background: var(--bg-card) !important;
-    /* En tunnare dubbelram för att inte krocka med kolumnens tjocka ram */
     border: 4px double var(--border); 
     border-radius: 16px;
     padding: 16px;
     gap: 12px;
     
-    /* KOMPAKT LÄGE (Standard) */
-    height: 350px;
-    min-height: 350px; 
-    max-height: 350px;
+    height: auto;
+    min-height: 260px; 
+    max-height: none;
     
-    overflow: hidden;
+    overflow: visible;
     position: relative;
-    /* Mjuk övergång för både lyft och glöd */
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
 }
@@ -470,33 +496,21 @@ body.menu-is-collapsed .taskFilterContainer {
 .taskFooter {
     margin-top: auto;
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    flex-direction: column; 
+    align-items: center; 
+    gap: 16px; 
     padding-top: 12px;
     border-top: 1px solid var(--border);
-}
-
-.assignedSelect {
-    width: 100%;
-    max-width: 200px;
-    margin: 0 auto;
-    padding: 8px 12px;
-    background: var(--bg-element);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text-main);
-    font-size: 14px;
-    cursor: pointer;
+    width: 100%; 
 }
 
 .taskControls {
     display: flex;
     align-items: center;
-    gap: 12px;
-    justify-content: center;
+    gap: 8px; 
+    justify-content: center; 
+    width: 100%; 
 }
-
-/* Styling för de faktiska knapparna i listItem.js */
 .controlBtn {
     background: var(--bg-element);
     border: 2px solid var(--text-dim);
@@ -577,9 +591,13 @@ body.menu-is-collapsed .taskFilterContainer {
     margin: 0;
 }
 
-/* Kort inuti arkivet - Specifik röd styling */
+/* Kort inuti arkivet - Specifik röd styling, full textvisning */
 .closed-tasks-archive .listItem {
     width: 100%;
+    height: auto;
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
     border: 4px double var(--accent-crimson) !important;
     box-shadow: 0 4px 15px rgba(248, 113, 113, 0.15);
     opacity: 0.85;
@@ -604,3 +622,89 @@ body.menu-is-collapsed .taskFilterContainer {
     font-style: italic;
     margin: 5px 0 0 0;
 }
+
+/* ==========================================================================
+   7. MULTI-ASSIGN AVATARER (LIA-FOKUS)
+   ========================================================================== */
+.assignee-avatars-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px; /* Tydlig luft mellan rutorna så de inte smälter ihop */
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    padding: 4px 0;
+}
+
+.assignee-avatars-list:hover {
+    background: rgba(255, 255, 255, 0.05);
+    opacity: 0.8;
+}
+
+.assignee-avatar-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: var(--status-color, #3b82f6); /* Använder variabeln, annars blå som backup */
+    color: #000; /* Svart text för bättre kontrast mot de ljusa statusfärgerna */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.taskWrapper[data-status="Att göra"] { --status-color: #60a5fa; }
+.taskWrapper[data-status="Pågår"] { --status-color: #fbbf24; }
+.taskWrapper[data-status="Klar"] { --status-color: #22c55e; }
+
+.avatar-empty {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ==========================================================================
+    8. MODAL & FLERVALS-CHIPS (SKAPA/REDIGERA UPPGIFT)
+   ========================================================================== */
+.assignee-selector-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.assignee-chip input[type="checkbox"] {
+    display: none;
+}
+
+.assignee-chip .chip-text {
+    display: inline-block;
+    padding: 8px 14px;
+    background: var(--bg-element, #1e293b); 
+    border: 1px solid var(--border, #cbd5e1);
+    border-radius: 20px; /* Ändra till 8px om du vill ha rutor istället för runda */
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    box-sizing: border-box;
+    white-space: normal; /* Tillåter radbrytning för långa namn */
+}
+
+.assignee-chip input[type="checkbox"]:checked + .chip-text {
+    /* Vi använder samma logik som på korten */
+    background: var(--status-color, #3b82f6); 
+    color: #000;
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+

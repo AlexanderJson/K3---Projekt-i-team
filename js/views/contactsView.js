@@ -197,7 +197,7 @@ function createMasterPanel(container, shell) {
 
   // Status Filter Dropdown
   const statusFilterSelect = document.createElement("select");
-  statusFilterSelect.style.cssText = "padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--bg-element);color:var(--text-main);font-family:inherit;font-size:13px;max-width:110px;"; // Compact
+  statusFilterSelect.style.cssText = "padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--bg-element);color:var(--text-main);font-family:inherit;font-size:13px;min-width:140px;";
   
   const filterOpts = ["Alla", "Ej kontaktad", "Pågående", "Klar", "Förlorad", "Återkom"];
   filterOpts.forEach(s => {
@@ -214,7 +214,7 @@ function createMasterPanel(container, shell) {
 
   // Assignee Filter Dropdown
   const assigneeFilterSelect = document.createElement("select");
-  assigneeFilterSelect.style.cssText = "padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--bg-element);color:var(--text-main);font-family:inherit;font-size:13px;max-width:110px;";
+  assigneeFilterSelect.style.cssText = "padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--bg-element);color:var(--text-main);font-family:inherit;font-size:13px;min-width:150px;";
   
   const people = loadState().people || [];
   const allOpt = document.createElement("option");
@@ -314,7 +314,10 @@ function refreshList(master, container, shell) {
   
   // 1. Filter by Status
   if (currentStatusFilter !== "Alla") {
-      contactsToShow = contactsToShow.filter(c => c.status === currentStatusFilter);
+      contactsToShow = contactsToShow.filter(c => {
+          const s = (c.status || "Ej kontaktad").toLowerCase().trim();
+          return s === currentStatusFilter.toLowerCase().trim();
+      });
   }
 
   // 1b. Filter by Assignee
@@ -711,6 +714,13 @@ function refreshDetailContent(detail, container, shell) {
       const oldStatus = contact.status || "Ej kontaktad";
       const newStatus = statusSelect.value;
       contact.status = newStatus;
+
+      // Sätt completedAt vid "Klar" för CRM veckomål
+      if (newStatus === "Klar" && !contact.completedAt) {
+        contact.completedAt = new Date().toISOString();
+      } else if (newStatus !== "Klar") {
+        contact.completedAt = null;
+      }
       
       // Log interaction
       const logItem = {
@@ -725,8 +735,11 @@ function refreshDetailContent(detail, container, shell) {
       contact.lastContactDate = new Date().toISOString();
       
       await updateContact(contact);
-      refreshList(shell.querySelector(".contacts-master"), container, shell); // Updates list badge
-      renderTimeline(contact, historyContent); // Refresh timeline
+      refreshList(shell.querySelector(".contacts-master"), container, shell);
+      renderTimeline(contact, historyContent);
+
+      // CRM-synk: trigga dashboard-uppdatering i realtid
+      window.dispatchEvent(new CustomEvent('renderApp'));
   };
   historyContent.append(statusSelect);
 
@@ -1071,6 +1084,13 @@ function openContactModal(contact, container, shell, master) {
     };
 
     if (!data.name) { alert("Namn krävs."); return; }
+
+    // Dubblettskydd: case-insensitive namnkontroll
+    const nameToCheck = data.name.toLowerCase().trim();
+    const duplicate = allContacts.find(c => 
+      c.name.toLowerCase().trim() === nameToCheck && String(c.id) !== String(data.id)
+    );
+    if (duplicate) { alert(`En kontakt med namnet "${data.name}" finns redan.`); return; }
 
     if (isEdit) {
       await updateContact(data);

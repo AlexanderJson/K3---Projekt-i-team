@@ -261,11 +261,12 @@ function createCRMBox(name, allContacts, state) {
     startOfWeek.setDate(now.getDate() - day + 1);
 
     // Count contacts that are "Klar" AND completed this week
-    // Note: older contacts might not have completedAt, so we only count those that do.
+    // Initial scan: fallback to lastContactDate if completedAt is missing
     const completedThisWeek = relevantContacts.filter(c => {
         if (c.status !== "Klar") return false;
-        if (!c.completedAt) return false; 
-        return new Date(c.completedAt) >= startOfWeek;
+        const doneDate = c.completedAt || c.lastContactDate;
+        if (!doneDate) return true; // Klar without any date = count it
+        return new Date(doneDate) >= startOfWeek;
     }).length;
 
     const targetPercent = Math.min(100, Math.round((completedThisWeek / weeklyTarget) * 100));

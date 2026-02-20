@@ -98,7 +98,7 @@ export const menu = () => {
   mainButtons.classList.add("menu-main");
 
   const mainMenuButtons = [
-    { text: "Kalender",     icon: "calendar_month", view: "schedule" }, 
+    { text: "Kalender",     icon: "calendar_month", view: "calendar" }, 
     { text: "Dashboard",    icon: "dashboard",      view: "dashboard" },
     { text: "Uppgifter",    icon: "assignment",     view: "tasks" },
     { text: "Kontakter",    icon: "group",          view: "contacts" },
@@ -114,8 +114,6 @@ export const menu = () => {
         if (b.view === "theme") {
           const actualBtn = toggleThemeBtn();
           actualBtn.click();
-        } else if (b.view === "schedule") {
-          alert("Kommer snart!");
         } else {
           setView(b.view);
         }

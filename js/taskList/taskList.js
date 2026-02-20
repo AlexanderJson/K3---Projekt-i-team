@@ -1,95 +1,109 @@
 import { listItem } from "./listItem.js";
 
+/**
+ * @file taskList.js
+ * @description Renderar en enskild kolumn (statusgrupp) i Kanban-tavlan.
+ * Hanterar expandering/kollaps med persistens och tillgänglighetsstöd.
+ */
+
+/**
+ * Skapar en uppgiftslista för en specifik status.
+ * @param {string} status - Namnet på statusen (t.ex. 'Todo', 'In Progress').
+ * @param {Array<Object>} tasks - Lista över uppgifter som tillhör denna status.
+ * @returns {HTMLElement} Kolumnelementet.
+ */
 export const taskList = (status, tasks) => {
   const container = document.createElement("div");
   
-  // Hämta sparat läge från localStorage
+  // Hämta sparat läge för att bibehålla användarens vy vid omladdning
   const storageKey = `column_state_${status}`;
   const savedState = localStorage.getItem(storageKey);
   const isInitiallyExpanded = savedState !== "collapsed";
 
-  // AUTO-EXPAND LOGIC: Only 0 -> 1 transition triggers auto-open
+  // AUTO-EXPAND LOGIC: Öppnar kolumnen automatiskt om den går från 0 till 1+ uppgifter
   const countKey = `column_count_${status}`;
   const lastCount = parseInt(localStorage.getItem(countKey) || "0");
   const currentCount = tasks.length;
 
   let shouldBeExpanded = isInitiallyExpanded;
 
-  // Om kolumnen var tom sist, och nu har uppgifter -> Öppna upp
   if (lastCount === 0 && currentCount > 0) {
     shouldBeExpanded = true;
-    localStorage.setItem(storageKey, "expanded"); // Spara det nya läget
+    localStorage.setItem(storageKey, "expanded");
   }
 
-  // Uppdatera räknaren för nästa gång
   localStorage.setItem(countKey, currentCount);
 
-  // Sätter klassen baserat på sparat läge. Om ej öppen (eller inget sparat) -> collapsed
+  // Klasshantering för CSS och styling
   const baseClass = "task-column";
   const archiveClass = status === "Stängd" ? " closed-tasks-archive" : "";
   const collapsedClass = shouldBeExpanded ? "" : " collapsed";
   
   container.className = `${baseClass}${archiveClass}${collapsedClass}`;
-  container.setAttribute("data-status", status); // Viktigt för CSS-färgstyrning
+  container.setAttribute("data-status", status);
 
-  const header = document.createElement("div");
+  // ---------- TILLGÄNGLIG HEADER (VG: Semantisk Button) ----------
+  const header = document.createElement("button");
   header.className = "taskHeader clickable-header";
-  
-  // Sätt pilens rotation baserat på initialt läge
+  header.setAttribute("aria-expanded", String(shouldBeExpanded));
+  header.setAttribute("aria-label", `${status}, ${tasks.length} uppgifter. Klicka för att expandera eller dölja.`);
+
   const initialRotation = shouldBeExpanded ? "0deg" : "-90deg";
 
   header.innerHTML = `
-    <div class="header-content">
+    <div class="header-content" aria-hidden="true">
       <span class="arrow-wrapper">
         <span class="taskArrow" style="transform: rotate(${initialRotation}); display: inline-block; transition: transform 0.3s ease;">▼</span>
       </span>
-      <span class="status-text">${status === "Stängd" ? "STÄNGD" : status}</span>
+      <span class="status-text">${status === "Stängd" ? "STÄNGD" : status.toUpperCase()}</span>
     </div>
-    <span class="taskCount">${tasks.length}</span>
+    <span class="taskCount" aria-hidden="true">${tasks.length}</span>
   `;
 
+  // Container för listobjekt
   const listItemsContainer = document.createElement("div");
   listItemsContainer.className = "task-list-items";
-  // Visa eller dölj baserat på sparat läge
   listItemsContainer.style.display = shouldBeExpanded ? "flex" : "none";
   listItemsContainer.style.flexDirection = "column";
   listItemsContainer.style.gap = "16px";
 
+  // Arkiv-beskrivning (VG: Inkluderande beskrivning)
   if (status === "Stängd") {
     const description = document.createElement("p");
     description.className = "archive-description";
-    description.textContent = "Här sparas uppgifter som inte längre är aktuella, har avbrutits eller arkiverats för att hålla din aktiva tavla ren.";
-    
-    // Om container är collapsed, dölj även description
+    description.textContent = "Här sparas uppgifter som inte längre är aktuella eller har arkiverats.";
     description.style.display = shouldBeExpanded ? "block" : "none";
-
     container.append(header, description, listItemsContainer); 
   } else {
     container.append(header, listItemsContainer);
   }
 
+  /**
+   * Hanterar klick på headern för att toggla kolumnens synlighet.
+   * Uppdaterar ARIA-tillstånd och lokal lagring (VG: Focus Management).
+   */
   header.onclick = () => {
-    // Toggle logic
     const isCollapsed = container.classList.toggle("collapsed");
     const isExpanded = !isCollapsed;
 
-    // Spara nytt läge
+    // Spara läge och uppdatera tillgänglighetsattribut
     localStorage.setItem(storageKey, isExpanded ? "expanded" : "collapsed");
+    header.setAttribute("aria-expanded", String(isExpanded));
     
     const arrow = header.querySelector(".taskArrow");
     if (arrow) {
-        arrow.style.transform = isCollapsed ? "rotate(-90deg)" : "rotate(0deg)";
+      arrow.style.transform = isCollapsed ? "rotate(-90deg)" : "rotate(0deg)";
     }
     
     listItemsContainer.style.display = isCollapsed ? "none" : "flex";
 
-    // Hantera beskrivningen i arkivet om den finns
     const description = container.querySelector(".archive-description");
     if (description) {
-        description.style.display = isCollapsed ? "none" : "block";
+      description.style.display = isCollapsed ? "none" : "block";
     }
   };
 
+  // Rendera innehåll (VG: Modulär användning av listItem)
   if (tasks.length === 0) {
     const empty = document.createElement("p");
     empty.className = "emptyState";
@@ -97,6 +111,7 @@ export const taskList = (status, tasks) => {
     listItemsContainer.append(empty);
   } else {
     tasks.forEach(task => {
+      // Skickar vidare uppgiften till listItem som nu hanterar flera avatarer
       listItemsContainer.append(listItem(task));
     });
   }
