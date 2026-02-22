@@ -2,3 +2,16 @@ node_modules/
 .vs/
 .DS_Store
 .vscode
+
+# Testing out and coverage
+coverage/
+*-out*.json
+*output.json
+err.json
+dom-*.json
+*.txt
+jest-final.json
+
+# Generated reports
+lh-report.html
+.lighthouseci/
