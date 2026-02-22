@@ -8,6 +8,7 @@
 import { addState, loadState, saveState } from "../storage.js";
 import { TASK_STATUSES } from "../status.js";
 import { getPeople } from "../people/peopleService.js";
+import { sendPushNotification } from "../utils/toast.js";
 
 /**
  * Öppnar en modal för att skapa eller redigera en uppgift.
@@ -15,24 +16,18 @@ import { getPeople } from "../people/peopleService.js";
  * @returns {HTMLElement} Overlay-elementet.
  */
 export const addTaskDialog = (taskToEdit = null) => {
-  const overlay = document.createElement("div");
-  overlay.className = "modalOverlay"; 
-  overlay.setAttribute("role", "presentation");
+  const dialog = document.createElement("dialog");
+  dialog.className = "nativeModalDialog modalCard modalCard-expanded";
+  dialog.setAttribute("aria-label", taskToEdit ? "Redigera uppgift" : "Skapa ny uppgift");
 
-  const modal = document.createElement("div");
-  modal.className = "modalCard modalCard-expanded"; 
-  modal.setAttribute("role", "dialog");
-  modal.setAttribute("aria-modal", "true");
-  modal.setAttribute("aria-label", taskToEdit ? "Redigera uppgift" : "Skapa ny uppgift");
-
-  const people = getPeople(); 
+  const people = getPeople();
   const isEdit = !!taskToEdit;
-  
+
   const titleText = isEdit ? "Redigera uppgift" : "Skapa uppgift";
   const btnText = isEdit ? "Spara ändringar" : "Skapa uppgift";
-  
+
   let selectedContact = isEdit && taskToEdit.contactId ? { id: taskToEdit.contactId, name: taskToEdit.contactName } : null;
-  
+
   let selectedAssignees = [];
   if (isEdit) {
     if (taskToEdit.assignedTo && Array.isArray(taskToEdit.assignedTo)) {
@@ -42,7 +37,7 @@ export const addTaskDialog = (taskToEdit = null) => {
     }
   }
 
-  modal.innerHTML = `
+  dialog.innerHTML = `
     <h2>${titleText}</h2>
     <div class="modal-body ${isEdit ? "modal-split" : ""}">
       <div class="modal-col-left">
@@ -61,15 +56,15 @@ export const addTaskDialog = (taskToEdit = null) => {
           <label class="modal-label">Vilka i teamet är ansvariga?</label>
           <div class="assignee-selector-grid" role="group" aria-label="Teammedlemmar">
             ${people.map(personName => {
-              const isChecked = selectedAssignees.includes(personName) ? "checked" : "";
-              const displayName = personName === "Ingen" ? "🟢 Ledig uppgift" : personName;
-              return `
+    const isChecked = selectedAssignees.includes(personName) ? "checked" : "";
+    const displayName = personName === "Ingen" ? "🟢 Ledig uppgift" : personName;
+    return `
                 <label class="assignee-chip">
                   <input type="checkbox" value="${personName}" ${isChecked}>
                   <span class="chip-text">${displayName}</span>
                 </label>
               `;
-            }).join("")}
+  }).join("")}
           </div>
         </div>
 
@@ -100,54 +95,54 @@ export const addTaskDialog = (taskToEdit = null) => {
 
   // Populate values
   if (isEdit) {
-    modal.querySelector("#taskTitle").value = taskToEdit.title || "";
-    modal.querySelector("#taskDesc").value = taskToEdit.description || "";
+    dialog.querySelector("#taskTitle").value = taskToEdit.title || "";
+    dialog.querySelector("#taskDesc").value = taskToEdit.description || "";
     if (taskToEdit.deadline) {
-        modal.querySelector("#taskDeadline").value = taskToEdit.deadline;
+      dialog.querySelector("#taskDeadline").value = taskToEdit.deadline;
     }
   }
-  
+
   // Contact badge
-  const badge = modal.querySelector("#linkedContactBadge");
-  const badgeName = modal.querySelector("#linkedContactName");
-  const removeLink = modal.querySelector("#removeLink");
-  
+  const badge = dialog.querySelector("#linkedContactBadge");
+  const badgeName = dialog.querySelector("#linkedContactName");
+  const removeLink = dialog.querySelector("#removeLink");
+
   const updateBadge = () => {
-      if (selectedContact) {
-          badge.style.display = "flex";
-          badgeName.textContent = selectedContact.name;
-      } else {
-          badge.style.display = "none";
-      }
+    if (selectedContact) {
+      badge.style.display = "flex";
+      badgeName.textContent = selectedContact.name;
+    } else {
+      badge.style.display = "none";
+    }
   };
-  
+
   removeLink.onclick = () => {
-      selectedContact = null;
-      updateBadge();
+    selectedContact = null;
+    updateBadge();
   };
   updateBadge();
 
   // --- Exclusive checkbox logic ---
-  const checkboxes = modal.querySelectorAll('.assignee-chip input[type="checkbox"]');
+  const checkboxes = dialog.querySelectorAll('.assignee-chip input[type="checkbox"]');
   const ingenCb = Array.from(checkboxes).find(cb => cb.value === "Ingen");
 
   checkboxes.forEach(cb => {
-      cb.addEventListener('change', (e) => {
-          if (e.target.value === "Ingen" && e.target.checked) {
-              checkboxes.forEach(other => {
-                  if (other.value !== "Ingen") other.checked = false;
-              });
-          } else if (e.target.value !== "Ingen" && e.target.checked) {
-              if (ingenCb) ingenCb.checked = false;
-          }
-      });
+    cb.addEventListener('change', (e) => {
+      if (e.target.value === "Ingen" && e.target.checked) {
+        checkboxes.forEach(other => {
+          if (other.value !== "Ingen") other.checked = false;
+        });
+      } else if (e.target.value !== "Ingen" && e.target.checked) {
+        if (ingenCb) ingenCb.checked = false;
+      }
+    });
   });
 
   // --- Notes Log (only for edit mode) ---
   if (isEdit) {
-    const notesLog = modal.querySelector("#notesLog");
-    const noteInput = modal.querySelector("#taskNoteInput");
-    const addNoteBtn = modal.querySelector("#addNoteBtn");
+    const notesLog = dialog.querySelector("#notesLog");
+    const noteInput = dialog.querySelector("#taskNoteInput");
+    const addNoteBtn = dialog.querySelector("#addNoteBtn");
 
     /**
      * Renderar noteringsloggen i modalen.
@@ -193,12 +188,12 @@ export const addTaskDialog = (taskToEdit = null) => {
   }
 
   // --- Save ---
-  modal.querySelector("#saveTask").onclick = () => {
-    const title = modal.querySelector("#taskTitle").value.trim();
-    const description = modal.querySelector("#taskDesc").value.trim();
-    const deadline = modal.querySelector("#taskDeadline").value || 0;
+  dialog.querySelector("#saveTask").onclick = () => {
+    const title = dialog.querySelector("#taskTitle").value.trim();
+    const description = dialog.querySelector("#taskDesc").value.trim();
+    const deadline = dialog.querySelector("#taskDeadline").value || 0;
 
-    const assignedTo = Array.from(modal.querySelectorAll('.assignee-chip input:checked')).map(cb => cb.value);
+    const assignedTo = Array.from(dialog.querySelectorAll('.assignee-chip input:checked')).map(cb => cb.value);
     const primaryAssignee = assignedTo.length > 0 ? assignedTo[0] : "Ingen";
 
     if (!title) return alert("Titeln får inte vara tom!");
@@ -206,15 +201,15 @@ export const addTaskDialog = (taskToEdit = null) => {
     if (isEdit) {
       const state = loadState();
       const index = state.tasks.findIndex(t => String(t.id) === String(taskToEdit.id));
-      
+
       if (index !== -1) {
         const oldStatus = state.tasks[index].status;
         state.tasks[index] = {
           ...taskToEdit,
           title,
           description,
-          assigned: primaryAssignee, 
-          assignedTo, 
+          assigned: primaryAssignee,
+          assignedTo,
           deadline,
           notes: taskToEdit.notes || [],
           contactId: selectedContact ? selectedContact.id : null,
@@ -229,6 +224,18 @@ export const addTaskDialog = (taskToEdit = null) => {
             date: new Date().toISOString(),
             type: "status"
           });
+
+          if (state.tasks[index].status === TASK_STATUSES.DONE) {
+            sendPushNotification(
+              "Uppgift Klar! ✅",
+              `'${state.tasks[index].title}' är nu markerad som färdig.`
+            );
+          } else {
+            sendPushNotification(
+              "Status Ändrad",
+              `'${state.tasks[index].title}' har flyttats till ${state.tasks[index].status}.`
+            );
+          }
         }
 
         saveState(state);
@@ -239,10 +246,10 @@ export const addTaskDialog = (taskToEdit = null) => {
         title,
         description,
         deadline,
-        createdAt: new Date().toISOString(), 
+        createdAt: new Date().toISOString(),
         status: TASK_STATUSES.TODO,
-        assigned: primaryAssignee, 
-        assignedTo, 
+        assigned: primaryAssignee,
+        assignedTo,
         contactId: selectedContact ? selectedContact.id : null,
         contactName: selectedContact ? selectedContact.name : null,
         completed: false,
@@ -250,105 +257,130 @@ export const addTaskDialog = (taskToEdit = null) => {
         notes: []
       };
       addState(newTask);
+
+      // ✅ Trigger Notification on new task creation
+      sendPushNotification(
+        "Ny uppgift skapad",
+        `'${title}' har skapats och tilldelats ${primaryAssignee}.`
+      );
     }
 
-    overlay.remove();
+    const closeDialog = () => {
+      dialog.close();
+      dialog.remove();
+    };
+
+    closeDialog();
     window.dispatchEvent(new CustomEvent('renderApp'));
   };
 
-  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
-  modal.querySelector("#cancelTask").onclick = () => overlay.remove();
-  
-  overlay.append(modal);
+  dialog.addEventListener("click", (e) => {
+    if (e.target === dialog) {
+      const rect = dialog.getBoundingClientRect();
+      const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height
+        && rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+      if (!isInDialog) {
+        dialog.close();
+        dialog.remove();
+      }
+    }
+  });
+
+  dialog.querySelector("#cancelTask").onclick = () => {
+    dialog.close();
+    dialog.remove();
+  };
 
   // --- Autocomplete ---
   import("../utils/contactsDb.js").then(({ getAllContacts, initContactsDB }) => {
-      initContactsDB().then(() => {
-          getAllContacts().then(contacts => {
-              if (contacts && contacts.length > 0) {
-                  const attachAutocomplete = (inputEl) => {
-                      inputEl.setAttribute("autocomplete", "off");
-                      const wrapper = document.createElement("div");
-                      wrapper.style.position = "relative";
-                      inputEl.parentNode.insertBefore(wrapper, inputEl);
-                      wrapper.append(inputEl);
+    initContactsDB().then(() => {
+      getAllContacts().then(contacts => {
+        if (contacts && contacts.length > 0) {
+          const attachAutocomplete = (inputEl) => {
+            inputEl.setAttribute("autocomplete", "off");
+            const wrapper = document.createElement("div");
+            wrapper.style.position = "relative";
+            inputEl.parentNode.insertBefore(wrapper, inputEl);
+            wrapper.append(inputEl);
 
-                      const box = document.createElement("div");
-                      box.className = "autocomplete-suggestions";
-                      Object.assign(box.style, {
-                          position: "absolute", top: "100%", left: "0", right: "0", zIndex: "6000",
-                          display: "none", background: "var(--bg-deep, #111)", border: "1px solid var(--accent-cyan)",
-                          borderRadius: "0 0 8px 8px", boxShadow: "0 8px 20px rgba(0,0,0,0.5)",
-                          maxHeight: "160px", overflowY: "auto"
-                      });
-                      wrapper.append(box);
+            const box = document.createElement("div");
+            box.className = "autocomplete-suggestions";
+            Object.assign(box.style, {
+              position: "absolute", top: "100%", left: "0", right: "0", zIndex: "6000",
+              display: "none", background: "var(--bg-deep, #111)", border: "1px solid var(--accent-cyan)",
+              borderRadius: "0 0 8px 8px", boxShadow: "0 8px 20px rgba(0,0,0,0.5)",
+              maxHeight: "160px", overflowY: "auto"
+            });
+            wrapper.append(box);
 
-                      inputEl.addEventListener("input", () => {
-                          const val = inputEl.value;
-                          const cursorPos = inputEl.selectionStart;
-                          const before = val.slice(0, cursorPos);
-                          const words = before.split(/\s+/);
-                          const word = words[words.length - 1];
+            inputEl.addEventListener("input", () => {
+              const val = inputEl.value;
+              const cursorPos = inputEl.selectionStart;
+              const before = val.slice(0, cursorPos);
+              const words = before.split(/\s+/);
+              const word = words[words.length - 1];
 
-                          if (word.length < 2) { box.style.display = "none"; return; }
+              if (word.length < 2) { box.style.display = "none"; return; }
 
-                          const matches = contacts.filter(c => c.name.toLowerCase().startsWith(word.toLowerCase()));
-                          if (matches.length === 0) { box.style.display = "none"; return; }
+              const matches = contacts.filter(c => c.name.toLowerCase().startsWith(word.toLowerCase()));
+              if (matches.length === 0) { box.style.display = "none"; return; }
 
-                          box.innerHTML = "";
-                          const label = document.createElement("div");
-                          label.textContent = "📇 Kontakter";
-                          label.style.cssText = "padding:6px 12px;font-size:11px;color:var(--accent-cyan);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.08);";
-                          box.append(label);
+              box.innerHTML = "";
+              const label = document.createElement("div");
+              label.textContent = "📇 Kontakter";
+              label.style.cssText = "padding:6px 12px;font-size:11px;color:var(--accent-cyan);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.08);";
+              box.append(label);
 
-                          matches.forEach(m => {
-                              const item = document.createElement("div");
-                              item.style.cssText = "padding:10px 14px;cursor:pointer;color:var(--text-main);display:flex;align-items:center;gap:8px;transition:background 0.15s;";
+              matches.forEach(m => {
+                const item = document.createElement("div");
+                item.style.cssText = "padding:10px 14px;cursor:pointer;color:var(--text-main);display:flex;align-items:center;gap:8px;transition:background 0.15s;";
 
-                              const nameSpan = document.createElement("span");
-                              nameSpan.textContent = m.name;
-                              nameSpan.style.fontWeight = "bold";
+                const nameSpan = document.createElement("span");
+                nameSpan.textContent = m.name;
+                nameSpan.style.fontWeight = "bold";
 
-                              const roleSpan = document.createElement("span");
-                              roleSpan.textContent = m.role || m.company || "";
-                              roleSpan.style.cssText = "font-size:12px;color:var(--text-dim);margin-left:auto;";
+                const roleSpan = document.createElement("span");
+                roleSpan.textContent = m.role || m.company || "";
+                roleSpan.style.cssText = "font-size:12px;color:var(--text-dim);margin-left:auto;";
 
-                              item.append(nameSpan, roleSpan);
-                              item.onmouseover = () => { item.style.background = "rgba(34,211,238,0.1)"; };
-                              item.onmouseout = () => { item.style.background = "transparent"; };
+                item.append(nameSpan, roleSpan);
+                item.onmouseover = () => { item.style.background = "rgba(34,211,238,0.1)"; };
+                item.onmouseout = () => { item.style.background = "transparent"; };
 
-                              item.onclick = () => {
-                                  const after = val.slice(cursorPos);
-                                  const beforeWord = before.slice(0, -word.length);
-                                  inputEl.value = beforeWord + m.name + " " + after;
-                                  box.style.display = "none";
-                                  inputEl.focus();
-                                  
-                                  selectedContact = m;
-                                  updateBadge();
-                              };
-                              box.append(item);
-                          });
-                          box.style.display = "block";
-                      });
+                item.onclick = () => {
+                  const after = val.slice(cursorPos);
+                  const beforeWord = before.slice(0, -word.length);
+                  inputEl.value = beforeWord + m.name + " " + after;
+                  box.style.display = "none";
+                  inputEl.focus();
 
-                      const closeHandler = (e) => {
-                          if (e.target !== inputEl && !box.contains(e.target)) box.style.display = "none";
-                      };
-                      overlay.addEventListener("click", closeHandler);
-                  };
+                  selectedContact = m;
+                  updateBadge();
+                };
+                box.append(item);
+              });
+              box.style.display = "block";
+            });
 
-                  const titleInput = modal.querySelector("#taskTitle");
-                  const descInput = modal.querySelector("#taskDesc");
-                  
-                  if (titleInput) attachAutocomplete(titleInput);
-                  if (descInput) attachAutocomplete(descInput);
-              }
-          });
+            const closeHandler = (e) => {
+              if (e.target !== inputEl && !box.contains(e.target)) box.style.display = "none";
+            };
+            dialog.addEventListener("click", closeHandler);
+          };
+
+          const titleInput = dialog.querySelector("#taskTitle");
+          const descInput = dialog.querySelector("#taskDesc");
+
+          if (titleInput) attachAutocomplete(titleInput);
+          if (descInput) attachAutocomplete(descInput);
+        }
       });
+    });
   });
 
-  return overlay; 
+  document.body.append(dialog);
+  dialog.showModal();
+  return dialog;
 };
 
 /**

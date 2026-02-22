@@ -64,7 +64,7 @@ setView("dashboard");
 document.addEventListener("click", (e) => {
   /** @type {Element|null} - Hittar närmaste element med klassen .addTaskFab */
   const fabButton = e.target.closest(".addTaskFab");
-  
+
   if (fabButton) {
     // 1. Rensa bort gamla modal-overlays om de mot förmodan ligger kvar
     const existingModal = document.querySelector(".modalOverlay");
@@ -73,20 +73,7 @@ document.addEventListener("click", (e) => {
     /** * @type {HTMLDialogElement|HTMLElement} - Skapar en ny dialog-instans.
      * För optimal tillgänglighet bör addTaskDialog returnera ett <dialog>-element.
      */
-    const dialog = addTaskDialog();
-    
-    // 3. Lägg till den i bodyn så den hamnar överst
-    document.body.appendChild(dialog);
-    
-    // 4. Säkerställ att den inte är dold (om din dialog-kod använder hidden)
-    dialog.removeAttribute("hidden");
-    
-    /** * Om dialog-elementet stöds av webbläsaren och är av typen HTMLDialogElement,
-     * bör showModal() användas för att hantera fokus och skärmläsare automatiskt.
-     */
-    if (typeof dialog.showModal === "function") {
-      dialog.showModal();
-    }
+    addTaskDialog();
   }
 });
 

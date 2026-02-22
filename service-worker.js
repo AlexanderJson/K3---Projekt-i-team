@@ -2,22 +2,22 @@
     LIANER SERVICE WORKER (service-worker.js)
    ========================================================================== */
 
-const CACHE_VERSION = 'v1'; 
-const CACHE_NAME = `lianer-cache-${CACHE_VERSION}`; 
+const CACHE_VERSION = 'v1';
+const CACHE_NAME = `lianer-cache-${CACHE_VERSION}`;
 
 // Resurser att cacha vid installation - Baserat på din mappstruktur
-const ASSETS = [ 
-	'/', 
-	'/index.html', 
-	'/app.js', 
-	'/manifest.webmanifest',
-    '/css/variables.css',
-	'/css/main.css',
-	'/css/dashboard.css',
-	'/css/tasks.css',
-	'/icons/icon-192.png',
-	'/icons/icon-512.png',
-	'/icons/icon-512-maskable.png'
+const ASSETS = [
+  '/',
+  '/index.html',
+  '/app.js',
+  '/manifest.webmanifest',
+  '/css/variables.css',
+  '/css/main.css',
+  '/css/dashboard.css',
+  '/css/tasks.css',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/icon-512-maskable.png'
 ];
 
 // --- INSTALL: Cacha resurser ---
@@ -43,7 +43,7 @@ self.addEventListener('activate', event => {
     )
   );
   self.clients.claim(); //
-}); 
+});
 
 // --- FETCH: Hantera nätverksstrategier ---
 self.addEventListener('fetch', event => {
@@ -70,7 +70,7 @@ self.addEventListener('fetch', event => {
 });
 
 /* ==========================================================================
-    CACHING-STRATEGIER (Enligt din lärares material)
+    CACHING-STRATEGIER
    ========================================================================== */
 
 async function cacheFirst(req) {
@@ -120,7 +120,7 @@ self.addEventListener('sync', event => {
 let syncInProgress = false;
 
 async function handleSync() {
-  if (syncInProgress) return; 
+  if (syncInProgress) return;
   syncInProgress = true;
 
   try {
@@ -133,3 +133,35 @@ async function handleSync() {
     syncInProgress = false;
   }
 }
+
+/* ==========================================================================
+    PUSH NOTIFICATIONS
+   ========================================================================== */
+
+self.addEventListener('push', event => {
+  let data = { title: 'Ny notis från Lianer', body: 'Du har en uppdatering.' };
+
+  if (event.data) {
+    try { data = event.data.json(); }
+    catch (e) { data.body = event.data.text(); }
+  }
+
+  const options = {
+    body: data.body,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    vibrate: [200, 100, 200],
+    data: { dateOfArrival: Date.now() }
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow('/')
+  );
+});

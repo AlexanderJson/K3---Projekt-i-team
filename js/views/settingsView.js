@@ -10,6 +10,7 @@ import { loadState, saveState } from "../storage.js";
 import { notify } from "../observer.js";
 import { loadDemoWorkspace, loadDemoLIA } from "../taskList/seed.js";
 import { clearAllContacts, initContactsDB, getAllContacts, importContacts } from "../utils/contactsDb.js";
+import { showToast } from "../utils/toast.js";
 
 /**
  * Renderar inställningsvyn i angiven container.
@@ -34,7 +35,7 @@ export function renderSettings(container, rerenderCallback) {
 
   // --- TEAM-SEKTION ---
   const teamSection = document.createElement("section");
-  teamSection.className = "settings-section"; 
+  teamSection.className = "settings-section";
   teamSection.setAttribute("aria-label", "Teaminställningar");
   teamSection.innerHTML = `
     <div class="settings-grid">
@@ -63,9 +64,9 @@ export function renderSettings(container, rerenderCallback) {
   peopleSection.style.flexDirection = "column";
 
   peopleSection.innerHTML = `<label class="meta-label">TEAMMEDLEMMAR</label>`;
-  
+
   const list = document.createElement("div");
-  list.className = "members-container-scroll"; 
+  list.className = "members-container-scroll";
   list.style.flex = "1";
 
   /** @type {HTMLElement[]} */
@@ -84,8 +85,8 @@ export function renderSettings(container, rerenderCallback) {
         <button class="settings-btn btn-delete-small" aria-label="Radera ${name || 'medlem'}">RADERA</button>
     `;
     row.querySelector(".btn-delete-small").onclick = () => {
-        row.remove(); 
-        memberRows = memberRows.filter(r => r !== row);
+      row.remove();
+      memberRows = memberRows.filter(r => r !== row);
     };
     return row;
   };
@@ -237,6 +238,74 @@ export function renderSettings(container, rerenderCallback) {
   backupRow.append(exportBtn, importInput, importBtn);
   actionsContent.append(backupRow);
 
+  // --- Notiser-knappar ---
+  const notisLabel = document.createElement("label");
+  notisLabel.className = "meta-label";
+  notisLabel.textContent = "NOTIFIKATIONER (PUSH)";
+  notisLabel.style.marginTop = "16px";
+  notisLabel.style.marginBottom = "8px";
+  actionsContent.append(notisLabel);
+
+  const notisRow = document.createElement("div");
+  notisRow.className = "settings-action-row";
+
+  const enableNotisBtn = document.createElement("button");
+  enableNotisBtn.className = "settings-btn btn-load-demo";
+  enableNotisBtn.textContent = "🔔 Aktivera Notiser";
+  enableNotisBtn.setAttribute("aria-label", "Begär tillåtelse att visa notifikationer");
+  enableNotisBtn.onclick = async () => {
+    if (!("Notification" in window)) {
+      showToast("Fel", "Din webbläsare stödjer inte notiser.");
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") {
+      showToast("Tillåtet", "Notiser är nu aktiverade!");
+      // Här kan pushManager.subscribe() anropas om en backend fanns
+    } else {
+      showToast("Nekad", "Notiser är blockerade eller nekades.");
+    }
+  };
+
+  const testNotisBtn = document.createElement("button");
+  testNotisBtn.className = "settings-btn btn-load-demo";
+  testNotisBtn.textContent = "📨 Testa Notis";
+  testNotisBtn.setAttribute("aria-label", "Skicka en testnotifikation");
+  testNotisBtn.onclick = async () => {
+    if (Notification.permission === "granted") {
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        if (!registration) {
+          showToast("Varning", "Kunde inte hitta en aktiv Service Worker för att skicka notisen.");
+          return;
+        }
+        await registration.showNotification("Lianer System!", {
+          body: "Systemets push-notiser fungerar korrekt via Service Worker.",
+          icon: "/icons/icon-192.png",
+          vibrate: [200, 100, 200]
+        });
+        showToast("Framgång", "Push-notis skickad. Titta i ditt system/åtgärdscenter.");
+      } catch (err) {
+        console.error("Fel vid skickande av testnotis via SW:", err);
+        try {
+          // Fallback if HTTP-Server blocks service worker notifications
+          new Notification("Lianer System!", {
+            body: "Service Worker misslyckades. Detta är standard-API:t.",
+            icon: "/icons/icon-192.png",
+          });
+          showToast("Framgång (Fallback)", "Push-notis skickad utan Service Worker.");
+        } catch (fallbackErr) {
+          showToast("System Notis Misslyckades", `Windows/Webbläsare blockerade notisen.\nLäs konsolen för mer info.`);
+        }
+      }
+    } else {
+      showToast("Kan ej skicka", "Vänligen aktivera notiser via knappen ovan först.");
+    }
+  };
+
+  notisRow.append(enableNotisBtn, testNotisBtn);
+  actionsContent.append(notisRow);
+
   // --- Rensa-knapp ---
   const dangerLabel = document.createElement("label");
   dangerLabel.className = "meta-label";
@@ -293,7 +362,7 @@ export function renderSettings(container, rerenderCallback) {
   saveBtn.setAttribute("aria-label", "Spara alla inställningar");
   saveBtn.onclick = () => {
     const s = loadState();
-    
+
     const newTeamName = document.getElementById("teamNameInput").value.trim();
     const newWeeklyTarget = parseInt(document.getElementById("weeklyTargetInput").value) || 5;
     const newWeeklyCRMTarget = parseInt(document.getElementById("weeklyCRMTargetInput").value) || 5;
@@ -306,17 +375,17 @@ export function renderSettings(container, rerenderCallback) {
     const newPeople = memberRows
       .map(r => r.querySelector("input").value.trim())
       .filter(n => n !== "" && n.toLowerCase() !== "ingen");
-    
+
     if (!newPeople.includes("Ingen")) {
-        newPeople.unshift("Ingen");
+      newPeople.unshift("Ingen");
     }
-    
+
     s.people = newPeople;
     saveState(s);
-    notify(); 
+    notify();
 
     if (rerenderCallback) {
-      rerenderCallback(); 
+      rerenderCallback();
     } else {
       renderSettings(container, rerenderCallback);
     }
@@ -328,7 +397,7 @@ export function renderSettings(container, rerenderCallback) {
   cancelBtn.setAttribute("aria-label", "Avbryt ändringar");
   cancelBtn.onclick = () => {
     if (confirm("Vill du förkasta dina ändringar?")) {
-        if (rerenderCallback) rerenderCallback();
+      if (rerenderCallback) rerenderCallback();
     }
   };
 

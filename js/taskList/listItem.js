@@ -29,7 +29,7 @@ const moveTask = (id, direction) => {
     tasks[index] = tasks[globalTargetIndex];
     tasks[globalTargetIndex] = temp;
     saveState(state);
-    window.dispatchEvent(new CustomEvent('renderApp')); 
+    window.dispatchEvent(new CustomEvent('renderApp'));
   }
 };
 
@@ -49,16 +49,16 @@ const renderAssigneeAvatars = (assignedNames = []) => {
   }
 
   const validNames = assignedNames.filter(name => name && name !== "Ingen");
-  
+
   validNames.forEach((name) => {
     const avatar = document.createElement("div");
     avatar.className = "assignee-avatar-circle";
     avatar.title = name;
-    
+
     // Plockar ut initialerna
     const initials = name.split(" ").map(n => n.charAt(0)).join("").substring(0, 2).toUpperCase();
     avatar.textContent = initials;
-    
+
     container.append(avatar);
   });
 
@@ -69,16 +69,13 @@ export const listItem = (task) => {
   const isClosed = task.status === TASK_STATUSES.CLOSED;
   const isDone = task.status === TASK_STATUSES.DONE;
   const isTodo = task.status === TASK_STATUSES.TODO;
-  
+
   const div = document.createElement("div");
   div.className = `listItem ${isClosed ? "is-closed" : ""} is-expandable`;
-  div.setAttribute("role", "button");
-  div.setAttribute("tabindex", "0");
-  div.setAttribute("aria-expanded", "false");
-  
+
   const toggleExpand = () => {
     const expanded = div.classList.toggle('is-expanded');
-    div.setAttribute("aria-expanded", String(expanded));
+    expandBtn.setAttribute("aria-expanded", String(expanded));
   };
 
   div.onclick = (e) => {
@@ -86,14 +83,15 @@ export const listItem = (task) => {
     toggleExpand();
   };
 
-  div.onkeydown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      if (e.target === div) { 
-          e.preventDefault();
-          toggleExpand();
-      }
-    }
+  const expandBtn = document.createElement("button");
+  expandBtn.className = "sr-only expand-toggle-btn";
+  expandBtn.textContent = "Expandera/kollapsa uppgift";
+  expandBtn.setAttribute("aria-expanded", "false");
+  expandBtn.onclick = (e) => {
+    e.stopPropagation();
+    toggleExpand();
   };
+  div.append(expandBtn);
 
   const headerRow = document.createElement("div");
   headerRow.className = "card-header-row";
@@ -132,12 +130,12 @@ export const listItem = (task) => {
     linkDiv.className = "task-contact-explicit";
     linkDiv.style.cssText = "margin-top: 10px; padding: 6px 10px; background: rgba(34,211,238,0.1); border-radius: 4px; color: var(--accent-cyan); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: bold; border: 1px solid rgba(34,211,238,0.2); width: fit-content;";
     linkDiv.innerHTML = `<span>🔗</span> Länkad till: ${task.contactName} <span style="opacity:0.6;font-size:10px;">↗</span>`;
-    
+
     linkDiv.onclick = (e) => {
-      e.stopPropagation(); 
-      setView('contacts', { highlightId: task.contactId }); 
+      e.stopPropagation();
+      setView('contacts', { highlightId: task.contactId });
     };
-    
+
     mainContent.append(linkDiv);
   }
 
@@ -146,26 +144,25 @@ export const listItem = (task) => {
 
   let assignedArray = task.assignedTo || [];
   if (assignedArray.length === 0 && task.assigned) assignedArray = [task.assigned];
-  
+
   const avatars = renderAssigneeAvatars(assignedArray);
-  
+
   // FIXAD: Tar inte emot 'e' här eftersom addBtn-hjälparen hanterar det!
   const openEditDialog = () => {
-      const dialog = addTaskDialog(task);
-      document.body.append(dialog);
+    addTaskDialog(task);
   };
 
   // Om man klickar direkt på avatarerna
   avatars.onclick = (e) => {
-      e.stopPropagation();
-      openEditDialog();
+    e.stopPropagation();
+    openEditDialog();
   };
   avatars.onkeydown = (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          e.stopPropagation();
-          openEditDialog();
-      }
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.stopPropagation();
+      openEditDialog();
+    }
   };
 
   footer.append(avatars);
@@ -210,6 +207,6 @@ export const listItem = (task) => {
 
   footer.append(controls);
   div.append(headerRow, mainContent, footer);
-  
+
   return div;
 };
