@@ -250,6 +250,8 @@ function buildHeader(container) {
 function buildToolbar(people, container) {
   const toolbar = document.createElement("div");
   toolbar.className = "calendar-filter-row";
+  toolbar.style.position = "relative";
+  toolbar.style.zIndex = "50";
 
   const filterLabel = document.createElement("label");
   filterLabel.className = "meta-label";
@@ -258,6 +260,7 @@ function buildToolbar(people, container) {
 
   const filterSelect = document.createElement("select");
   filterSelect.id = "cal-team-filter";
+  filterSelect.tabIndex = 0;
   filterSelect.className = "taskFilterSelect calendar-team-filter";
   filterSelect.setAttribute("aria-label", "Filtrera kalender per teammedlem");
 
@@ -706,8 +709,29 @@ function showDayPopup(anchorCell, tasks, events, dateStr, dayNum) {
     popup.append(list);
   }
 
-  anchorCell.style.position = "relative";
-  anchorCell.append(popup);
+  // Append to body to avoid overflow: hidden issues on anchorCell
+  document.body.append(popup);
+  
+  // Calculate position relative to the cell
+  const rect = anchorCell.getBoundingClientRect();
+  popup.style.position = "absolute";
+  popup.style.zIndex = "2000";
+  // Default position: slightly below and to the right of the cell top-left corner
+  let top = rect.top + window.scrollY;
+  let left = rect.left + window.scrollX + 20;
+
+  // Ensure it doesn't go off-screen
+  setTimeout(() => {
+    const pRect = popup.getBoundingClientRect();
+    if (left + pRect.width > window.innerWidth) {
+      left = window.innerWidth - pRect.width - 20;
+    }
+    if (top + pRect.height > window.innerHeight + window.scrollY) {
+      top = rect.bottom + window.scrollY - pRect.height; 
+    }
+    popup.style.left = `${left}px`;
+    popup.style.top = `${top}px`;
+  }, 0);
 
   const outsideClick = (e) => {
     if (!popup.contains(e.target) && !anchorCell.contains(e.target)) {
@@ -715,6 +739,7 @@ function showDayPopup(anchorCell, tasks, events, dateStr, dayNum) {
       document.removeEventListener("click", outsideClick);
     }
   };
+  // Small delay so the click that opened it doesn't immediately close it
   setTimeout(() => document.addEventListener("click", outsideClick), 0);
 
   const escHandler = (e) => {

@@ -64,8 +64,8 @@ export const addTaskDialog = (taskToEdit = null) => {
               const isChecked = selectedAssignees.includes(personName) ? "checked" : "";
               const displayName = personName === "Ingen" ? "🟢 Ledig uppgift" : personName;
               return `
-                <label class="assignee-chip">
-                  <input type="checkbox" value="${personName}" ${isChecked}>
+                <label class="assignee-chip" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); this.querySelector('input').click();}">
+                  <input type="checkbox" value="${personName}" ${isChecked} tabindex="-1">
                   <span class="chip-text">${displayName}</span>
                 </label>
               `;

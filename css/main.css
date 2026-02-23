@@ -849,7 +849,6 @@ body {
 
 .calendar-day.other-month {
     opacity: 0.3;
-    pointer-events: none;
 }
 
 .day-number {

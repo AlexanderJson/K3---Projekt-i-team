@@ -327,8 +327,12 @@ function renderControls(wrapper, container) {
   const controls = document.createElement("div");
   controls.className = "dashboard-controls";
   controls.style.marginBottom = "24px"; // Add spacing
+  controls.style.position = "relative";
+  controls.style.zIndex = "50";
 
   const select = document.createElement("select");
+  select.id = "dashboard-filter-select";
+  select.tabIndex = 0;
   select.className = "taskFilterSelect";
 
   const teamOption = document.createElement("option");
@@ -351,7 +355,12 @@ function renderControls(wrapper, container) {
   select.value = currentFilter;
   select.addEventListener("change", () => {
     localStorage.setItem("dashboardViewFilter", select.value);
-    renderDashboard(container);
+    renderDashboard(container).then(() => {
+      setTimeout(() => {
+        const el = document.getElementById("dashboard-filter-select");
+        if (el) el.focus();
+      }, 50);
+    });
   });
 
   controls.append(select);
