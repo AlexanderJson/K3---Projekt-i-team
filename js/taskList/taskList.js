@@ -103,6 +103,21 @@ export const taskList = (status, tasks) => {
     }
   };
 
+  header.addEventListener("keydown", (e) => {
+    if (["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+      e.preventDefault();
+      const items = Array.from(document.querySelectorAll('.taskHeader, .listItem[tabindex="0"]'));
+      const currentIndex = items.indexOf(header);
+      
+      if (currentIndex !== -1) {
+        let nextIndex = currentIndex;
+        if (e.key === "ArrowDown" || e.key === "ArrowRight") nextIndex++;
+        if (e.key === "ArrowUp" || e.key === "ArrowLeft") nextIndex--;
+        if (nextIndex >= 0 && nextIndex < items.length) items[nextIndex].focus();
+      }
+    }
+  });
+
   // Rendera innehåll (VG: Modulär användning av listItem)
   if (tasks.length === 0) {
     const empty = document.createElement("p");

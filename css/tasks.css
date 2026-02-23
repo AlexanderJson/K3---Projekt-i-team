@@ -87,6 +87,13 @@ body.menu-is-collapsed .taskFilterContainer {
     transform: translateY(-1px);
 }
 
+.taskFilterSelect:focus {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.3);
+}
+
 /* Stilar till de linjer (separatorer) vi lade till */
 .taskFilterSelect option[disabled] {
     color: var(--text-dim, #888888);
@@ -680,8 +687,23 @@ body.menu-is-collapsed .taskFilterContainer {
     margin-top: 8px;
 }
 
+.assignee-chip {
+    position: relative;
+}
+
 .assignee-chip input[type="checkbox"] {
-    display: none;
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.assignee-chip input[type="checkbox"]:focus-visible + .chip-text {
+    outline: 2px solid var(--accent-cyan, #22d3ee);
+    outline-offset: 2px;
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.3);
 }
 
 .assignee-chip .chip-text {

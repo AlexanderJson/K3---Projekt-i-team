@@ -86,14 +86,26 @@ export const listItem = (task) => {
     toggleExpand();
   };
 
-  div.onkeydown = (e) => {
+  div.addEventListener("keydown", (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       if (e.target === div) { 
           e.preventDefault();
           toggleExpand();
       }
+    } else if (["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+      if (e.target === div) {
+        e.preventDefault();
+        const items = Array.from(document.querySelectorAll('.taskHeader, .listItem[tabindex="0"]'));
+        const currentIndex = items.indexOf(div);
+        if (currentIndex !== -1) {
+          let nextIndex = currentIndex;
+          if (e.key === "ArrowDown" || e.key === "ArrowRight") nextIndex++;
+          if (e.key === "ArrowUp" || e.key === "ArrowLeft") nextIndex--;
+          if (nextIndex >= 0 && nextIndex < items.length) items[nextIndex].focus();
+        }
+      }
     }
-  };
+  });
 
   const headerRow = document.createElement("div");
   headerRow.className = "card-header-row";

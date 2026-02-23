@@ -280,7 +280,14 @@ function buildToolbar(people, container) {
     calendarFilter = filterSelect.value;
     renderCalendar(container, "cal-team-filter");
     announceMessage(`Filtrerar: ${calendarFilter === "Alla" ? "Hela teamet" : calendarFilter}`);
+    // Restore focus after re-render
+    setTimeout(() => {
+      const newSelect = document.getElementById("cal-team-filter");
+      if (newSelect) newSelect.focus();
+    }, 50);
   };
+
+  filterSelect.tabIndex = 0;
 
   toolbar.append(filterLabel, filterSelect);
 
@@ -488,6 +495,15 @@ function buildAgendaView(tasks, importedEvents, todayStr) {
       item.addEventListener("click", openEdit);
       item.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEdit(); }
+        if (["ArrowDown", "ArrowUp"].includes(e.key)) {
+          e.preventDefault();
+          const items = Array.from(document.querySelectorAll(".agenda-item[tabindex='0']"));
+          const currentIndex = items.indexOf(item);
+          if (currentIndex !== -1) {
+            let nextIndex = currentIndex + (e.key === "ArrowDown" ? 1 : -1);
+            if (nextIndex >= 0 && nextIndex < items.length) items[nextIndex].focus();
+          }
+        }
       });
 
       itemList.append(item);
@@ -517,6 +533,15 @@ function buildAgendaView(tasks, importedEvents, todayStr) {
       item.addEventListener("click", showDetail);
       item.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showDetail(); }
+        if (["ArrowDown", "ArrowUp"].includes(e.key)) {
+          e.preventDefault();
+          const items = Array.from(document.querySelectorAll(".agenda-item[tabindex='0']"));
+          const currentIndex = items.indexOf(item);
+          if (currentIndex !== -1) {
+            let nextIndex = currentIndex + (e.key === "ArrowDown" ? 1 : -1);
+            if (nextIndex >= 0 && nextIndex < items.length) items[nextIndex].focus();
+          }
+        }
       });
 
       itemList.append(item);
@@ -612,6 +637,19 @@ function createDayCell(dayNum, tasks, events, isToday, isCurrentMonth, dateStr) 
     cell.addEventListener("click", openPopup);
     cell.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPopup(); }
+      if (["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp"].includes(e.key)) {
+        e.preventDefault();
+        const gridCells = Array.from(document.querySelectorAll('.calendar-day[tabindex="0"]'));
+        const currentIndex = gridCells.indexOf(cell);
+        if (currentIndex !== -1) {
+          let nextIndex = currentIndex;
+          if (e.key === "ArrowRight") nextIndex++;
+          if (e.key === "ArrowLeft") nextIndex--;
+          if (e.key === "ArrowDown") nextIndex += 7;
+          if (e.key === "ArrowUp") nextIndex -= 7;
+          if (nextIndex >= 0 && nextIndex < gridCells.length) gridCells[nextIndex].focus();
+        }
+      }
     });
   }
 
@@ -631,6 +669,7 @@ function createDayCell(dayNum, tasks, events, isToday, isCurrentMonth, dateStr) 
  * @param {number} dayNum
  */
 function showDayPopup(anchorCell, tasks, events, dateStr, dayNum) {
+  document.querySelectorAll(".calendar-day").forEach(c => c.style.zIndex = "");
   document.querySelectorAll(".calendar-day-popup").forEach(p => p.remove());
 
   const popup = document.createElement("div");
@@ -707,11 +746,13 @@ function showDayPopup(anchorCell, tasks, events, dateStr, dayNum) {
   }
 
   anchorCell.style.position = "relative";
+  anchorCell.style.zIndex = "50";
   anchorCell.append(popup);
 
   const outsideClick = (e) => {
     if (!popup.contains(e.target) && !anchorCell.contains(e.target)) {
       popup.remove();
+      anchorCell.style.zIndex = "";
       document.removeEventListener("click", outsideClick);
     }
   };
@@ -720,6 +761,7 @@ function showDayPopup(anchorCell, tasks, events, dateStr, dayNum) {
   const escHandler = (e) => {
     if (e.key === "Escape") {
       popup.remove();
+      anchorCell.style.zIndex = "";
       document.removeEventListener("keydown", escHandler);
       anchorCell.focus();
     }
@@ -777,7 +819,7 @@ function showEventDetail(event) {
       ${event.description ? `
       <div class="event-detail-row event-detail-desc">
         <span class="event-detail-label">📋 Beskrivning</span>
-        <p class="event-detail-value">${escapeHtml(event.description).replace(/\\n/g, "<br>")}</p>
+        <p class="event-detail-value">${linkifyHtml(escapeHtml(event.description).replace(/\\n/g, "<br>"))}</p>
       </div>` : ""}
     </div>
     <div class="modalButtons">
@@ -811,4 +853,16 @@ function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str || "";
   return div.innerHTML;
+}
+
+/**
+ * Konverterar råa webbadresser till klickbara HTML-länkar.
+ * @param {string} text - The encoded HTML text.
+ * @returns {string} The HTML string with active <a> tags.
+ */
+function linkifyHtml(text) {
+  const urlRegex = /(https?:\/\/[^\s<]+)/g;
+  return text.replace(urlRegex, (url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-cyan); text-decoration: underline;">${url}</a>`;
+  });
 }

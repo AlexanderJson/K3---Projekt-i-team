@@ -348,6 +348,51 @@ export const addTaskDialog = (taskToEdit = null) => {
       });
   });
 
+  // --- Focus Trap & Arrow Navigation ---
+  const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  let focusableElements = Array.from(modal.querySelectorAll(focusableSelectors));
+  
+  // Set initial focus
+  setTimeout(() => {
+    if (focusableElements.length) focusableElements[0].focus();
+  }, 10);
+
+  modal.addEventListener('keydown', (e) => {
+    focusableElements = Array.from(modal.querySelectorAll(focusableSelectors));
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    if (e.key === 'Tab') {
+      if (e.shiftKey) { 
+        if (document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+      } else { 
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      // Allow native arrow behavior in text inputs/textareas
+      if (['TEXTAREA', 'INPUT'].includes(document.activeElement.tagName) && 
+          !['checkbox', 'radio', 'button'].includes(document.activeElement.type)) {
+        return; 
+      }
+      e.preventDefault();
+      const currentIndex = focusableElements.indexOf(document.activeElement);
+      if (currentIndex !== -1) {
+        let nextIndex = currentIndex + (e.key === 'ArrowDown' ? 1 : -1);
+        if (nextIndex < 0) nextIndex = focusableElements.length - 1;
+        if (nextIndex >= focusableElements.length) nextIndex = 0;
+        focusableElements[nextIndex].focus();
+      }
+    } else if (e.key === 'Escape') {
+      overlay.remove();
+    }
+  });
+
   return overlay; 
 };
 

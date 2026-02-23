@@ -349,9 +349,17 @@ function renderControls(wrapper, container) {
   });
 
   select.value = currentFilter;
+  select.tabIndex = 0;
+  select.setAttribute("aria-label", "Välj dashboard-filter");
+  
   select.addEventListener("change", () => {
     localStorage.setItem("dashboardViewFilter", select.value);
     renderDashboard(container);
+    // Restore focus to the new select after re-render
+    setTimeout(() => {
+      const newSelect = wrapper.querySelector(".taskFilterSelect");
+      if (newSelect) newSelect.focus();
+    }, 50);
   });
 
   controls.append(select);

@@ -62,6 +62,8 @@ export const taskScreen = () => {
     if (personName === currentFilter) option.selected = true;
     select.append(option);
   });
+  
+  select.tabIndex = 0;
 
   const archiveSeparator = document.createElement("option");
   archiveSeparator.disabled = true;
