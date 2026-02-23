@@ -25,7 +25,6 @@ export const taskScreen = () => {
   const service = new TaskService(stateStore);
   
 
-  service.init();
 
 
   // Hämtar senast använda filter eller sätter standard till "Team"

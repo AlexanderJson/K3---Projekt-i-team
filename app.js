@@ -1,11 +1,16 @@
-import { initSeed } from "./js/taskList/seed.js";
+import { initTasksCSV } from "./js/taskList/seed.js";
 import { menu } from "./js/menu/sideMenu.js";
 import { subscribe } from "./js/observer.js";
 import { initViewController, rerenderActiveView, setView } from "./js/views/viewController.js";
 import { initTheme } from "./js/theme.js";
 import { addTaskDialog } from "./js/comps/dialog.js";
+import { StateStore } from "./js/data/StateStore.js";
+import { TaskService } from "./js/service/taskService.js";
+
 
 /**
+ * 
+ * 
  * @file app.js
  * @description Huvudentrépunkt för Lianer Project Management App.
  * Hanterar initiering av tema, layoutstruktur och globala händelselyssnare.
@@ -13,6 +18,9 @@ import { addTaskDialog } from "./js/comps/dialog.js";
 
 // Initiera tema (Mörkt/Ljust)
 initTheme();
+const stateStore = new StateStore();
+const taskService = new TaskService(stateStore);
+taskService.init();
 
 /** @type {HTMLElement} - Huvudcontainern definierad i index.html */
 const app = document.getElementById("app");
@@ -53,7 +61,7 @@ subscribe(() => rerenderActiveView());
 /**
  * Initiera startdata och sätt startvyn till dashboard.
  */
-initSeed();
+await initTasksCSV(taskService, "./team3.csv");
 setView("dashboard");
 
 /**
