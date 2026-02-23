@@ -10,24 +10,30 @@
   <meta name="theme-color" content="#3b82f6" />
   <link rel="stylesheet" href="css/variables.css" />
   <link rel="stylesheet" href="css/main.css" />
-  <link rel="stylesheet" href="css/dashboard.css" />
-  <link rel="stylesheet" href="css/tasks.css" />
-  <link rel="stylesheet" href="css/contacts.css" />
+  <link rel="stylesheet" href="css/dashboard.css" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="css/tasks.css" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="css/contacts.css" media="print" onload="this.media='all'" />
+
+  <link rel="modulepreload" href="app.js" />
+  <link rel="modulepreload" href="js/taskList/seed.js" />
+  <link rel="modulepreload" href="js/menu/sideMenu.js" />
+  <link rel="modulepreload" href="js/observer.js" />
+  <link rel="modulepreload" href="js/views/viewController.js" />
+  <link rel="modulepreload" href="js/theme.js" />
+  <link rel="modulepreload" href="js/comps/dialog.js" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preload" as="style"
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-    media="print" onload="this.media='all'" />
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" />
   <noscript>
-    <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/tasks.css" />
+    <link rel="stylesheet" href="css/contacts.css" />
   </noscript>
 
-  <script defer src="js/vendor/html5-qrcode.min.js"></script>
-  <script defer src="js/vendor/qrcode.min.js"></script>
+  <script async src="js/vendor/html5-qrcode.min.js"></script>
+  <script async src="js/vendor/qrcode.min.js"></script>
   <script defer type="module" src="app.js"></script>
 
   <script>
@@ -49,7 +55,22 @@
   <!-- Front-end Toasts -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
-  <div id="app"></div>
+  <div id="app">
+    <div class="initial-loader" aria-busy="true" aria-label="Laddar applikation">
+      <style>
+        .initial-loader {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          font-family: system-ui, sans-serif;
+          color: #3b82f6;
+          font-size: 1.2rem;
+        }
+      </style>
+      Laddar...
+    </div>
+  </div>
 
 
 </body>

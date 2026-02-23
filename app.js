@@ -37,6 +37,7 @@ mainContent.classList.add("center");
 mainContent.setAttribute("id", "main-content");
 
 // Bygg ihop applikationens grundstruktur
+app.innerHTML = "";
 app.append(sideMenuDiv, mainContent);
 
 /**

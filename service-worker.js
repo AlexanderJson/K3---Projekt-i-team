@@ -2,7 +2,7 @@
     LIANER SERVICE WORKER (service-worker.js)
    ========================================================================== */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `lianer-cache-${CACHE_VERSION}`;
 
 // Resurser att cacha vid installation - Baserat på din mappstruktur
