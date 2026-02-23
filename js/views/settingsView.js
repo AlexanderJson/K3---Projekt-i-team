@@ -178,7 +178,20 @@ export function renderSettings(container, rerenderCallback) {
   exportBtn.textContent = "📦 Exportera Backup";
   exportBtn.setAttribute("aria-label", "Exportera hela appens data som JSON-fil");
   exportBtn.onclick = async () => {
-    const backupData = { state: loadState() };
+    const backupData = { state: loadState(), extras: {} };
+    
+    // Gräv fram all annan relaterad data ur localStorage
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith("column_state_") || key.startsWith("column_count_") || key === "taskViewFilter" || key === "ical_events" || key === "widget_order" || key === "widget_visibility")) {
+        try {
+          backupData.extras[key] = JSON.parse(localStorage.getItem(key));
+        } catch {
+          backupData.extras[key] = localStorage.getItem(key);
+        }
+      }
+    }
+
     try {
       await initContactsDB();
       backupData.contacts = await getAllContacts();
@@ -218,6 +231,17 @@ export function renderSettings(container, rerenderCallback) {
         await initContactsDB();
         await clearAllContacts();
         await importContacts(data.contacts);
+      }
+
+      // Restore extra workspace data (widgets, events, columns)
+      if (data.extras && typeof data.extras === 'object') {
+        Object.entries(data.extras).forEach(([key, value]) => {
+          if (typeof value === 'object') {
+            localStorage.setItem(key, JSON.stringify(value));
+          } else {
+            localStorage.setItem(key, value);
+          }
+        });
       }
 
       notify();
