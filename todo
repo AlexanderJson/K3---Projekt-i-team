@@ -1,7 +1,22 @@
-- gå igenom all kod, anteckna förbättringar osvb
-- läs på om bästa sätt att hangtera rendering/omrendering + export/import av moduler
-- skapa data -> repo -> service -> ui
-- appendChild
+
+
+
+- Sortera ut alla state calls
+- implementera service calls istället
+- lägg in bra filtering, indexering
+- lös flytt funktioner med service calls (DOM hämtar kopia från en sorted array istället som innehåller
+  den renderade datan + overflow)
+
+- Skapa eventbuss 
+- Bygg in virtualization listan igen
+- main div = main
+- appendChild vid rerender istället för inner.html
+- hitta minnesleaks (t.ex nodes som skapas osv.)
+- lägg in seed funktionen igen
+
+- lägg in csv och json readers igen 
+
+
 
 
 låg prio:

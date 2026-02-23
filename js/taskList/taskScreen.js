@@ -2,6 +2,8 @@ import { loadState } from "../storage.js";
 import { taskList } from "../taskList/taskList.js";
 import { TASK_STATUSES } from "../status.js";
 
+import { StateStore } from "../data/StateStore.js";
+import { TaskService } from "../service/taskService.js";
 /**
  * @file taskScreen.js
  * @description Hanterar huvudskärmen för uppgifter (Kanban-vyn).
@@ -13,9 +15,19 @@ import { TASK_STATUSES } from "../status.js";
  * @returns {HTMLElement} Det sammansatta elementet för uppgiftsskärmen.
  */
 export const taskScreen = () => {
+
   const state = loadState();
   const people = state.people || []; // Array med strängar (namn)
+
+
+  const taskKey = "state"; // TODO: BYTA TILL TASK
+  const stateStore = new StateStore(taskKey);
+  const service = new TaskService(stateStore);
   
+
+  service.init();
+
+
   // Hämtar senast använda filter eller sätter standard till "Team"
   let currentFilter = localStorage.getItem("taskViewFilter") || "Team";
 

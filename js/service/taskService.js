@@ -1,5 +1,5 @@
 
-export class taskService
+export class TaskService
 {
      constructor(repo)
      {
