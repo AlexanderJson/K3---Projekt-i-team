@@ -323,9 +323,6 @@ export const addTaskDialog = (taskToEdit = null) => {
                                   inputEl.value = beforeWord + m.name + " " + after;
                                   box.style.display = "none";
                                   inputEl.focus();
-                                  
-                                  selectedContact = m;
-                                  updateBadge();
                               };
                               box.append(item);
                           });

@@ -234,7 +234,69 @@ function buildHeader(container) {
   monthLabel.textContent = `${MONTH_NAMES[currentMonth]} ${currentYear}`;
 
   header.append(prevBtn, monthLabel, todayBtn, nextBtn);
-  return header;
+  wrapper.append(header);
+
+  // ── Filter toolbar ──
+  const people = [...new Set(tasks.map(t => t.assigned).filter(Boolean))];
+  const toolbar = buildToolbar(people, container, wrapper);
+  wrapper.append(toolbar);
+
+  // ── Weekday labels ──
+  const weekdayRow = document.createElement("div");
+  weekdayRow.className = "calendar-grid calendar-weekdays";
+  WEEKDAYS.forEach(day => {
+    const cell = document.createElement("div");
+    cell.className = "calendar-weekday-cell";
+    cell.textContent = day;
+    weekdayRow.append(cell);
+  });
+  wrapper.append(weekdayRow);
+
+  // ── Day grid ──
+  const grid = document.createElement("div");
+  grid.className = "calendar-grid";
+
+  const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+  const firstDay = getFirstDayOfWeek(currentYear, currentMonth);
+
+  // Previous month padding
+  const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+  const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+  const daysInPrevMonth = getDaysInMonth(prevYear, prevMonth);
+
+  for (let i = 0; i < firstDay; i++) {
+    const dayNum = daysInPrevMonth - firstDay + 1 + i;
+    const cell = createDayCell(dayNum, [], false, false, null);
+    cell.classList.add("other-month");
+    grid.append(cell);
+  }
+
+  // Current month days
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const dayTasks = getTasksForDate(tasks, dateStr);
+    const isToday = dateStr === todayStr;
+    const cell = createDayCell(day, dayTasks, isToday, true, dateStr);
+    grid.append(cell);
+  }
+
+  // Next month padding (fill to complete the grid row)
+  const totalCells = firstDay + daysInMonth;
+  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let i = 1; i <= remaining; i++) {
+    const cell = createDayCell(i, [], false, false, null);
+    cell.classList.add("other-month");
+    grid.append(cell);
+  }
+
+  wrapper.append(grid);
+  container.append(wrapper);
+
+  // Restore focus if needed (e.g. after filter change)
+  if (restoreFocusId) {
+    const el = document.getElementById(restoreFocusId);
+    if (el) el.focus();
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -242,9 +304,10 @@ function buildHeader(container) {
 // ═══════════════════════════════════════════════════════
 
 /**
- * Bygger toolbar med teamfilter och iCal-knappar.
+ * Bygger toolbar med teamfilter.
  * @param {Array<string>} people
  * @param {HTMLElement} container
+ * @param {HTMLElement} wrapper
  * @returns {HTMLElement}
  */
 function buildToolbar(people, container) {
@@ -633,7 +696,7 @@ function createDayCell(dayNum, tasks, events, isToday, isCurrentMonth, dateStr) 
   }
 
   if (isCurrentMonth) {
-    const openPopup = () => showDayPopup(cell, tasks, events, dateStr, dayNum);
+    const openPopup = () => showDayPopup(cell, tasks, dateStr, dayNum);
     cell.addEventListener("click", openPopup);
     cell.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPopup(); }
@@ -661,10 +724,9 @@ function createDayCell(dayNum, tasks, events, isToday, isCurrentMonth, dateStr) 
 // ═══════════════════════════════════════════════════════
 
 /**
- * Visar popup med dagens alla händelser.
+ * Visar popup med dagens alla uppgifter.
  * @param {HTMLElement} anchorCell
  * @param {Array<Object>} tasks
- * @param {Array<Object>} events
  * @param {string} dateStr
  * @param {number} dayNum
  */
@@ -689,56 +751,37 @@ function showDayPopup(anchorCell, tasks, events, dateStr, dayNum) {
   popupHeader.append(closeBtn);
   popup.append(popupHeader);
 
-  const allItems = [
-    ...tasks.map(t => ({ type: "task", data: t })),
-    ...events.map(e => ({ type: "event", data: e }))
-  ];
-
-  if (allItems.length === 0) {
+  if (tasks.length === 0) {
     const empty = document.createElement("div");
     empty.className = "popup-empty";
-    empty.textContent = "Inga händelser denna dag.";
+    empty.textContent = "Inga uppgifter denna dag.";
     popup.append(empty);
   } else {
     const list = document.createElement("ul");
     list.className = "popup-task-list";
     list.setAttribute("role", "list");
 
-    allItems.forEach(item => {
+    tasks.forEach(task => {
       const li = document.createElement("li");
       li.className = "popup-task-item";
       li.tabIndex = 0;
       li.setAttribute("role", "button");
 
       const dot = document.createElement("span");
+      dot.className = `legend-dot ${statusClass(task.status)}`;
+
       const title = document.createElement("span");
       title.className = "popup-task-title";
+      title.textContent = task.title;
 
-      if (item.type === "task") {
-        dot.className = `legend-dot ${statusClass(item.data.status)}`;
-        title.textContent = item.data.title;
-        li.setAttribute("aria-label", `Redigera: ${item.data.title}`);
-        li.append(dot, title);
+      li.setAttribute("aria-label", `Redigera: ${task.title}`);
+      li.append(dot, title);
 
-        const openEdit = () => { popup.remove(); addTaskDialog(item.data); };
-        li.addEventListener("click", openEdit);
-        li.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEdit(); }
-        });
-      } else {
-        // KLICKBAR extern event → detaljvy
-        dot.className = "legend-dot cal-ical";
-        const timePrefix = item.data.startTime ? `${item.data.startTime} ` : "";
-        title.textContent = `${timePrefix}${item.data.summary}`;
-        li.setAttribute("aria-label", `Visa detaljer: ${item.data.summary}`);
-        li.append(dot, title);
-
-        const showDetail = () => { popup.remove(); showEventDetail(item.data); };
-        li.addEventListener("click", showDetail);
-        li.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showDetail(); }
-        });
-      }
+      const openEdit = () => { popup.remove(); addTaskDialog(task); };
+      li.addEventListener("click", openEdit);
+      li.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEdit(); }
+      });
 
       list.append(li);
     });
