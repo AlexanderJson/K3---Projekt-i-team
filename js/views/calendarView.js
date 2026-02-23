@@ -777,7 +777,7 @@ function showEventDetail(event) {
       ${event.description ? `
       <div class="event-detail-row event-detail-desc">
         <span class="event-detail-label">📋 Beskrivning</span>
-        <p class="event-detail-value">${escapeHtml(event.description).replace(/\\n/g, "<br>")}</p>
+        <p class="event-detail-value">${linkifyHtml(escapeHtml(event.description).replace(/\\n/g, "<br>"))}</p>
       </div>` : ""}
     </div>
     <div class="modalButtons">
@@ -811,4 +811,16 @@ function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str || "";
   return div.innerHTML;
+}
+
+/**
+ * Konverterar råa webbadresser till klickbara HTML-länkar.
+ * @param {string} text - The encoded HTML text.
+ * @returns {string} The HTML string with active <a> tags.
+ */
+function linkifyHtml(text) {
+  const urlRegex = /(https?:\/\/[^\s<]+)/g;
+  return text.replace(urlRegex, (url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-cyan); text-decoration: underline;">${url}</a>`;
+  });
 }

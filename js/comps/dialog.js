@@ -323,9 +323,6 @@ export const addTaskDialog = (taskToEdit = null) => {
                                   inputEl.value = beforeWord + m.name + " " + after;
                                   box.style.display = "none";
                                   inputEl.focus();
-                                  
-                                  selectedContact = m;
-                                  updateBadge();
                               };
                               box.append(item);
                           });
@@ -346,6 +343,35 @@ export const addTaskDialog = (taskToEdit = null) => {
               }
           });
       });
+  });
+
+  // --- Focus Trap ---
+  const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  const getFocusable = () => Array.from(modal.querySelectorAll(focusableSelectors)).filter(el => !el.disabled && el.offsetParent !== null);
+  
+  setTimeout(() => {
+    const els = getFocusable();
+    if (els.length) els[0].focus();
+  }, 50);
+
+  modal.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      const focusable = getFocusable();
+      if (!focusable.length) return;
+      
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    } else if (e.key === 'Escape') {
+      overlay.remove();
+    }
   });
 
   return overlay; 
