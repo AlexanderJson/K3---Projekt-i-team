@@ -250,6 +250,8 @@ function buildHeader(container) {
 function buildToolbar(people, container) {
   const toolbar = document.createElement("div");
   toolbar.className = "calendar-filter-row";
+  toolbar.style.position = "relative";
+  toolbar.style.zIndex = "50";
 
   const filterLabel = document.createElement("label");
   filterLabel.className = "meta-label";
@@ -258,6 +260,7 @@ function buildToolbar(people, container) {
 
   const filterSelect = document.createElement("select");
   filterSelect.id = "cal-team-filter";
+  filterSelect.tabIndex = 0;
   filterSelect.className = "taskFilterSelect calendar-team-filter";
   filterSelect.setAttribute("aria-label", "Filtrera kalender per teammedlem");
 
@@ -457,11 +460,23 @@ function buildAgendaView(tasks, importedEvents, todayStr) {
     // Day header
     const dayHeader = document.createElement("div");
     dayHeader.className = "agenda-day-header";
+    dayHeader.style.cursor = "pointer"; // Make it visibly clickable
+    dayHeader.tabIndex = 0; // Keyboard navigation
+    dayHeader.setAttribute("role", "button");
+    dayHeader.setAttribute("aria-label", `Visa detaljer för ${day} ${MONTH_NAMES[currentMonth]}`);
     dayHeader.innerHTML = `
       <span class="agenda-weekday">${weekdayName}</span>
       <span class="agenda-date">${day} ${MONTH_NAMES[currentMonth]}</span>
       ${isToday ? '<span class="agenda-today-badge">IDAG</span>' : ""}
     `;
+
+    // Click behavior like desktop
+    const openDayInfo = () => showDayPopup(dayHeader, dayTasks, dayEvents, dateStr, day);
+    dayHeader.addEventListener("click", openDayInfo);
+    dayHeader.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDayInfo(); }
+    });
+
     section.append(dayHeader);
 
     // Items
@@ -706,8 +721,29 @@ function showDayPopup(anchorCell, tasks, events, dateStr, dayNum) {
     popup.append(list);
   }
 
-  anchorCell.style.position = "relative";
-  anchorCell.append(popup);
+  // Append to body to avoid overflow: hidden issues on anchorCell
+  document.body.append(popup);
+  
+  // Calculate position relative to the cell
+  const rect = anchorCell.getBoundingClientRect();
+  popup.style.position = "absolute";
+  popup.style.zIndex = "2000";
+  // Default position: slightly below and to the right of the cell top-left corner
+  let top = rect.top + window.scrollY;
+  let left = rect.left + window.scrollX + 20;
+
+  // Ensure it doesn't go off-screen
+  setTimeout(() => {
+    const pRect = popup.getBoundingClientRect();
+    if (left + pRect.width > window.innerWidth) {
+      left = window.innerWidth - pRect.width - 20;
+    }
+    if (top + pRect.height > window.innerHeight + window.scrollY) {
+      top = rect.bottom + window.scrollY - pRect.height; 
+    }
+    popup.style.left = `${left}px`;
+    popup.style.top = `${top}px`;
+  }, 0);
 
   const outsideClick = (e) => {
     if (!popup.contains(e.target) && !anchorCell.contains(e.target)) {
@@ -715,6 +751,7 @@ function showDayPopup(anchorCell, tasks, events, dateStr, dayNum) {
       document.removeEventListener("click", outsideClick);
     }
   };
+  // Small delay so the click that opened it doesn't immediately close it
   setTimeout(() => document.addEventListener("click", outsideClick), 0);
 
   const escHandler = (e) => {
@@ -777,7 +814,7 @@ function showEventDetail(event) {
       ${event.description ? `
       <div class="event-detail-row event-detail-desc">
         <span class="event-detail-label">📋 Beskrivning</span>
-        <p class="event-detail-value">${escapeHtml(event.description).replace(/\\n/g, "<br>")}</p>
+        <p class="event-detail-value">${linkifyHtml(escapeHtml(event.description).replace(/\\n/g, "<br>"))}</p>
       </div>` : ""}
     </div>
     <div class="modalButtons">
@@ -811,4 +848,16 @@ function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str || "";
   return div.innerHTML;
+}
+
+/**
+ * Konverterar råa webbadresser till klickbara HTML-länkar.
+ * @param {string} text - The encoded HTML text.
+ * @returns {string} The HTML string with active <a> tags.
+ */
+function linkifyHtml(text) {
+  const urlRegex = /(https?:\/\/[^\s<]+)/g;
+  return text.replace(urlRegex, (url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-cyan); text-decoration: underline;">${url}</a>`;
+  });
 }

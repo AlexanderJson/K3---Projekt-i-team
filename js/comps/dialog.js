@@ -1,4 +1,4 @@
-/**
+  /**
  * @file dialog.js
  * @description Modal-dialog för att skapa/redigera uppgifter.
  * Inkluderar: titel, beskrivning, deadline, teamtilldelning,
@@ -56,9 +56,9 @@ export const addTaskDialog = (taskToEdit = null) => {
           <label class="modal-label">Vilka i teamet är ansvariga?</label>
           <div class="assignee-selector-grid" role="group" aria-label="Teammedlemmar">
             ${people.map(personName => {
-    const isChecked = selectedAssignees.includes(personName) ? "checked" : "";
-    const displayName = personName === "Ingen" ? "🟢 Ledig uppgift" : personName;
-    return `
+              const isChecked = selectedAssignees.includes(personName) ? "checked" : "";
+              const displayName = personName === "Ingen" ? "🟢 Ledig uppgift" : personName;
+              return `
                 <label class="assignee-chip">
                   <input type="checkbox" value="${personName}" ${isChecked}>
                   <span class="chip-text">${displayName}</span>
@@ -347,20 +347,20 @@ export const addTaskDialog = (taskToEdit = null) => {
                 item.onmouseover = () => { item.style.background = "rgba(34,211,238,0.1)"; };
                 item.onmouseout = () => { item.style.background = "transparent"; };
 
-                item.onclick = () => {
-                  const after = val.slice(cursorPos);
-                  const beforeWord = before.slice(0, -word.length);
-                  inputEl.value = beforeWord + m.name + " " + after;
-                  box.style.display = "none";
-                  inputEl.focus();
-
-                  selectedContact = m;
-                  updateBadge();
-                };
-                box.append(item);
-              });
-              box.style.display = "block";
-            });
+                              item.onclick = () => {
+                                  const after = val.slice(cursorPos);
+                                  const beforeWord = before.slice(0, -word.length);
+                                  inputEl.value = beforeWord + m.name + " " + after;
+                                  box.style.display = "none";
+                                  inputEl.focus();
+                                  
+                                  selectedContact = m;
+                                  updateBadge();
+                              };
+                              box.append(item);
+                          });
+                          box.style.display = "block";
+                      });
 
             const closeHandler = (e) => {
               if (e.target !== inputEl && !box.contains(e.target)) box.style.display = "none";
@@ -376,6 +376,35 @@ export const addTaskDialog = (taskToEdit = null) => {
         }
       });
     });
+  });
+
+  // --- Focus Trap ---
+  const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  const getFocusable = () => Array.from(modal.querySelectorAll(focusableSelectors)).filter(el => !el.disabled && el.offsetParent !== null);
+  
+  setTimeout(() => {
+    const els = getFocusable();
+    if (els.length) els[0].focus();
+  }, 50);
+
+  modal.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      const focusable = getFocusable();
+      if (!focusable.length) return;
+      
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    } else if (e.key === 'Escape') {
+      overlay.remove();
+    }
   });
 
   document.body.append(dialog);

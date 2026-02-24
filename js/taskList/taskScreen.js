@@ -37,6 +37,7 @@ export const taskScreen = () => {
 
   const select = document.createElement("select");
   select.id = "task-filter-select";
+  select.tabIndex = 0;
   select.classList.add("taskFilterSelect");
   select.setAttribute("aria-controls", "task-board");
 
@@ -141,6 +142,10 @@ export const taskScreen = () => {
     const newFilter = e.target.value;
     localStorage.setItem("taskViewFilter", newFilter);
     updateView(newFilter);
+    setTimeout(() => {
+      const el = document.getElementById("task-filter-select");
+      if (el) el.focus();
+    }, 50);
   });
 
   // Initial rendering

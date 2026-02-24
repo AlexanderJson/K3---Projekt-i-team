@@ -19,6 +19,8 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     box-sizing: border-box;
     transition: all 0.3s ease;
+    position: relative;
+    z-index: 50;
 }
 
 /* Anpassa bredden när menyn är kollapsad */
@@ -85,6 +87,11 @@ body.menu-is-collapsed .taskFilterContainer {
 .taskFilterSelect:hover {
     border-color: var(--accent-cyan);
     transform: translateY(-1px);
+}
+
+.taskFilterSelect:focus-visible {
+    outline: 3px solid var(--accent-cyan);
+    outline-offset: 2px;
 }
 
 /* Stilar till de linjer (separatorer) vi lade till */
@@ -697,6 +704,11 @@ body.menu-is-collapsed .taskFilterContainer {
     cursor: pointer;
     box-sizing: border-box;
     white-space: normal; /* Tillåter radbrytning för långa namn */
+}
+
+.assignee-chip:focus-visible .chip-text {
+    outline: 3px solid var(--accent-cyan);
+    outline-offset: 2px;
 }
 
 .assignee-chip input[type="checkbox"]:checked + .chip-text {

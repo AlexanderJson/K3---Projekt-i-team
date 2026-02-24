@@ -921,13 +921,18 @@ dialog.nativeModalDialog {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 12px;
-    min-height: 100px;
+    height: 100px;
     padding: 8px;
     display: flex;
     flex-direction: column;
     gap: 4px;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
     overflow: hidden;
+}
+
+.calendar-day:focus-visible {
+    outline: 3px solid var(--accent-cyan);
+    outline-offset: 2px;
 }
 
 .calendar-day:hover {
@@ -943,7 +948,6 @@ dialog.nativeModalDialog {
 
 .calendar-day.other-month {
     opacity: 0.3;
-    pointer-events: none;
 }
 
 .day-number {
@@ -1506,6 +1510,15 @@ details[open]>.settings-collapsible-summary .collapsible-chevron {
 .notes-text {
     color: var(--text-main);
     line-height: 1.4;
+    word-break: break-all;
+    overflow-wrap: break-word;
+}
+
+/* Ensure long text in specific popup/modal containers wrap properly */
+.popup-task-desc,
+.event-detail-value {
+    word-break: break-all;
+    overflow-wrap: break-word;
 }
 
 .notes-empty {
@@ -1622,8 +1635,7 @@ details[open]>.settings-collapsible-summary .collapsible-chevron {
     textarea,
     select {
         min-height: 44px;
-        font-size: 16px;
-        /* Prevents iOS zoom */
+        font-size: 16px; /* Prevents iOS zoom */
     }
 
     .calendar-filter-row {
@@ -1645,6 +1657,18 @@ details[open]>.settings-collapsible-summary .collapsible-chevron {
         border-radius: 12px 12px 0 0;
         margin: auto 0 0;
     }
+    
+    .modalCard {
+        width: 90%;
+        max-width: 350px;
+        margin: auto; /* Centers it vertically and horizontally in flex container */
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modalButtons {
+        gap: 16px;
+    }
 
     .modal-notes-input-row {
         flex-direction: column;
@@ -1656,6 +1680,19 @@ details[open]>.settings-collapsible-summary .collapsible-chevron {
 
     .dashboard-row {
         flex-direction: column;
+    }
+
+    /* Fixed Settings Mobile View */
+    .settings-wrapper {
+        height: auto;
+        min-height: 100vh;
+        width: 100%;
+        margin: 0;
+        padding: 20px 16px 120px 16px; /* Extra bottom padding for save button, and clear bottom nav */
+        border-radius: 0;
+        box-sizing: border-box;
+        overflow-y: visible;
+        overflow-x: hidden;
     }
 }
 
@@ -1689,6 +1726,17 @@ details[open]>.settings-collapsible-summary .collapsible-chevron {
     padding: 10px 16px;
     background: var(--bg-element);
     border-bottom: 1px solid var(--border);
+    transition: background 0.2s; /* Added transition */
+}
+
+/* Added hover and focus styles for mobile day header clickability */
+.agenda-day-header:hover,
+.agenda-day-header:focus-visible {
+    background: rgba(34, 211, 238, 0.08); /* slight cyan highlight */
+    outline: none;
+}
+.agenda-day-header:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--accent-cyan);
 }
 
 .agenda-weekday {
