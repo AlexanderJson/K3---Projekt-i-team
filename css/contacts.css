@@ -132,6 +132,36 @@
   opacity: 0.85;
 }
 
+/* ===== NEW: MOBILE FILTER TOGGLE ===== */
+.mobile-filter-toggle {
+  display: none; /* Hidden on desktop */
+}
+
+@media (max-width: 768px) {
+  .mobile-filter-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .contacts-actions {
+    display: none; /* Hide by default on mobile */
+    animation: fadeIn 0.2s ease;
+  }
+  
+  .contacts-actions.show-mobile-actions {
+    display: flex; /* Show when toggled */
+  }
+
+  /* Make actions take full width or stack nicely on mobile */
+  .contacts-actions select,
+  .contacts-actions button {
+    flex: 1 1 45%; 
+    min-width: 120px;
+    padding: 8px 10px;
+  }
+}
+
 /* ===== VIRTUAL SCROLL LIST ===== */
 .contacts-list {
   flex: 1;
@@ -253,9 +283,15 @@
     z-index: 100;
     border-radius: 0;
     background: var(--bg-main);
+    padding-bottom: 120px; /* Air above bottom nav for edit buttons */
   }
   .contacts-detail.hidden-mobile {
     display: none;
+  }
+  
+  .detail-qr {
+    align-self: center;
+    margin: 10px auto;
   }
 }
 

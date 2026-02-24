@@ -103,12 +103,14 @@ function createMasterPanel(container, shell) {
     }, 200);
   });
 
-  header.append(title, search);
+  header.append(title);
+  // Search row is appended later
   master.append(header);
 
   // Actions
   const actions = document.createElement("div");
   actions.className = "contacts-actions";
+  actions.id = "contacts-advanced-actions";
 
   const importVcfInput = document.createElement("input");
   importVcfInput.type = "file";
@@ -179,13 +181,18 @@ function createMasterPanel(container, shell) {
   const iconPeople = `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>`;
 
   const updateToggleBtn = () => {
-      btnToggleFav.innerHTML = showingFavorites ? `${iconPeople} Visa alla` : `${iconStar} Visa favoriter`;
+      btnToggleFav.innerHTML = showingFavorites ? `${iconPeople} Alla` : `${iconStar} Favoriter`;
       btnToggleFav.title = showingFavorites ? "Visa alla kontakter" : "Visa endast favoritkontakter";
       btnToggleFav.style.borderColor = showingFavorites ? "var(--accent-yellow, #fbbf24)" : "var(--border)";
       btnToggleFav.style.color = showingFavorites ? "var(--accent-yellow, #fbbf24)" : "var(--text-dim)";
       btnToggleFav.style.display = "flex";
       btnToggleFav.style.alignItems = "center";
+      btnToggleFav.style.justifyContent = "center";
       btnToggleFav.style.gap = "6px";
+      btnToggleFav.style.padding = "10px 14px";
+      btnToggleFav.style.borderRadius = "8px";
+      btnToggleFav.style.background = "var(--bg-element)";
+      btnToggleFav.style.cursor = "pointer";
   };
   updateToggleBtn();
 
@@ -235,8 +242,39 @@ function createMasterPanel(container, shell) {
       refreshList(master, container, shell);
   };
 
-  actions.append(statusFilterSelect, assigneeFilterSelect, importVcfInput, importCsvInput, btnImportVcf, btnImportCsv, btnExport, btnScan, btnAdd, btnToggleFav);
+  actions.append(statusFilterSelect, assigneeFilterSelect, importVcfInput, importCsvInput, btnImportVcf, btnImportCsv, btnExport, btnScan, btnAdd);
   master.append(actions);
+
+  // Prepend search bar modifications (Move search and favorites and mobile filter toggle to a row)
+  const searchRow = document.createElement("div");
+  searchRow.className = "contacts-search-row";
+  searchRow.style.display = "flex";
+  searchRow.style.gap = "8px";
+  searchRow.style.alignItems = "center";
+  searchRow.style.width = "100%";
+
+  // Add the mobile filter toggle button
+  const mobileFilterBtn = document.createElement("button");
+  mobileFilterBtn.className = "mobile-filter-toggle";
+  mobileFilterBtn.innerHTML = `⚙️`;
+  mobileFilterBtn.title = "Avancerade filter / export";
+  mobileFilterBtn.style.padding = "10px 14px";
+  mobileFilterBtn.style.borderRadius = "8px";
+  mobileFilterBtn.style.border = "1px solid var(--border)";
+  mobileFilterBtn.style.background = "var(--bg-element)";
+  mobileFilterBtn.style.color = "var(--text-main)";
+  mobileFilterBtn.style.cursor = "pointer";
+  
+  mobileFilterBtn.onclick = () => {
+    actions.classList.toggle("show-mobile-actions");
+    mobileFilterBtn.classList.toggle("active");
+    mobileFilterBtn.style.borderColor = mobileFilterBtn.classList.contains("active") ? "var(--accent-cyan)" : "var(--border)";
+  };
+
+  // Re-parent elements into searchRow
+  search.style.flex = "1";
+  searchRow.append(search, btnToggleFav, mobileFilterBtn);
+  header.append(searchRow);
 
   // Contact List container
   const list = document.createElement("div");

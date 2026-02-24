@@ -460,11 +460,23 @@ function buildAgendaView(tasks, importedEvents, todayStr) {
     // Day header
     const dayHeader = document.createElement("div");
     dayHeader.className = "agenda-day-header";
+    dayHeader.style.cursor = "pointer"; // Make it visibly clickable
+    dayHeader.tabIndex = 0; // Keyboard navigation
+    dayHeader.setAttribute("role", "button");
+    dayHeader.setAttribute("aria-label", `Visa detaljer för ${day} ${MONTH_NAMES[currentMonth]}`);
     dayHeader.innerHTML = `
       <span class="agenda-weekday">${weekdayName}</span>
       <span class="agenda-date">${day} ${MONTH_NAMES[currentMonth]}</span>
       ${isToday ? '<span class="agenda-today-badge">IDAG</span>' : ""}
     `;
+
+    // Click behavior like desktop
+    const openDayInfo = () => showDayPopup(dayHeader, dayTasks, dayEvents, dateStr, day);
+    dayHeader.addEventListener("click", openDayInfo);
+    dayHeader.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDayInfo(); }
+    });
+
     section.append(dayHeader);
 
     // Items
