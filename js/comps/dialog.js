@@ -1,10 +1,10 @@
-  /**
- * @file dialog.js
- * @description Modal-dialog för att skapa/redigera uppgifter.
- * Inkluderar: titel, beskrivning, deadline, teamtilldelning,
- * kontakt-autocomplete, och tidsstämplad noteringslogg.
- * WCAG 2.1 AA: role="dialog", aria-modal, :focus-visible, JSDoc.
- */
+/**
+* @file dialog.js
+* @description Modal-dialog för att skapa/redigera uppgifter.
+* Inkluderar: titel, beskrivning, deadline, teamtilldelning,
+* kontakt-autocomplete, och tidsstämplad noteringslogg.
+* WCAG 2.1 AA: role="dialog", aria-modal, :focus-visible, JSDoc.
+*/
 import { addState, loadState, saveState } from "../storage.js";
 import { TASK_STATUSES } from "../status.js";
 import { getPeople } from "../people/peopleService.js";
@@ -56,9 +56,9 @@ export const addTaskDialog = (taskToEdit = null) => {
           <label class="modal-label">Vilka i teamet är ansvariga?</label>
           <div class="assignee-selector-grid" role="group" aria-label="Teammedlemmar">
             ${people.map(personName => {
-              const isChecked = selectedAssignees.includes(personName) ? "checked" : "";
-              const displayName = personName === "Ingen" ? "🟢 Ledig uppgift" : personName;
-              return `
+    const isChecked = selectedAssignees.includes(personName) ? "checked" : "";
+    const displayName = personName === "Ingen" ? "🟢 Ledig uppgift" : personName;
+    return `
                 <label class="assignee-chip">
                   <input type="checkbox" value="${personName}" ${isChecked}>
                   <span class="chip-text">${displayName}</span>
@@ -347,20 +347,20 @@ export const addTaskDialog = (taskToEdit = null) => {
                 item.onmouseover = () => { item.style.background = "rgba(34,211,238,0.1)"; };
                 item.onmouseout = () => { item.style.background = "transparent"; };
 
-                              item.onclick = () => {
-                                  const after = val.slice(cursorPos);
-                                  const beforeWord = before.slice(0, -word.length);
-                                  inputEl.value = beforeWord + m.name + " " + after;
-                                  box.style.display = "none";
-                                  inputEl.focus();
-                                  
-                                  selectedContact = m;
-                                  updateBadge();
-                              };
-                              box.append(item);
-                          });
-                          box.style.display = "block";
-                      });
+                item.onclick = () => {
+                  const after = val.slice(cursorPos);
+                  const beforeWord = before.slice(0, -word.length);
+                  inputEl.value = beforeWord + m.name + " " + after;
+                  box.style.display = "none";
+                  inputEl.focus();
+
+                  selectedContact = m;
+                  updateBadge();
+                };
+                box.append(item);
+              });
+              box.style.display = "block";
+            });
 
             const closeHandler = (e) => {
               if (e.target !== inputEl && !box.contains(e.target)) box.style.display = "none";
@@ -381,7 +381,7 @@ export const addTaskDialog = (taskToEdit = null) => {
   // --- Focus Trap ---
   const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
   const getFocusable = () => Array.from(dialog.querySelectorAll(focusableSelectors)).filter(el => !el.disabled && el.offsetParent !== null);
-  
+
   setTimeout(() => {
     const els = getFocusable();
     if (els.length) els[0].focus();
@@ -391,7 +391,7 @@ export const addTaskDialog = (taskToEdit = null) => {
     if (e.key === 'Tab') {
       const focusable = getFocusable();
       if (!focusable.length) return;
-      
+
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
 
@@ -423,3 +423,92 @@ function escapeHtml(str) {
   div.textContent = str;
   return div.innerHTML;
 }
+
+/**
+ * Custom confirmation dialog instead of window.confirm
+ * @param {string} message - Message to ask the user
+ * @returns {Promise<boolean>} Resolves true if confirmed, false otherwise
+ */
+export const showConfirmDialog = (message) => {
+  return new Promise((resolve) => {
+    const dialog = document.createElement("dialog");
+    dialog.className = "nativeModalDialog modalCard modalCard-expanded";
+    dialog.innerHTML = `
+      <h2 style="font-size: 1.25rem; margin-bottom: 16px;">Bekräfta</h2>
+      <div class="modal-body" style="margin-bottom: 24px;">
+        <p style="color: var(--text-dim);">${escapeHtml(message)}</p>
+      </div>
+      <div class="modalButtons">
+        <button id="cancelConfirm" class="cancelBtn">Avbryt</button>
+        <button id="okConfirm" class="confirmBtn" style="background: var(--accent-crimson); color: white;">Ja, radera</button>
+      </div>
+    `;
+
+    document.body.append(dialog);
+    dialog.showModal();
+
+    const closeDialog = (result) => {
+      dialog.close();
+      dialog.remove();
+      resolve(result);
+    };
+
+    dialog.querySelector("#cancelConfirm").onclick = () => closeDialog(false);
+    dialog.querySelector("#okConfirm").onclick = () => closeDialog(true);
+
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) closeDialog(false);
+    });
+  });
+};
+
+/**
+ * Custom prompt dialog instead of window.prompt
+ * @param {string} message - Message to ask the user
+ * @returns {Promise<string|null>} Resolves with the string if submitted, null if cancelled
+ */
+export const showPromptDialog = (message) => {
+  return new Promise((resolve) => {
+    const dialog = document.createElement("dialog");
+    dialog.className = "nativeModalDialog modalCard modalCard-expanded";
+    dialog.innerHTML = `
+      <h2 style="font-size: 1.25rem; margin-bottom: 16px;">Vänligen ange</h2>
+      <div class="modal-body" style="margin-bottom: 24px;">
+        <label for="promptInput" style="display: block; margin-bottom: 8px; color: var(--text-dim);">${escapeHtml(message)}</label>
+        <input type="text" id="promptInput" class="modalInput" style="width: 100%; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main);" />
+      </div>
+      <div class="modalButtons">
+        <button id="cancelPrompt" class="cancelBtn">Avbryt</button>
+        <button id="okPrompt" class="confirmBtn">Bekräfta</button>
+      </div>
+    `;
+
+    document.body.append(dialog);
+    dialog.showModal();
+
+    const input = dialog.querySelector("#promptInput");
+    input.focus();
+
+    const closeDialog = (result) => {
+      dialog.close();
+      dialog.remove();
+      resolve(result);
+    };
+
+    dialog.querySelector("#cancelPrompt").onclick = () => closeDialog(null);
+    dialog.querySelector("#okPrompt").onclick = () => closeDialog(input.value);
+
+    dialog.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        closeDialog(input.value);
+      } else if (e.key === "Escape") {
+        closeDialog(null);
+      }
+    });
+
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) closeDialog(null);
+    });
+  });
+};

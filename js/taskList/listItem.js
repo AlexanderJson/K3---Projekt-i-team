@@ -1,7 +1,7 @@
 import { updateTaskStatus } from "./updateTaskStatus.js";
 import { TASK_STATUSES } from "../status.js";
 import { removeById, loadState, saveState } from "../storage.js";
-import { addTaskDialog } from "../comps/dialog.js";
+import { addTaskDialog, showConfirmDialog, showPromptDialog } from "../comps/dialog.js";
 import { setView } from "../views/viewController.js";
 
 const formatDate = (dateStr) => {
@@ -71,27 +71,9 @@ export const listItem = (task) => {
   const isTodo = task.status === TASK_STATUSES.TODO;
 
   const div = document.createElement("div");
-  div.className = `listItem ${isClosed ? "is-closed" : ""} is-expandable`;
-
-  const toggleExpand = () => {
-    const expanded = div.classList.toggle('is-expanded');
-    expandBtn.setAttribute("aria-expanded", String(expanded));
-  };
-
-  div.onclick = (e) => {
-    if (e.target.closest('.taskControls') || e.target.closest('.task-contact-explicit') || e.target.closest('.assignee-avatars-list')) return;
-    toggleExpand();
-  };
-
-  const expandBtn = document.createElement("button");
-  expandBtn.className = "sr-only expand-toggle-btn";
-  expandBtn.textContent = "Expandera/kollapsa uppgift";
-  expandBtn.setAttribute("aria-expanded", "false");
-  expandBtn.onclick = (e) => {
-    e.stopPropagation();
-    toggleExpand();
-  };
-  div.append(expandBtn);
+  div.className = `listItem ${isClosed ? "is-closed" : ""}`;
+  div.setAttribute("role", "listitem");
+  div.setAttribute("tabindex", "0");
 
   const headerRow = document.createElement("div");
   headerRow.className = "card-header-row";
@@ -99,14 +81,14 @@ export const listItem = (task) => {
   const dateRow = document.createElement("div");
   dateRow.className = "date-row";
   dateRow.innerHTML = `
-    <div class="meta-item"><span class="meta-label">SKAPAD</span><span class="meta-value">${formatDate(task.createdAt)}</span></div>
+    <div class="meta-item" aria-label="Skapad: ${formatDate(task.createdAt)}"><span class="meta-label" aria-hidden="true">SKAPAD</span><span class="meta-value" aria-hidden="true">${formatDate(task.createdAt)}</span></div>
   `;
 
   if (task.deadline) {
     const isOverdue = new Date(task.deadline) < new Date() && !isDone && !isClosed;
     dateRow.innerHTML += `
-      <div class="meta-item ${isOverdue ? "deadline-overdue" : ""}">
-        <span class="meta-label">DEADLINE</span><span class="meta-value">${formatDate(task.deadline)}</span>
+      <div class="meta-item ${isOverdue ? "deadline-overdue" : ""}" aria-label="Deadline: ${formatDate(task.deadline)}">
+        <span class="meta-label" aria-hidden="true">DEADLINE</span><span class="meta-value" aria-hidden="true">${formatDate(task.deadline)}</span>
       </div>
     `;
   }
@@ -167,8 +149,9 @@ export const listItem = (task) => {
 
   footer.append(avatars);
 
-  const controls = document.createElement("div");
-  controls.className = "taskControls dynamic-grid";
+  const controls = document.createElement("nav");
+  controls.className = "taskControls command-bar";
+  controls.setAttribute("aria-label", "Uppgiftskontroller");
 
   const addBtn = (icon, label, action, className = "") => {
     const btn = document.createElement("button");
@@ -196,11 +179,12 @@ export const listItem = (task) => {
     addBtn('<span class="material-symbols-rounded">edit</span>', "Redigera", openEditDialog, "edit-btn");
   }
 
-  addBtn("✕", "Ta bort", () => {
+  addBtn("✕", "Ta bort", async () => {
     if (isClosed) {
-      if (confirm("Radera permanent?")) removeById(task.id);
+      const confirmed = await showConfirmDialog("Radera permanent?");
+      if (confirmed) removeById(task.id);
     } else {
-      const reason = prompt("Anledning till stängning:");
+      const reason = await showPromptDialog("Anledning till stängning:");
       if (reason?.trim()) updateTaskStatus(task.id, TASK_STATUSES.CLOSED, reason.trim());
     }
   }, "delete-btn");
