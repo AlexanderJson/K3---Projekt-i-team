@@ -107,3 +107,74 @@ if ("serviceWorker" in navigator) {
     }
   });
 }
+
+/**
+ * Hantera PWA Installation (US-2.4)
+ */
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Förhindra att webbläsaren visar sin standardprompt
+  e.preventDefault();
+  // Spara eventet så att det kan triggas senare via en egen knapp.
+  window.deferredPrompt = e;
+  deferredPrompt = e;
+
+  // Visa endast om användaren inte redan har klickat "Senare"
+  if (localStorage.getItem('pwa-prompt-dismissed') === 'true') {
+    return;
+  }
+
+  // Skapa en installationsbanner om den inte redan finns
+  if (!document.getElementById('pwa-install-banner')) {
+    const banner = document.createElement('div');
+    banner.id = 'pwa-install-banner';
+    // Inline styling för bannern
+    banner.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--bg-card, #fff); color: var(--text-main, #333); box-shadow: 0 -4px 15px rgba(0,0,0,0.15); position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; border-top: 1px solid var(--border, #eee); animation: slideUp 0.3s ease-out;">
+        <style>
+          @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        </style>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <strong style="font-size: 15px;">Installera appen</strong>
+          <span style="font-size: 13px; color: var(--text-dim, #666);">Få åtkomst från hemskärmen och offline-stöd</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button id="pwa-install-dismiss" style="background: none; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; color: var(--text-dim, #666); font-weight: 500; font-family: inherit;">Senare</button>
+          <button id="pwa-install-btn" style="background: var(--accent-cyan, #0ea5e9); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: inherit; box-shadow: 0 2px 4px rgba(14, 165, 233, 0.3);">Installera</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(banner);
+
+    document.getElementById('pwa-install-btn').addEventListener('click', async () => {
+      // Göm bannern
+      banner.style.display = 'none';
+      // Visa webbläsarens installationsprompt
+      deferredPrompt.prompt();
+      // Vänta på användarens val
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`Lianer: Användaren valde att ${outcome === 'accepted' ? 'installera' : 'avvisa'} PWA.`);
+      deferredPrompt = null;
+      window.deferredPrompt = null;
+    });
+
+    document.getElementById('pwa-install-dismiss').addEventListener('click', () => {
+      // Spara i LocalStorage att användaren avvisat prompten
+      localStorage.setItem('pwa-prompt-dismissed', 'true');
+      // Göm bannern om användaren klickar "Senare"
+      banner.style.display = 'none';
+    });
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  // Rensa deferredPrompt och göm eventuell banner
+  deferredPrompt = null;
+  window.deferredPrompt = null;
+  console.log('Lianer: PWA installerades framgångsrikt');
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) {
+    banner.style.display = 'none';
+  }
+});

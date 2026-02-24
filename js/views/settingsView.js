@@ -303,7 +303,24 @@ export function renderSettings(container, rerenderCallback) {
     }
   };
 
-  notisRow.append(enableNotisBtn, testNotisBtn);
+  const installPwaBtn = document.createElement("button");
+  installPwaBtn.className = "settings-btn btn-load-demo";
+  installPwaBtn.textContent = "💻 Installera som App";
+  installPwaBtn.setAttribute("aria-label", "Installera appen via webbläsaren");
+  installPwaBtn.onclick = async () => {
+    if (window.deferredPrompt) {
+      window.deferredPrompt.prompt();
+      const { outcome } = await window.deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        window.deferredPrompt = null;
+        localStorage.removeItem('pwa-prompt-dismissed');
+      }
+    } else {
+      showToast("Info", "Appen är antingen redan installerad eller stöds ej av denna webbläsare.");
+    }
+  };
+
+  notisRow.append(enableNotisBtn, testNotisBtn, installPwaBtn);
   actionsContent.append(notisRow);
 
   // --- Rensa-knapp ---
