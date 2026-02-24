@@ -5,10 +5,11 @@ export class TaskService
      {
         this.repo = repo;
         this.tasks = new Map();
-        this.rev = new Set();
+        this.dirtyIds = new Set();
         this.changed = new Map();
         
      }
+
 
 
      /*
@@ -64,6 +65,14 @@ export class TaskService
             .filter(t=>t[k] === v);
      }
 
+
+
+    init()
+    {
+        this._load();
+    }
+
+
      getTasks()
      {
         return Array.from(this.tasks.values());
@@ -83,79 +92,109 @@ export class TaskService
      }
 
 
+    /*
+        Adds new task. 
+        Branches: 
+        1) if null should return error (todo); 
+        2) if it exists  should return error(todo);
+        3) if else should: 
+        * generate unique ID (we use our own format on all for now)
+        * add to batchSaved(map) and dirtIds(id)
+        * return task by id - more expensive, but safe way to make sure the task got added
+    */
     addTask(task)
     {
         if (!task) return null;
 
         // We check if the task exists
-        if(task.id != null && this._exists(task.id))
+        if(this._exists(task.id))
         {
-            return this.updateTask(task);;
+            return null; //Could update but it mixes too many concepts and makes it harder to communicate errors with the user
         } 
 
         // Otherwise we generate a new ID based on our formatting
         task.id = this._generateId(); // and yes, this should overwrite intentionally
         this.tasks.set(task.id, task);
+        this.dirtyIds.set(id);
         this._save();
         return this.getTaskById(task.id);
     }
 
+    /*
+        Returns full task by ID
+    */
     getTaskById(id)
     {
         const t =  this.tasks.get(id);
         console.log(`Fetched task ${t.id}: ${t.title}`);
         return t;
     }
+    
 
-
-    cacheTask(task)
-    {
-        task.id = this._generateId();
-        this.patched.set(task.id, task);
-        this.rev.add(task.id);
-        this.cacheChanges
-    }
-
-    cacheChanges(id)
-    {
-        const threshold = 10; // tillfällig
-        if(this.rev.size > threshold)
-            {
-                this.batchSave(); // signallerar att spara senaste batch och rensa
-                this.rev.clear();
-            }; 
-        this.rev.set(id);
-    }
-
-
-    fetchCachedChanges()
-    {
-        const ids = this.rev.values();
-        return ids.map(id => this.getTaskById(id)|| null);
-
-    }
-
-    // laga sen
-    batchSave()
-    {
-        const array = Array.from(this.rev.values());
-        this.repo.save(array);
-    }
-
-    init()
-    {
-        this._load();
-    }
-
-     // Filters
+     /*
+        Just default filtering if needed. 
+        returns by status.
+     */
 
      byStatus(status)
      {
         return this._filter("status",status);
      }
 
+     /*
+      Returns by assigned
+    */
+
      byAssigned(assigned)
      {
         return this._filter("assigned",assigned);
      }
+
+
+    /*
+        This adds an ID to the dirtyIds set. 
+        The idea is to keep track of currently changed items
+        so we only update them while rerendering in list.
+        I put a threshold of max 20 ids before flushing it.
+    */
+
+    markDirty(id)
+    {        
+        if(id== null) return;
+
+        const maxBatchSize = 20;
+        if(this.dirtyIds.size >= maxBatchSize) this.consumeDirtyIds();
+        this.dirtyIds.add(id);
+    }
+
+    /*
+        This consumes the ids aka clears it and returns the ids.
+    */
+
+    consumeDirtyIds()
+    {
+        const ids = Array.from(this.dirtyIds);
+        this.dirtyIds.clear();
+        console.log("Consumed dirtyIds:", ids);
+        return ids;
+    }
+
+
+    consumeChangedTasks()
+    {
+        const changedTasks = Array.from(this.changed.values());
+        this.changed.clear();
+        
+        return changedTasks;
+    }
+
+
+    fetchCachedChanges()
+    {
+        const ids = this.dirtyIds.values();
+        return ids.map(id => this.getTaskById(id)|| null);
+
+    }
+
+
 }
