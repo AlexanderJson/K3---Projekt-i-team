@@ -69,6 +69,15 @@ const techPeople = [
 
   }
 
+
+  export const serviceSeedTest = (service) =>
+  {    
+    if (service.getTasks().length > 0) return;
+    const task = createTask({id:"-",  title:"Konfigurera CI/CD-pipeline",         description:"GitHub Actions: build, lint, deploy till staging vid push till main.",   status:TASK_STATUSES.TODO,        assignedTo:["Ali Hassan","Lukas Karlsson"], assigned:"Ali Hassan",       createdAt:daysAgo(28), deadline:dl(7) });
+    service.addTask(task);
+    console.log("task created");
+  }
+
   export const seedStressTasks = (count = 10_000) => 
   {
     const state = loadState();

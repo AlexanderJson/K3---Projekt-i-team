@@ -1,4 +1,5 @@
 import { loadState } from "../storage.js";
+import { serviceSeedTest } from "../taskList/seed.js";
 
 const FAVORITES_KEY = "dashboard:favorites";
 
@@ -60,15 +61,42 @@ function createStatusGroup({ label, count, color, cssClass, percent, items }) {
   return group;
 }
 
-export async function renderDashboard(container) {
+export async function renderDashboard(container, service) {
   container.innerHTML = "";
 
   const wrapper = document.createElement("div");
   wrapper.className = "dashboard";
 
+
+  const serviceAddBtn = document.createElement("button");
+  const serviceFetchBtn = document.createElement("button");
+  const servicefetchId = document.createElement("button");
+
+  serviceAddBtn.innerText = "Add";
+  serviceFetchBtn.innerText = "Fetch";
+  servicefetchId.innerText = "fetch ID";
+
+  serviceAddBtn.onclick = () => {
+    serviceSeedTest(service);
+  }
+
+  serviceFetchBtn.onclick = () => {
+    const tasks = service.getTasks();
+    for (const t in tasks) {      
+      const element = tasks[t];
+      console.log(element);
+    }
+  }
+
+  servicefetchId.onclick = () => {
+    const task = service.getTaskById("1");
+    console.log(task);
+    
+  }
+
   const title = document.createElement("h2");
   title.textContent = "Dashboard";
-  wrapper.append(title);
+  wrapper.append(title, serviceAddBtn, serviceFetchBtn,servicefetchId);
 
   // ---------- KONTROLLER ----------
   renderControls(wrapper, container);

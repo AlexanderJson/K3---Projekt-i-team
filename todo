@@ -7,10 +7,10 @@
 - lös flytt funktioner med service calls (DOM hämtar kopia från en sorted array istället som innehåller
   den renderade datan + overflow)
 
-- Skapa eventbuss 
+- Skapa eventbuss  (även notify(ish) fukntion i service)
 - Bygg in virtualization listan igen
 - main div = main
-- appendChild vid rerender istället för inner.html
+- appendChild vid rerender istället för inner.html (FINNS BLA VID ALLA RENDER_)
 - hitta minnesleaks (t.ex nodes som skapas osv.)
 - lägg in seed funktionen igen
 

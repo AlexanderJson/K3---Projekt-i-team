@@ -5,7 +5,6 @@
  * kontakt-autocomplete, och tidsstämplad noteringslogg.
  * WCAG 2.1 AA: role="dialog", aria-modal, :focus-visible, JSDoc.
  */
-import { addState, loadState, saveState } from "../storage.js";
 import { TASK_STATUSES } from "../status.js";
 import { getPeople } from "../people/peopleService.js";
 
@@ -14,7 +13,7 @@ import { getPeople } from "../people/peopleService.js";
  * @param {Object|null} taskToEdit - Befintlig uppgift att redigera, eller null för ny.
  * @returns {HTMLElement} Overlay-elementet.
  */
-export const addTaskDialog = (taskToEdit = null) => {
+export const addTaskDialog = (taskService, taskToEdit = null) => {
   const overlay = document.createElement("div");
   overlay.className = "modalOverlay"; 
   overlay.setAttribute("role", "presentation");
@@ -204,52 +203,51 @@ export const addTaskDialog = (taskToEdit = null) => {
     if (!title) return alert("Titeln får inte vara tom!");
 
     if (isEdit) {
-      const state = loadState();
-      const index = state.tasks.findIndex(t => String(t.id) === String(taskToEdit.id));
-      
-      if (index !== -1) {
-        const oldStatus = state.tasks[index].status;
-        state.tasks[index] = {
-          ...taskToEdit,
-          title,
-          description,
-          assigned: primaryAssignee, 
-          assignedTo, 
-          deadline,
-          notes: taskToEdit.notes || [],
-          contactId: selectedContact ? selectedContact.id : null,
-          contactName: selectedContact ? selectedContact.name : null
-        };
+      const oldStatus = taskToEdit.status;
 
-        // Log status change as note
-        if (oldStatus !== state.tasks[index].status) {
-          if (!state.tasks[index].notes) state.tasks[index].notes = [];
-          state.tasks[index].notes.push({
-            text: `Status ändrad: ${oldStatus} → ${state.tasks[index].status}`,
+
+      const updatedTask = 
+      {
+        ...taskToEdit,
+        title,
+        description,
+        assigned: primaryAssignee,
+        assignedTo,
+        deadline,
+        notes:taskToEdit.notes || [],
+        contactId: selectedContact ? selectedContact.id : null,
+        contactName: selectedContact ? selectedContact.name : null
+      };
+
+      if(oldStatus !== updatedTask.status)
+      {
+        if(!updatedTask.notes) updatedTask.notes = []; //ifall tom
+        updatedTask.notes.push(
+          {            
+            text: `Status ändrad: ${oldStatus} → ${updatedTask.status}`,
             date: new Date().toISOString(),
             type: "status"
-          });
-        }
-
-        saveState(state);
-      }
+          }
+        )
+      };
+      taskService.updateTask(updatedTask);
     } else {
       const newTask = {
-        id: Date.now(),
+        id: "", // Auto sätter värden i service
         title,
         description,
         deadline,
-        createdAt: new Date().toISOString(), 
+        createdAt: new Date().toISOString(),
         status: TASK_STATUSES.TODO,
-        assigned: primaryAssignee, 
-        assignedTo, 
+        assigned: primaryAssignee,
+        assignedTo,
         contactId: selectedContact ? selectedContact.id : null,
         contactName: selectedContact ? selectedContact.name : null,
         completed: false,
         comment: "",
         notes: []
       };
-      addState(newTask);
+      taskService.addTask(newTask);
     }
 
     overlay.remove();
