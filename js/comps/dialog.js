@@ -380,14 +380,14 @@ export const addTaskDialog = (taskToEdit = null) => {
 
   // --- Focus Trap ---
   const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-  const getFocusable = () => Array.from(modal.querySelectorAll(focusableSelectors)).filter(el => !el.disabled && el.offsetParent !== null);
+  const getFocusable = () => Array.from(dialog.querySelectorAll(focusableSelectors)).filter(el => !el.disabled && el.offsetParent !== null);
   
   setTimeout(() => {
     const els = getFocusable();
     if (els.length) els[0].focus();
   }, 50);
 
-  modal.addEventListener('keydown', (e) => {
+  dialog.addEventListener('keydown', (e) => {
     if (e.key === 'Tab') {
       const focusable = getFocusable();
       if (!focusable.length) return;
@@ -403,7 +403,8 @@ export const addTaskDialog = (taskToEdit = null) => {
         first.focus();
       }
     } else if (e.key === 'Escape') {
-      overlay.remove();
+      dialog.close();
+      dialog.remove();
     }
   });
 

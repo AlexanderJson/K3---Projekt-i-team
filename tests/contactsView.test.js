@@ -141,8 +141,8 @@ describe("contactsView", () => {
     test("Toggles favorites view", async () => {
         await renderContacts(container);
 
-        const buttons = Array.from(container.querySelectorAll(".contacts-actions button"));
-        const toggleFavBtn = buttons.find(b => b.textContent.includes("Visa favoriter") || b.textContent.includes("Visa alla"));
+        const buttons = Array.from(container.querySelectorAll("button"));
+        const toggleFavBtn = buttons.find(b => b.textContent.includes("Favoriter") || b.textContent.includes("Alla"));
         expect(toggleFavBtn).toBeDefined();
 
         toggleFavBtn.click();

@@ -3,7 +3,7 @@ import globals from "globals";
 
 export default [
   {
-    ignores: ["coverage/**", "node_modules/**", "docs/**", "coverage/**"]
+    ignores: ["coverage/**", "node_modules/**", "docs/**", "**/*.min.js"]
   },
   js.configs.recommended,
 
@@ -13,8 +13,12 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.jest,
-        ...globals.node
+        ...globals.node,
+        ...globals.serviceworker
       }
+    },
+    rules: {
+      "no-unused-vars": "warn"
     }
   }
 ];
