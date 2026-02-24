@@ -7,6 +7,8 @@ node_modules/
 coverage/
 *-out*.json
 *output.json
+eslint_*.json
+eslint_*.txt
 err.json
 dom-*.json
 *.txt
