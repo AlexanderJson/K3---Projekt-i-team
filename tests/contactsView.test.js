@@ -269,4 +269,122 @@ describe("contactsView", () => {
 
         expect(updateContact).toHaveBeenCalled();
     });
+
+    test("Renders CSV Import Modal and handles import", async () => {
+        await renderContacts(container);
+        const importCsvInput = container.querySelector("input[accept='.csv']");
+
+        // Mock a file selection
+        const file = new File(["Namn,Telefon\nJohn Doe,123456"], "test.csv", { type: "text/csv" });
+        file.text = jest.fn().mockResolvedValue("Namn,Telefon\nJohn Doe,123456");
+        Object.defineProperty(importCsvInput, 'files', { value: [file] });
+
+        // Mock FileReader
+        const mockFileReader = {
+            readAsText: jest.fn(),
+            onload: null,
+            result: "Namn,Telefon\nJohn Doe,123456"
+        };
+        window.FileReader = jest.fn(() => mockFileReader);
+
+        fireEvent.change(importCsvInput);
+
+        // Trigger onload
+        if (mockFileReader.onload) mockFileReader.onload({ target: { result: mockFileReader.result } });
+        await flushPromises();
+
+        const overlay = document.body.querySelector(".csv-modal-overlay");
+        expect(overlay).not.toBeNull();
+        expect(overlay.innerHTML).toContain("CSV Import");
+
+        // Find import button
+        const buttons = overlay.querySelectorAll("button");
+        const importBtn = Array.from(buttons).find(b => b.textContent.includes("Importera"));
+
+        importContacts.mockResolvedValue();
+        importBtn.click();
+        await flushPromises();
+
+        expect(importContacts).toHaveBeenCalled();
+        expect(document.body.querySelector(".csv-modal-overlay")).toBeNull();
+    });
+
+    test("Renders Social Links in Info Tab", async () => {
+        getAllContacts.mockResolvedValue([
+            { id: "1", name: "Social Contact", social: { linkedin: "http://linkedin", website: "http://website" } }
+        ]);
+        await renderContacts(container, { highlightId: "1" });
+        await flushPromises();
+
+        const detailPanel = container.querySelector(".contacts-detail");
+        const socialLinks = detailPanel.querySelectorAll(".social-btn");
+        expect(socialLinks.length).toBe(2);
+        expect(socialLinks[0].href).toContain("linkedin");
+    });
+
+    test("Renders Timeline in CRM Tab", async () => {
+        getAllContacts.mockResolvedValue([
+            { id: "1", name: "Timeline Contact", interactionLog: [{ date: "2026-01-01T12:00:00.000Z", content: "Met for coffee", type: "note" }] }
+        ]);
+        await renderContacts(container, { highlightId: "1" });
+        await flushPromises();
+
+        const detailPanel = container.querySelector(".contacts-detail");
+        const tabs = detailPanel.querySelectorAll(".detail-tab-btn");
+        tabs[1].click(); // Go to CRM tab
+
+        const timeline = detailPanel.querySelector(".crm-timeline");
+        expect(timeline).not.toBeNull();
+        expect(timeline.innerHTML).toContain("Met for coffee");
+    });
+
+    test("Pre-fills data in Edit Contact Modal", async () => {
+        getAllContacts.mockResolvedValue([
+            { id: "1", name: "Edit Me", role: "Developer", phone: ["111"], email: ["edit@mem.com"] }
+        ]);
+        await renderContacts(container, { highlightId: "1" });
+        await flushPromises();
+
+        const detailPanel = container.querySelector(".contacts-detail");
+        const buttons = detailPanel.querySelectorAll("button");
+        const editBtn = Array.from(buttons).find(b => b.textContent.includes("Redigera"));
+        editBtn.click();
+
+        const overlay = document.body.querySelector(".csv-modal-overlay");
+        expect(overlay).not.toBeNull();
+
+        const nameInput = overlay.querySelector("input[type='text']");
+        expect(nameInput.value).toBe("Edit Me");
+
+        // Cleanup
+        overlay.remove();
+    });
+
+    test("Toggles Mobile View classes", async () => {
+        // Change window.innerWidth to mobile size
+        global.innerWidth = 500;
+        global.dispatchEvent(new Event('resize'));
+
+        await renderContacts(container);
+        const items = container.querySelectorAll(".contact-item");
+
+        items[0].click();
+        await flushPromises();
+
+        const master = container.querySelector(".contacts-master");
+        const detail = container.querySelector(".contacts-detail");
+
+        expect(master.classList.contains("hidden-mobile")).toBe(true);
+        expect(detail.classList.contains("hidden-mobile")).toBe(false);
+
+        // Go back
+        const backBtn = detail.querySelector(".detail-back-btn");
+        backBtn.click();
+
+        expect(master.classList.contains("hidden-mobile")).toBe(false);
+        expect(detail.classList.contains("hidden-mobile")).toBe(true);
+
+        // Reset window size for subsequent tests
+        global.innerWidth = 1024;
+    });
 });
