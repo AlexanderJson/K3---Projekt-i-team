@@ -1,4 +1,4 @@
-import { listItem } from "./listItem.js";
+import { listItem } from "../card/listItem.js";
 
 /**
  * @file taskList.js
