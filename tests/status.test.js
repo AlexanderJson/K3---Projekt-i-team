@@ -14,7 +14,7 @@ import { loadState, saveState } from "../js/storage.js";
 
 
 let store = {};
-global.localStorage = 
+global.localStorage =
 {
   getItem: (key) => store[key] || null,
   setItem: (key, value) => {
@@ -66,31 +66,62 @@ describe("Task status validation", () => {
 
 
 
-  describe("updateTaskStatus", () =>
-  {
-    test("should updates status of task", () => 
-    {
-      updateTaskStatus(1,TASK_STATUSES.IN_PROGRESS);
+  describe("updateTaskStatus", () => {
+    test("should updates status of task", () => {
+      updateTaskStatus(1, TASK_STATUSES.IN_PROGRESS);
       const state = loadState();
       expect(state.tasks[0].status)
-      .toBe(TASK_STATUSES.IN_PROGRESS);
+        .toBe(TASK_STATUSES.IN_PROGRESS);
       expect(state.tasks[0].completed).toBe(false);
     });
 
     test("marks task as completed when DONE", () => {
-    updateTaskStatus(1, TASK_STATUSES.DONE);
+      updateTaskStatus(1, TASK_STATUSES.DONE);
 
-    const state = loadState();
+      const state = loadState();
 
-    expect(state.tasks[0].completed).toBe(true);
-  });
+      expect(state.tasks[0].completed).toBe(true);
+    });
 
-  test("throws error when state is invalid", () => {
-    saveState(null);
+    test("throws error when state is invalid", () => {
+      saveState(null);
 
-    expect(() =>
-      updateTaskStatus(1, TASK_STATUSES.DONE)
-    ).toThrow("State not initialized");
-  });
+      expect(() =>
+        updateTaskStatus(1, TASK_STATUSES.DONE)
+      ).toThrow("State not initialized");
+    });
+
+    test("throws error on invalid status", () => {
+      expect(() =>
+        updateTaskStatus(1, "FakeStatus")
+      ).toThrow("Invalid task status");
+    });
+
+    test("throws error if closing without comment", () => {
+      expect(() =>
+        updateTaskStatus(1, TASK_STATUSES.CLOSED, "")
+      ).toThrow("Comment is required for closed tasks");
+    });
+
+    test("throws error if task not found", () => {
+      expect(() =>
+        updateTaskStatus(999, TASK_STATUSES.IN_PROGRESS)
+      ).toThrow("Task not found");
+    });
+
+    test("appends comment and marks completed when closing a task", () => {
+      // Note: ensure the task has at least some initial description so we test the append behavior too
+      const state = loadState();
+      state.tasks[0].description = "Initial desc";
+      saveState(state);
+
+      const today = new Date().toLocaleDateString('sv-SE');
+      updateTaskStatus(1, TASK_STATUSES.CLOSED, "My close reason");
+
+      const updatedState = loadState();
+      expect(updatedState.tasks[0].completed).toBe(true);
+      expect(updatedState.tasks[0].comment).toBe("My close reason");
+      expect(updatedState.tasks[0].description).toBe(`Initial desc\n\n[STÄNGD ${today}]: My close reason`);
+    });
   })
 });

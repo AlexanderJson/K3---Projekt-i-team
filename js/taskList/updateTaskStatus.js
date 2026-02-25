@@ -6,6 +6,7 @@ import {
 
 import { loadState, saveState } from "../storage.js";
 import { notify } from "../observer.js";
+import { sendPushNotification } from "../utils/toast.js";
 
 export function updateTaskStatus(taskId, newStatus, comment = "") {
   if (!isValidTaskStatus(newStatus)) {
@@ -28,8 +29,11 @@ export function updateTaskStatus(taskId, newStatus, comment = "") {
     throw new Error("Task not found");
   }
 
+  const oldStatus = task.status;
   task.status = newStatus;
-  
+
+  const isAlreadyCompleted = task.completed;
+
   const isCompleted = (newStatus === TASK_STATUSES.DONE || newStatus === TASK_STATUSES.CLOSED);
   task.completed = isCompleted;
 
@@ -39,16 +43,16 @@ export function updateTaskStatus(taskId, newStatus, comment = "") {
   } else if (!isCompleted) {
     task.completedDate = null;
   }
-  
+
   if (newStatus === TASK_STATUSES.CLOSED && comment) {
     const today = new Date().toLocaleDateString('sv-SE');
-    
+
     // Skapa noteringen (Utan namn, bara datum och kommentar)
     const closeNote = `\n\n[STÄNGD ${today}]: ${comment}`;
-    
+
     // Lägg till i beskrivningen
     task.description = (task.description || "") + closeNote;
-    
+
     // task.comment behövs egentligen inte längre om vi sparar i beskrivningen, 
     // men vi kan låta den vara eller ta bort den. Jag tar bort den för att inte ha dubbeldata.
     // task.comment = comment; 
@@ -56,4 +60,18 @@ export function updateTaskStatus(taskId, newStatus, comment = "") {
 
   saveState(state);
   notify();
+
+  if (oldStatus !== newStatus) {
+    if (newStatus === TASK_STATUSES.DONE && !isAlreadyCompleted) {
+      sendPushNotification(
+        "Uppgift Klar! ✅",
+        `'${task.title}' är nu markerad som färdig.`
+      );
+    } else {
+      sendPushNotification(
+        "Status Ändrad",
+        `'${task.title}' har flyttats till ${newStatus}.`
+      );
+    }
+  }
 }

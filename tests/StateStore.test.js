@@ -12,21 +12,8 @@ describe("StateStore", () => {
   ];
 
   beforeEach(() => {
-    memory = {};
-
-    global.localStorage = {
-      getItem: jest.fn(key => memory[key] ?? null),
-      setItem: jest.fn((key, value) => {
-        memory[key] = value;
-      }),
-      removeItem: jest.fn(key => {
-        delete memory[key];
-      }),
-      clear: jest.fn(() => {
-        memory = {};
-      })
-    };
-
+    localStorage.clear();
+    jest.restoreAllMocks();
     store = new StateStore("state");
   });
 
@@ -49,6 +36,7 @@ describe("StateStore", () => {
   });
 
   test("save should write data to localStorage", () => {
+    jest.spyOn(Storage.prototype, 'setItem');
     store.save(tasks);
 
     expect(localStorage.setItem).toHaveBeenCalledWith(
@@ -58,6 +46,7 @@ describe("StateStore", () => {
   });
 
   test("clear should remove stored data", () => {
+    jest.spyOn(Storage.prototype, 'removeItem');
     store.save(tasks);
     store.clear();
 
@@ -65,11 +54,15 @@ describe("StateStore", () => {
   });
 
   test("load should return empty array if JSON is invalid", () => {
-    memory["state"] = "{invalid json";
+    // dämpa förväntade consoler i detta test så att utdatan ser ren ut
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+
+    localStorage.setItem("state", "{invalid json");
 
     const state = store.load();
 
     expect(state).toEqual([]);
+    consoleErrorSpy.mockRestore();
   });
 
 });
