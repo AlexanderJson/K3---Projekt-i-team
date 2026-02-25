@@ -20,7 +20,7 @@ app.classList.add("app");
 
 /** * Sidomeny (Navigation)
  * @description Använder <aside> och role="navigation" för att markera sektionen som sekundärt innehåll/navigering.
- * @type {HTMLElement} 
+ * @type {HTMLElement}
  */
 const sideMenuDiv = document.createElement("aside");
 sideMenuDiv.classList.add("left");
@@ -30,15 +30,11 @@ sideMenuDiv.append(menu());
 
 /** * Huvudinnehåll (Main)
  * @description Använder <main> för att markera applikationens centrala innehåll, vilket är kritiskt för tillgänglighet.
- * @type {HTMLElement} 
+ * @type {HTMLElement}
  */
 const mainContent = document.createElement("main");
 mainContent.classList.add("center");
 mainContent.setAttribute("id", "main-content");
-
-// Bygg ihop applikationens grundstruktur
-app.innerHTML = "";
-app.append(sideMenuDiv, mainContent);
 
 /**
  * Initiera vyn-hanteraren och koppla den till huvudytan.
@@ -46,16 +42,19 @@ app.append(sideMenuDiv, mainContent);
 initViewController(mainContent);
 
 /**
- * Prenumerera på tillståndsändringar (The Observer Flow).
- * Vid varje ändring i datan renderas den aktiva vyn om.
- */
-subscribe(() => rerenderActiveView());
-
-/**
  * Initiera startdata och sätt startvyn till dashboard.
+ * IMPORTANT: subscribe() must come AFTER initSeed + setView to avoid
+ * double-render. initSeed→saveState→notify would trigger rerenderActiveView
+ * before setView runs, rendering the dashboard twice.
  */
 initSeed();
 setView("dashboard");
+
+// Register observer AFTER initial render to prevent double-render
+subscribe(() => rerenderActiveView());
+
+// Bygg ihop applikationens grundstruktur atomiskt
+app.replaceChildren(sideMenuDiv, mainContent);
 
 /**
  * Global händelselyssnare för interaktioner.

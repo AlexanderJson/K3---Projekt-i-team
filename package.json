@@ -7,10 +7,10 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
-    "serve": "http-server . -p 8080",
+    "serve": "http-server . -p 8080 -g",
     "lighthouse": "lhci autorun",
     "build": "node build.js",
-    "serve:dist": "http-server dist -p 8080"
+    "serve:dist": "http-server dist -p 8080 -g"
   },
   "repository": {
     "type": "git",

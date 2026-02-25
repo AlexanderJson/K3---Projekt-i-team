@@ -72,7 +72,6 @@ async function build() {
 
     // 3. Minifiera CSS
     console.log('Minifying CSS to style.min.css...');
-    // Hämta alla relevanta CSS-filer som normalt importeras för att bygga style.min.css
     const cssFiles = [
         'css/variables.css',
         'css/main.css',
@@ -89,22 +88,87 @@ async function build() {
     const cssResult = await postcss([cssnano]).process(combinedCss, { from: undefined });
     fs.writeFileSync(path.join(distDir, 'style.min.css'), cssResult.css);
 
+    // 3b. Build critical CSS (variables + core layout from main.css lines 1-172)
+    // This is the minimum CSS needed to render the initial loader and app shell
+    console.log('Extracting critical CSS for inlining...');
+    const variablesCss = fs.readFileSync(path.join(__dirname, 'css/variables.css'), 'utf8');
+    const mainCssLines = fs.readFileSync(path.join(__dirname, 'css/main.css'), 'utf8').split('\n');
+    const criticalMainCss = mainCssLines.slice(0, 172).join('\n');
+    const criticalCssRaw = variablesCss + '\n' + criticalMainCss;
+    const criticalResult = await postcss([cssnano]).process(criticalCssRaw, { from: undefined });
+    const criticalCssInline = criticalResult.css;
+    console.log(`  Critical CSS: ${(criticalCssInline.length / 1024).toFixed(1)} KiB (inlined)`);
+
     // 4. Kopiera index.html till dist/ och uppdatera länkarna
     console.log('Processing and copying index.html...');
     let indexHtml = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 
-    // Byt ut stylesheet link markup mot enbart den nya style.min.css
-    indexHtml = indexHtml.replace(/<link rel="stylesheet".*?>[\s\n]*/g, '');
-    indexHtml = indexHtml.replace(/<noscript>[\s\S]*?<\/noscript>[\s\n]*/g, '');
-    indexHtml = indexHtml.replace(/<\/head>/, '  <link rel="stylesheet" href="style.min.css" />\n</head>');
+    // Strip only LOCAL CSS stylesheet links (not Google Fonts)
+    indexHtml = indexHtml.replace(/<link rel="stylesheet" href="css\/.*?>[\s\n]*/g, '');
+    // Strip only the noscript block containing local CSS fallbacks
+    indexHtml = indexHtml.replace(/<noscript>\s*<link rel="stylesheet" href="css\/[\s\S]*?<\/noscript>[\s\n]*/g, '');
+    // Clean up any leftover empty noscript blocks
+    indexHtml = indexHtml.replace(/<noscript>\s*<\/noscript>[\s\n]*/g, '');
 
-    // Ändra referensen till app.js till main.min.js
+    // Strip old modulepreload hints (they only listed a few dev paths)
+    indexHtml = indexHtml.replace(/<link rel="modulepreload"[^>]*>\s*\n?/g, '');
+
+    // Rename app.js → main.min.js (must happen before modulepreload injection)
     indexHtml = indexHtml.replace(/"app\.js"/g, '"main.min.js"');
 
-    // 5. Kopiera vendor
-    console.log('Copying src/vendor to dist/vendor...');
-    if (fs.existsSync(path.join(__dirname, 'src', 'vendor'))) {
-        copyDirSync(path.join(__dirname, 'src', 'vendor'), path.join(distDir, 'vendor'));
+    // 4b. Inject modulepreload hints for CRITICAL-PATH modules only
+    // Only preload modules needed for the initial dashboard render.
+    // Lazy-loaded views (calendar, tasks, settings, contacts) are excluded.
+    console.log('Injecting modulepreload hints for critical-path modules...');
+    const criticalModules = [
+        'main.min.js',
+        'js/views/viewController.js',
+        'js/views/dashboardView.js',
+        'js/menu/sideMenu.js',
+        'js/observer.js',
+        'js/theme.js',
+        'js/taskList/seed.js',
+        'js/storage.js',
+        'js/comps/btn.js',
+        'js/comps/themeBtn.js',
+        'js/comps/dialog.js',
+        'js/data/tasks.js',
+        'js/status.js',
+    ];
+    const allPreloads = criticalModules;
+    const preloadHints = allPreloads.map(f => `  <link rel="modulepreload" href="${f}" />`).join('\n');
+    // Inject right after the <script> tag for main.min.js
+    indexHtml = indexHtml.replace(
+        /(<script defer type="module" src="main\.min\.js"><\/script>)/,
+        `$1\n${preloadHints}`
+    );
+    console.log(`  Added ${allPreloads.length} modulepreload hints`);
+
+    // Inline critical CSS + async-load full stylesheet (media=print/onload trick)
+    const cssInjectBlock = `  <style>${criticalCssInline}</style>\n  <link rel="stylesheet" href="style.min.css" media="print" onload="this.media='all'" />\n  <noscript><link rel="stylesheet" href="style.min.css" /></noscript>\n`;
+    indexHtml = indexHtml.replace(/<\/head>/, cssInjectBlock + '</head>');
+
+
+    // 5. Copy and minify vendor JS
+    console.log('Copying and minifying vendor files to dist/vendor...');
+    const vendorSrc = path.join(__dirname, 'src', 'vendor');
+    if (fs.existsSync(vendorSrc)) {
+        const vendorDest = path.join(distDir, 'vendor');
+        fs.mkdirSync(vendorDest, { recursive: true });
+        const vendorFiles = fs.readdirSync(vendorSrc);
+        for (const file of vendorFiles) {
+            const srcPath = path.join(vendorSrc, file);
+            const destPath = path.join(vendorDest, file);
+            if (file.endsWith('.js') && !file.endsWith('.min.js')) {
+                // Minify non-minified JS vendor files
+                const code = fs.readFileSync(srcPath, 'utf8');
+                const result = await minify(code, { compress: true, mangle: true });
+                fs.writeFileSync(destPath, result.code);
+                console.log(`  Minified vendor/${file} (${(code.length / 1024).toFixed(1)} KiB → ${(result.code.length / 1024).toFixed(1)} KiB)`);
+            } else {
+                fs.copyFileSync(srcPath, destPath);
+            }
+        }
     }
 
 

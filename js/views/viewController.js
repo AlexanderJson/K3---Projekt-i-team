@@ -1,8 +1,6 @@
 import { renderDashboard } from "./dashboardView.js";
-import { renderCalendar } from "./calendarView.js";
-import { taskScreen } from "../taskList/taskScreen.js";
-import { renderSettings } from "./settingsView.js"; 
-import { renderContacts } from "./contactsView.js";
+// calendarView, taskScreen, settingsView are lazy-loaded on demand (see render())
+// contactsView is also lazy-loaded (see contacts block in render())
 import { loadState } from "../storage.js";
 
 let container = null;
@@ -12,17 +10,17 @@ export function initViewController(target) {
   container = target;
 }
 
-export function setView(view, params = null) {
+export async function setView(view, params = null) {
   activeView = view;
   if (params) window.viewParams = params;
-  render();
+  await render();
 }
 
-export function rerenderActiveView() {
-  render();
+export async function rerenderActiveView() {
+  await render();
 }
 
-function render() {
+async function render() {
   if (!container) return;
 
   // Rensa containern helt innan ny rendering för att undvika dubbla element
@@ -38,18 +36,19 @@ function render() {
   }
 
   if (activeView === "calendar") {
+    const { renderCalendar } = await import("./calendarView.js");
     renderCalendar(container);
     return;
   }
 
   if (activeView === "tasks") {
-    // Här skickar vi de faktiska uppgifterna från det laddade statet
-    const tasks = state.tasks || [];
-    container.append(taskScreen(tasks));
+    const { taskScreen } = await import("../taskList/taskScreen.js");
+    container.append(taskScreen());
     return;
   }
 
   if (activeView === "settings") {
+    const { renderSettings } = await import("./settingsView.js");
     renderSettings(container, rerenderActiveView);
     return;
   }
@@ -57,6 +56,8 @@ function render() {
   if (activeView === "contacts") {
     const params = window.viewParams;
     window.viewParams = null; // Rensa direkt (params redan kopierad)
+    // Lazy-load contactsView to reduce initial JS payload
+    const { renderContacts } = await import("./contactsView.js");
     renderContacts(container, params);
     return;
   }

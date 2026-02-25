@@ -62,8 +62,13 @@ describe("Accessibility checks (jest-axe)", () => {
             createdAt: '2026-02-18'
         };
         const itemEl = listItem(mockTask);
+
+        const listWrapper = document.createElement("div");
+        listWrapper.setAttribute("role", "list");
+        listWrapper.appendChild(itemEl);
+
         document.body.innerHTML = '<main id="main-content"></main>';
-        document.getElementById('main-content').appendChild(itemEl);
+        document.getElementById('main-content').appendChild(listWrapper);
 
         const results = await axe(document.body);
         expect(results).toHaveNoViolations();

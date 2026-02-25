@@ -81,13 +81,13 @@ export const listItem = (task) => {
   const dateRow = document.createElement("div");
   dateRow.className = "date-row";
   dateRow.innerHTML = `
-    <div class="meta-item" aria-label="Skapad: ${formatDate(task.createdAt)}"><span class="meta-label" aria-hidden="true">SKAPAD</span><span class="meta-value" aria-hidden="true">${formatDate(task.createdAt)}</span></div>
+    <div class="meta-item" role="group" aria-label="Skapad: ${formatDate(task.createdAt)}"><span class="meta-label" aria-hidden="true">SKAPAD</span><span class="meta-value" aria-hidden="true">${formatDate(task.createdAt)}</span></div>
   `;
 
   if (task.deadline) {
     const isOverdue = new Date(task.deadline) < new Date() && !isDone && !isClosed;
     dateRow.innerHTML += `
-      <div class="meta-item ${isOverdue ? "deadline-overdue" : ""}" aria-label="Deadline: ${formatDate(task.deadline)}">
+      <div class="meta-item ${isOverdue ? "deadline-overdue" : ""}" role="group" aria-label="Deadline: ${formatDate(task.deadline)}">
         <span class="meta-label" aria-hidden="true">DEADLINE</span><span class="meta-value" aria-hidden="true">${formatDate(task.deadline)}</span>
       </div>
     `;

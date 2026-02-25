@@ -15,7 +15,6 @@ dom-*.json
 jest-final.json
 
 # Generated reports
-lh-report.html
 .lighthouseci/
 report.json
 
