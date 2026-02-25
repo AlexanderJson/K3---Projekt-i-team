@@ -211,11 +211,6 @@ body.menu-is-collapsed .taskFilterContainer {
     box-shadow: 0 0 30px rgba(34, 197, 94, 0.4); 
 }
 
-
-/* ==========================================================================
-    1.1 KOLUMN-RUBRIKER & COUNTER
-   ========================================================================== */
-
 /* ==========================================================================
     1.1 KOLUMN-RUBRIKER & COUNTER
    ========================================================================== */
@@ -274,8 +269,8 @@ body.menu-is-collapsed .taskFilterContainer {
 
 /* Tvinga alla ihopfällda kolumner att ha exakt samma höjd */
 .taskWrapper:has(.collapsed) {
-    min-height: 105px;
-    height: 105px;
+    min-height: 110px;
+    height: 110px;
     overflow: hidden;
 }
 
@@ -569,14 +564,23 @@ body.menu-is-collapsed .taskFilterContainer {
 .closed-tasks-archive {
     background: var(--bg-card);
     border: 6px double var(--accent-crimson);
-    border-radius: 18px;
-    padding: 16px; 
+    border-radius: 18px; /* Matchar övriga kolumner */
+    padding: 12px; /* Samma padding som .taskWrapper */
+    min-height: 105px; /* Samma som de andra när de är ihopfällda */
     display: flex;
     flex-direction: column;
     gap: 16px;
     box-sizing: border-box;
     box-shadow: 0 0 20px rgba(248, 113, 113, 0.2);
     transition: all 0.4s ease;
+    width: 100%;
+}
+
+/* Tvinga arkivet att följa samma höjdregler som övriga vid collapse */
+.closed-tasks-archive:has(.collapsed) {
+    min-height: 140px;
+    height: 140px;
+    overflow: hidden;
 }
 
 .closed-tasks-archive:hover {
@@ -597,6 +601,7 @@ body.menu-is-collapsed .taskFilterContainer {
     width: 100%;
     margin: 0;
 }
+
 
 /* Kort inuti arkivet - Specifik röd styling, full textvisning */
 .closed-tasks-archive .listItem {
@@ -688,7 +693,14 @@ body.menu-is-collapsed .taskFilterContainer {
 }
 
 .assignee-chip input[type="checkbox"] {
-    display: none;
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
 }
 
 .assignee-chip .chip-text {
@@ -706,7 +718,7 @@ body.menu-is-collapsed .taskFilterContainer {
     white-space: normal; /* Tillåter radbrytning för långa namn */
 }
 
-.assignee-chip:focus-visible .chip-text {
+.assignee-chip input[type="checkbox"]:focus-visible + .chip-text {
     outline: 3px solid var(--accent-cyan);
     outline-offset: 2px;
 }
