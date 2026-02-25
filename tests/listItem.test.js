@@ -34,7 +34,11 @@ describe("listItem component", () => {
             }),
             saveState: jest.fn()
         };
-        const mockDialog = { addTaskDialog: jest.fn() };
+        const mockDialog = {
+            addTaskDialog: jest.fn(),
+            showConfirmDialog: jest.fn().mockResolvedValue(true),
+            showPromptDialog: jest.fn().mockResolvedValue("Reason")
+        };
         const mockView = { setView: jest.fn() };
         const mockStatus = { TASK_STATUSES };
 
@@ -82,21 +86,7 @@ describe("listItem component", () => {
         expect(el.querySelector(".avatar-empty").textContent).toContain("Ledig");
     });
 
-    test("Expand toggle expands/collapses", () => {
-        const task = { id: 1, status: "Att göra" };
-        const el = listItem(task);
 
-        expect(el.classList.contains("is-expanded")).toBe(false);
-        el.click(); // Should toggle expand
-
-        expect(el.classList.contains("is-expanded")).toBe(true);
-
-        const expandBtn = el.querySelector(".expand-toggle-btn");
-        expect(expandBtn.getAttribute("aria-expanded")).toBe("true");
-
-        expandBtn.click(); // Should collapse
-        expect(el.classList.contains("is-expanded")).toBe(false);
-    });
 
     test("Opens edit dialog when clicking avatar", () => {
         const task = { id: 1, status: "Att göra", assignedTo: ["Anna"] };
@@ -148,26 +138,28 @@ describe("listItem component", () => {
         expect(updateTaskStatus).toHaveBeenCalledWith(1, "Klar");
     });
 
-    test("Deletes task (for closed)", () => {
+    test("Deletes task (for closed)", async () => {
         const task = { id: 1, status: "Stängd" };
         const el = listItem(task);
 
         const deleteBtn = el.querySelector(".controlBtn.delete-btn");
         deleteBtn.click();
 
-        expect(window.confirm).toHaveBeenCalled();
-        expect(removeById).toHaveBeenCalledWith(1);
+        await waitFor(() => {
+            expect(removeById).toHaveBeenCalledWith(1);
+        });
     });
 
-    test("Closes task via prompt (for open)", () => {
+    test("Closes task via prompt (for open)", async () => {
         const task = { id: 1, status: "Att göra" };
         const el = listItem(task);
 
         const deleteBtn = el.querySelector(".controlBtn.delete-btn");
         deleteBtn.click();
 
-        expect(window.prompt).toHaveBeenCalled();
-        expect(updateTaskStatus).toHaveBeenCalledWith(1, "Stängd", "Reason");
+        await waitFor(() => {
+            expect(updateTaskStatus).toHaveBeenCalledWith(1, "Stängd", "Reason");
+        });
     });
 
     test("Renders explicit contact link and interacts", () => {

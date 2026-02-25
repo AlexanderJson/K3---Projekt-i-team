@@ -14,7 +14,7 @@ import { listItem } from "./listItem.js";
  */
 export const taskList = (status, tasks) => {
   const container = document.createElement("div");
-  
+
   // Hämta sparat läge för att bibehålla användarens vy vid omladdning
   const storageKey = `column_state_${status}`;
   const savedState = localStorage.getItem(storageKey);
@@ -38,7 +38,7 @@ export const taskList = (status, tasks) => {
   const baseClass = "task-column";
   const archiveClass = status === "Stängd" ? " closed-tasks-archive" : "";
   const collapsedClass = shouldBeExpanded ? "" : " collapsed";
-  
+
   container.className = `${baseClass}${archiveClass}${collapsedClass}`;
   container.setAttribute("data-status", status);
 
@@ -63,6 +63,7 @@ export const taskList = (status, tasks) => {
   // Container för listobjekt
   const listItemsContainer = document.createElement("div");
   listItemsContainer.className = "task-list-items";
+  listItemsContainer.setAttribute("role", "list");
   listItemsContainer.style.display = shouldBeExpanded ? "flex" : "none";
   listItemsContainer.style.flexDirection = "column";
   listItemsContainer.style.gap = "16px";
@@ -73,7 +74,7 @@ export const taskList = (status, tasks) => {
     description.className = "archive-description";
     description.textContent = "Här sparas uppgifter som inte längre är aktuella eller har arkiverats.";
     description.style.display = shouldBeExpanded ? "block" : "none";
-    container.append(header, description, listItemsContainer); 
+    container.append(header, description, listItemsContainer);
   } else {
     container.append(header, listItemsContainer);
   }
@@ -89,12 +90,12 @@ export const taskList = (status, tasks) => {
     // Spara läge och uppdatera tillgänglighetsattribut
     localStorage.setItem(storageKey, isExpanded ? "expanded" : "collapsed");
     header.setAttribute("aria-expanded", String(isExpanded));
-    
+
     const arrow = header.querySelector(".taskArrow");
     if (arrow) {
       arrow.style.transform = isCollapsed ? "rotate(-90deg)" : "rotate(0deg)";
     }
-    
+
     listItemsContainer.style.display = isCollapsed ? "none" : "flex";
 
     const description = container.querySelector(".archive-description");

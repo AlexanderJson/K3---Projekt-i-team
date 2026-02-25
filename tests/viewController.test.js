@@ -44,33 +44,33 @@ describe("viewController", () => {
         initViewController(container);
     });
 
-    test("Renders dashboard", () => {
-        setView("dashboard");
+    test("Renders dashboard", async () => {
+        await setView("dashboard");
         expect(renderDashboard).toHaveBeenCalledWith(container, { tasks: [] });
     });
 
-    test("Renders calendar", () => {
-        setView("calendar");
+    test("Renders calendar", async () => {
+        await setView("calendar");
         expect(renderCalendar).toHaveBeenCalledWith(container);
     });
 
-    test("Renders tasks", () => {
-        setView("tasks");
-        expect(taskScreen).toHaveBeenCalledWith([]);
+    test("Renders tasks", async () => {
+        await setView("tasks");
+        expect(taskScreen).toHaveBeenCalledWith();
         expect(container.children.length).toBe(1);
     });
 
-    test("Renders settings", () => {
-        setView("settings");
+    test("Renders settings", async () => {
+        await setView("settings");
         expect(renderSettings).toHaveBeenCalledWith(container, rerenderActiveView);
     });
 
-    test("Renders contacts with params", () => {
-        setView("contacts", { highlightId: '123' });
+    test("Renders contacts with params", async () => {
+        await setView("contacts", { highlightId: '123' });
         expect(renderContacts).toHaveBeenCalledWith(container, { highlightId: '123' });
 
         // Params should be cleared after usage
-        rerenderActiveView();
+        await rerenderActiveView();
         expect(renderContacts).toHaveBeenLastCalledWith(container, null);
     });
 });
