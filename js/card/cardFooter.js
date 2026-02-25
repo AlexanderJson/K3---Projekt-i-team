@@ -1,5 +1,5 @@
 import { renderAssigneeAvatars } from "./renderAvatars.js";
-import { TASK_STATUSES } from "../../status.js";
+import { TASK_STATUSES } from "../status.js";
 
 const assigneeAvatars = (task, {onEditTask}) =>
 {

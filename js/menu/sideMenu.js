@@ -1,5 +1,4 @@
 import { Btn } from "../comps/btn.js";
-import { setView } from "../views/viewController.js";
 import { toggleThemeBtn } from "../comps/themeBtn.js";
 import { loadState, saveState } from "../storage.js";
 import { subscribe } from "../observer.js";

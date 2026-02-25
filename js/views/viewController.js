@@ -1,63 +1,71 @@
-import { renderDashboard } from "./dashboardView.js";
 import { renderCalendar } from "./calendarView.js";
 import { taskScreen } from "../taskList/taskScreen.js";
 import { renderSettings } from "./settingsView.js"; 
 import { renderContacts } from "./contactsView.js";
-import { loadState } from "../storage.js";
+import { renderDashboard } from "./dashboardView.js";
 
-let container = null;
-let activeView = "dashboard";
+export class ViewController {
+  constructor(target, service) {
+    this.container = target;
+    this.service = service;
+    this.activeView = "dashboard";
+    this.params = null; 
+  }
 
-export function initViewController(target) {
-  container = target;
+
+setView(view, params = null) {
+    this.activeView = view;
+    this.params = params;
+    this.render();
 }
 
-export function setView(view, params = null) {
-  activeView = view;
-  if (params) window.viewParams = params;
-  render();
+
+navigate(view, params=null){
+  this.setView(view, params);
+}
+rerender() {
+  this.render();
 }
 
-export function rerenderActiveView() {
-  render();
-}
-
-function render() {
-  if (!container) return;
+render() {
+  if (!this.container) return;
 
   // Rensa containern helt innan ny rendering för att undvika dubbla element
-  container.innerHTML = "";
+  this.container.innerHTML = "";
 
-  // Hämta ALLTID det senaste statet här för att garantera att nya tasks finns med
-  const state = loadState();
 
-  if (activeView === "dashboard") {
+  if (this.activeView === "dashboard") {
     // Vi skickar med state även här om dashboardView behöver det
-    renderDashboard(container, state);
+    renderDashboard(this.container)
     return;
   }
 
-  if (activeView === "calendar") {
-    renderCalendar(container);
+  if (this.activeView === "calendar") {
+    renderCalendar(this.container);
     return;
   }
 
-  if (activeView === "tasks") {
+  if (this.activeView === "tasks") {
     // Här skickar vi de faktiska uppgifterna från det laddade statet
-    const tasks = state.tasks || [];
-    container.append(taskScreen(tasks));
+    this.container.append(
+      taskScreen({
+        taskService: this.service,
+        navigate: (view,params) => this.setView(view,params)
+        }));;
     return;
   }
 
-  if (activeView === "settings") {
-    renderSettings(container, rerenderActiveView);
+  if (this.activeView === "settings") {
+    renderSettings(this.container , ()=> this.rerender());
     return;
   }
 
-  if (activeView === "contacts") {
-    const params = window.viewParams;
-    window.viewParams = null; // Rensa direkt (params redan kopierad)
-    renderContacts(container, params);
+  if (this.activeView === "contacts") {
+    renderContacts(this.container, this.params);
+    this.params = null;
     return;
   }
 }
+  
+}
+

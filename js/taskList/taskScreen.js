@@ -1,7 +1,7 @@
 import { loadState } from "../storage.js";
-import { taskList } from "../taskList/taskList.js";
 import { TASK_STATUSES } from "../status.js";
-
+import { openTaskDialog } from "../menu/openTaskDialog.js";
+import { taskList } from "../taskList/taskList.js";
 /**
  * @file taskScreen.js
  * @description Hanterar huvudskärmen för uppgifter (Kanban-vyn).
@@ -12,10 +12,12 @@ import { TASK_STATUSES } from "../status.js";
  * Skapar och returnerar huvudvyn för uppgiftshantering.
  * @returns {HTMLElement} Det sammansatta elementet för uppgiftsskärmen.
  */
-export const taskScreen = () => {
+export const taskScreen = ({taskService, navigate}) => {
+
   const state = loadState();
   const people = state.people || []; // Array med strängar (namn)
-  
+
+
   // Hämtar senast använda filter eller sätter standard till "Team"
   let currentFilter = localStorage.getItem("taskViewFilter") || "Team";
 
@@ -37,7 +39,6 @@ export const taskScreen = () => {
 
   const select = document.createElement("select");
   select.id = "task-filter-select";
-  select.tabIndex = 0;
   select.classList.add("taskFilterSelect");
   select.setAttribute("aria-controls", "task-board");
 
@@ -83,8 +84,7 @@ export const taskScreen = () => {
   const updateView = (selectedFilter) => {
     contentArea.innerHTML = ""; 
 
-    const latestState = loadState();
-    const tasks = latestState.tasks || [];
+    const tasks  = taskService.getTasks();
 
     const board = document.createElement("div");
     board.id = "task-board";
@@ -99,7 +99,10 @@ export const taskScreen = () => {
       archiveColumn.setAttribute("aria-label", "Stängda uppgifter");
       
       const closedTasks = tasks.filter(t => t.status === TASK_STATUSES.CLOSED);
-      archiveColumn.append(taskList(TASK_STATUSES.CLOSED, closedTasks));
+      archiveColumn.append(taskList(TASK_STATUSES.CLOSED, closedTasks, {
+      taskService,
+      navigate
+      }));
       
       board.append(archiveColumn);
     } 
@@ -128,8 +131,24 @@ export const taskScreen = () => {
         columnWrapper.setAttribute("data-status", status);
         columnWrapper.setAttribute("aria-label", `Kolumn: ${status}`);
 
-        const columnTasks = filteredTasks.filter(t => t.status === status);
-        columnWrapper.append(taskList(status, columnTasks));
+          const columnTasks = filteredTasks
+          .filter(t => t.status === status)
+          .sort((a, b) => taskService._compareRank(a.order || "", b.order || ""));
+          columnWrapper.append(taskList(status, columnTasks, {
+          taskService,
+          navigate,    // Skickar navigate funktion till listItems 
+          onMoveTask: (id,dir) => {
+            taskService.moveTask(id,dir);
+          },
+          onChangeStatus: (id, newStatus) => {
+            taskService.changeStatus(id, newStatus);
+          },
+          onDeleteTask: (task) => {
+            taskService.deleteTask(task.id);
+          },
+          onEditTask: (task) => openTaskDialog({ taskService, taskToEdit: task }),
+
+        }));
         board.append(columnWrapper);
       });
     }
@@ -142,10 +161,6 @@ export const taskScreen = () => {
     const newFilter = e.target.value;
     localStorage.setItem("taskViewFilter", newFilter);
     updateView(newFilter);
-    setTimeout(() => {
-      const el = document.getElementById("task-filter-select");
-      if (el) el.focus();
-    }, 50);
   });
 
   // Initial rendering

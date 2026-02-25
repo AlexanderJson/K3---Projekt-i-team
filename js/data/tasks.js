@@ -20,6 +20,7 @@
  * @property {string|null} [contactName=null] - Länkad kontakts namn.
  * @property {string} [closedReason=''] - Anledning till stängning.
  * @property {string} [comment=''] - Kommentar (bakåtkompatibilitet).
+ * @property {number} [order=0] - Sorteringsordning inom samma statuskolumn.
  */
 
 /**
@@ -40,7 +41,8 @@ export function createTask({
   contactId = null,
   contactName = null,
   closedReason = "",
-  comment = ""
+  comment = "",
+  order = ""
 }) {
   return {
     id,
@@ -55,6 +57,7 @@ export function createTask({
     contactId,
     contactName,
     closedReason,
-    comment
+    comment,
+    order
   };
 }

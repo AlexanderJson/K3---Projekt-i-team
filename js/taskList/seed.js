@@ -2,6 +2,8 @@ import { createTask } from "../data/tasks.js";
 import { TASK_STATUSES } from "../status.js";
 import { saveState, loadState } from "../storage.js";
 import { initContactsDB, importContacts, getAllContacts } from "../utils/contactsDb.js";
+import { readCsv } from "../Reader/csvReader.js";
+
 
 /**
  * @file seed.js
@@ -108,6 +110,9 @@ const liaPeople = [
   "Nora Söderlund",
   "Lukas Karlsson"
 ];
+
+
+
 
 /**
  * Skapar 20 LIA/Praktik-uppgifter.
@@ -217,3 +222,58 @@ export async function loadDemoLIA() {
   saveState(state);
   await seedContacts(liaContacts);
 }
+
+
+
+
+
+// ═══════════════════════════════════════════════════════════════════
+// NYASTE SEED - DEMO från Linear CSV historik
+// ═══════════════════════════════════════════════════════════════════
+
+
+  async function readLocalCsv(path = "/team3.csv")
+  {
+    const res = await fetch(path);
+    if(!res.ok) throw new Error(`Could not load ${path}`);
+    const text = await res.text();
+    return readCsv(new File([text], "team3.csv", {type: "text/csv"}));
+  }
+  const normalize = (row, key) =>
+    row[key] ?? row[key.toUpperCase()] ?? row[key[0].toUpperCase() + key.slice(1)];
+  const normalizeStatuses = (s) =>
+  {
+    const v = (s ?? "").toString().trim().toLowerCase();
+    if(v==="done") return TASK_STATUSES.DONE;
+    if(v==="in progress") return TASK_STATUSES.IN_PROGRESS;
+    if(v==="todo") return TASK_STATUSES.TODO;
+    if(v==="backlog") return TASK_STATUSES.TODO;
+    return TASK_STATUSES.TODO;
+
+  }
+
+
+  export async function initTasksCSV(service, path="/team3.csv")
+  {
+    if (service.getTasks().length > 0) return;
+    const data = await readLocalCsv(path);
+    const tasks = data
+      .flatMap((row) => {
+      const title = (normalize(row, "title") ?? "").toString().trim();
+      const id = (normalize(row, "id") ?? "").toString().trim();
+      if (!id) return []; 
+      if (!title) return []; 
+      const statusRaw = normalize(row, "status");
+      const assigneeRaw = normalize(row, "assignee");
+
+      return [createTask({
+        id,
+        title,
+        description: (normalize(row, "description") ?? "").toString().trim(),
+        status: normalizeStatuses(statusRaw),
+        assigned: (assigneeRaw ?? "").toString().trim() || "Ingen",
+      })];
+    })
+    tasks.forEach(t => service.addTask(t));
+      
+  }

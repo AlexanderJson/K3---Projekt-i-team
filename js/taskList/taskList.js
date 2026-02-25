@@ -1,5 +1,4 @@
 import { listItem } from "../card/listItem.js";
-
 /**
  * @file taskList.js
  * @description Renderar en enskild kolumn (statusgrupp) i Kanban-tavlan.
@@ -12,9 +11,9 @@ import { listItem } from "../card/listItem.js";
  * @param {Array<Object>} tasks - Lista över uppgifter som tillhör denna status.
  * @returns {HTMLElement} Kolumnelementet.
  */
-export const taskList = (status, tasks) => {
+export const taskList = (status, tasks, deps = {}) => {
   const container = document.createElement("div");
-  
+  const actions = createListActions(deps);
   // Hämta sparat läge för att bibehålla användarens vy vid omladdning
   const storageKey = `column_state_${status}`;
   const savedState = localStorage.getItem(storageKey);
@@ -112,9 +111,21 @@ export const taskList = (status, tasks) => {
   } else {
     tasks.forEach(task => {
       // Skickar vidare uppgiften till listItem som nu hanterar flera avatarer
-      listItemsContainer.append(listItem(task));
+      listItemsContainer.append(listItem(task, actions));
     });
   }
 
   return container;
 };
+
+
+const createListActions = (deps) => ({
+  onNavigate: deps.navigate,
+  onEditTask: (task) => deps.onEditTask?.(task),
+  onMoveTask: (id, direction) => deps.onMoveTask?.(id, direction),
+  onChangeStatus: (id, newStatus) => deps.onChangeStatus?.(id, newStatus),
+  onDeleteTask: (task) => deps.onDeleteTask?.(task),
+});
+
+
+

@@ -5,7 +5,6 @@
  * kontakt-autocomplete, och tidsstämplad noteringslogg.
  * WCAG 2.1 AA: role="dialog", aria-modal, :focus-visible, JSDoc.
  */
-import { addState, loadState, saveState } from "../storage.js";
 import { TASK_STATUSES } from "../status.js";
 import { getPeople } from "../people/peopleService.js";
 import { sendPushNotification } from "../utils/toast.js";
@@ -15,7 +14,7 @@ import { sendPushNotification } from "../utils/toast.js";
  * @param {Object|null} taskToEdit - Befintlig uppgift att redigera, eller null för ny.
  * @returns {HTMLElement} Overlay-elementet.
  */
-export const addTaskDialog = (taskToEdit = null) => {
+export const addTaskDialog = (taskService, taskToEdit = null) => {
   const dialog = document.createElement("dialog");
   dialog.className = "nativeModalDialog modalCard modalCard-expanded";
   dialog.setAttribute("aria-label", taskToEdit ? "Redigera uppgift" : "Skapa ny uppgift");
@@ -199,47 +198,43 @@ export const addTaskDialog = (taskToEdit = null) => {
     if (!title) return alert("Titeln får inte vara tom!");
 
     if (isEdit) {
-      const state = loadState();
-      const index = state.tasks.findIndex(t => String(t.id) === String(taskToEdit.id));
+      const oldStatus = taskToEdit.status;
 
-      if (index !== -1) {
-        const oldStatus = state.tasks[index].status;
-        state.tasks[index] = {
-          ...taskToEdit,
-          title,
-          description,
-          assigned: primaryAssignee,
-          assignedTo,
-          deadline,
-          notes: taskToEdit.notes || [],
-          contactId: selectedContact ? selectedContact.id : null,
-          contactName: selectedContact ? selectedContact.name : null
-        };
+      const updatedTask = {
+        ...taskToEdit,
+        title,
+        description,
+        assigned: primaryAssignee,
+        assignedTo,
+        deadline,
+        notes: taskToEdit.notes || [],
+        contactId: selectedContact ? selectedContact.id : null,
+        contactName: selectedContact ? selectedContact.name : null
+      };
 
-        // Log status change as note
-        if (oldStatus !== state.tasks[index].status) {
-          if (!state.tasks[index].notes) state.tasks[index].notes = [];
-          state.tasks[index].notes.push({
-            text: `Status ändrad: ${oldStatus} → ${state.tasks[index].status}`,
-            date: new Date().toISOString(),
-            type: "status"
-          });
+      if (oldStatus !== updatedTask.status) {
+        if (!updatedTask.notes) updatedTask.notes = [];
+        updatedTask.notes.push({
+          text: `Status ändrad: ${oldStatus} → ${updatedTask.status}`,
+          date: new Date().toISOString(),
+          type: "status"
+        });
 
-          if (state.tasks[index].status === TASK_STATUSES.DONE) {
-            sendPushNotification(
-              "Uppgift Klar! ✅",
-              `'${state.tasks[index].title}' är nu markerad som färdig.`
-            );
-          } else {
-            sendPushNotification(
-              "Status Ändrad",
-              `'${state.tasks[index].title}' har flyttats till ${state.tasks[index].status}.`
-            );
-          }
+        if (updatedTask.status === TASK_STATUSES.DONE) {
+          sendPushNotification(
+            "Uppgift Klar! ✅",
+            `'${updatedTask.title}' är nu markerad som färdig.`
+          );
+        } else {
+          sendPushNotification(
+            "Status Ändrad",
+            `'${updatedTask.title}' har flyttats till ${updatedTask.status}.`
+          );
         }
-
-        saveState(state);
       }
+
+      taskService.updateTask(updatedTask);
+  
     } else {
       const newTask = {
         id: Date.now(),
@@ -254,9 +249,10 @@ export const addTaskDialog = (taskToEdit = null) => {
         contactName: selectedContact ? selectedContact.name : null,
         completed: false,
         comment: "",
-        notes: []
+        notes: [],
+        order: ""
       };
-      addState(newTask);
+      taskService.addTask(newTask);
 
       // ✅ Trigger Notification on new task creation
       sendPushNotification(
@@ -408,8 +404,8 @@ export const addTaskDialog = (taskToEdit = null) => {
     }
   });
 
-  document.body.append(dialog);
-  dialog.showModal();
+ // document.body.append(dialog);
+ // dialog.showModal();
   return dialog;
 };
 

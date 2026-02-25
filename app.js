@@ -1,10 +1,14 @@
-import { initSeed } from "./js/taskList/seed.js";
 import { menu } from "./js/menu/sideMenu.js";
 import { subscribe } from "./js/observer.js";
-import { initViewController, rerenderActiveView, setView } from "./js/views/viewController.js";
 import { initTheme } from "./js/theme.js";
-import { addTaskDialog } from "./js/comps/dialog.js";
+import { openTaskDialog } from "./js/menu/openTaskDialog.js";
 
+
+import { TaskRepo } from "./js/repo/TaskRepo.js";
+import { TaskService } from "./js/service/TaskService.js";
+import { ViewController } from "./js/views/viewController.js";
+
+import { initTasksCSV } from "./js/taskList/seed.js";
 /**
  * @file app.js
  * @description Huvudentrépunkt för Lianer Project Management App.
@@ -13,6 +17,13 @@ import { addTaskDialog } from "./js/comps/dialog.js";
 
 // Initiera tema (Mörkt/Ljust)
 initTheme();
+
+
+// Initirar våra instanser
+const taskRepo = new TaskRepo();
+const taskService = new TaskService(taskRepo);
+taskService.init();
+
 
 /** @type {HTMLElement} - Huvudcontainern definierad i index.html */
 const app = document.getElementById("app");
@@ -26,7 +37,7 @@ const sideMenuDiv = document.createElement("aside");
 sideMenuDiv.classList.add("left");
 sideMenuDiv.setAttribute("role", "navigation");
 sideMenuDiv.setAttribute("aria-label", "Huvudmeny");
-sideMenuDiv.append(menu());
+
 
 /** * Huvudinnehåll (Main)
  * @description Använder <main> för att markera applikationens centrala innehåll, vilket är kritiskt för tillgänglighet.
@@ -43,40 +54,30 @@ app.append(sideMenuDiv, mainContent);
 /**
  * Initiera vyn-hanteraren och koppla den till huvudytan.
  */
-initViewController(mainContent);
+const viewController = new ViewController(mainContent,taskService);
+const sideMenu = menu({
+  navigate:(view,params) => viewController.setView(view, params),
+  onAddTask: () => openTaskDialog({taskService})
+});
+sideMenuDiv.append(sideMenu);
+
 
 /**
  * Prenumerera på tillståndsändringar (The Observer Flow).
  * Vid varje ändring i datan renderas den aktiva vyn om.
  */
-subscribe(() => rerenderActiveView());
+subscribe(() => viewController.rerender());
 
 /**
  * Initiera startdata och sätt startvyn till dashboard.
  */
-initSeed();
-setView("dashboard");
+//initSeed();
+await initTasksCSV(taskService, "./team3.csv");
+viewController.setView("dashboard");
 
-/**
- * Global händelselyssnare för interaktioner.
- * Hanterar bland annat öppning av dialogrutan för att lägga till nya uppgifter (FAB).
- * * @param {MouseEvent} e - Klickhändelsen.
- */
-document.addEventListener("click", (e) => {
-  /** @type {Element|null} - Hittar närmaste element med klassen .addTaskFab */
-  const fabButton = e.target.closest(".addTaskFab");
 
-  if (fabButton) {
-    // 1. Rensa bort gamla modal-overlays om de mot förmodan ligger kvar
-    const existingModal = document.querySelector(".modalOverlay");
-    if (existingModal) existingModal.remove();
 
-    /** * @type {HTMLDialogElement|HTMLElement} - Skapar en ny dialog-instans.
-     * För optimal tillgänglighet bör addTaskDialog returnera ett <dialog>-element.
-     */
-    addTaskDialog();
-  }
-});
+
 
 /**
  * Service Worker och Background Sync registrering.

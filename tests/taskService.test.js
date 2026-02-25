@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, jest } from "@jest/globals";
-import { TaskService } from "../js/service/taskService.js";
+import { TaskService } from "../js/service/TaskService.js";
 
 describe("taskService", () => 
     {

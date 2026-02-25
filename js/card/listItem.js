@@ -1,10 +1,8 @@
-import { TASK_STATUSES } from "../../status.js";
-import { cardHeader } from "./cardHeader.js";
+
+import { TASK_STATUSES } from "../status.js";
 import { cardFooter } from "./cardFooter.js";
+import { cardHeader } from "./taskHeader.js";
 import { cardBody } from "./cardBody.js";
-
-
-
 
 export const listItem = (task, actions) => {
 
