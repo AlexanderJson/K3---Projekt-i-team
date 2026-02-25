@@ -109,6 +109,8 @@ if ("serviceWorker" in navigator) {
 
 /**
  * Hantera PWA Installation (US-2.4)
+ * Obs: Varningen "beforeinstallpromptevent.preventDefault() called" är förväntad
+ * eftersom vi ersätter standardbeteendet med vår egen anpassade installationsbanner.
  */
 let deferredPrompt;
 
