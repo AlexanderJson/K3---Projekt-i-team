@@ -68,7 +68,7 @@ describe('peopleService', () => {
         it('should do nothing if person already exists', () => {
             saveState({ people: ["Alice"] });
             const preSave = store['state'];
-            notifyCount = 0; // reset after setup
+            notifyCount = 0;  
 
             addPerson('Alice');
             expect(store['state']).toBe(preSave);
@@ -77,18 +77,17 @@ describe('peopleService', () => {
 
         it('should add person to existing people', () => {
             saveState({ people: ["Alice"] });
-            notifyCount = 0; // reset after setup
-
+            notifyCount = 0; 
             addPerson('Bob');
 
             const state = loadState();
             expect(state.people).toEqual(["Alice", "Bob"]);
-            expect(notifyCount).toBe(2); // saveState + direct notify
+            expect(notifyCount).toBe(2);  
         });
 
         it('should add person to default people if no state people exist', () => {
             saveState({});
-            notifyCount = 0; // reset after setup
+            notifyCount = 0;  
 
             addPerson('Bob');
 
@@ -102,7 +101,7 @@ describe('peopleService', () => {
         it('should do nothing if newName is empty', () => {
             saveState({ people: ["Person 1"] });
             const preSave = store['state'];
-            notifyCount = 0; // reset after setup
+            notifyCount = 0;  
 
             renamePerson('Person 1', '');
             expect(store['state']).toBe(preSave);

@@ -5,31 +5,47 @@ let loadState, saveState;
 let initContactsDB, importContacts, getAllContacts;
 let createTask;
 
+if (typeof global.File === "undefined") {
+  global.File = class File {
+    constructor(parts = [], name = "file.csv", options = {}) {
+      this._text = parts.map(p =>
+        typeof p === "string" ? p : String(p)
+      ).join("");
+      this.name = name;
+      this.type = options.type || "";
+      this.size = this._text.length;
+    }
+    async text() {
+      return this._text;
+    }
+  };
+}
+
 describe("seed data utilities", () => {
     beforeEach(async () => {
         jest.resetModules();
         jest.clearAllMocks();
-
-        const mockStorage = {
-            loadState: jest.fn(),
-            saveState: jest.fn()
+        initTasksCSV = module.initTasksCSV;
+const mockStorage = { loadState: jest.fn(), saveState: jest.fn() };
+        const mockContactsDb = { 
+            initContactsDB: jest.fn().mockResolvedValue(), 
+            importContacts: jest.fn().mockResolvedValue(), 
+            getAllContacts: jest.fn().mockResolvedValue([]) 
         };
 
-        const mockContactsDb = {
-            initContactsDB: jest.fn().mockResolvedValue(),
-            importContacts: jest.fn().mockResolvedValue(),
-            getAllContacts: jest.fn().mockResolvedValue([])
-        };
 
         const mockTasks = {
             createTask: jest.fn((input) => ({ ...input, isCreated: true }))
         };
 
         jest.unstable_mockModule("../js/storage.js", () => mockStorage);
+
         jest.unstable_mockModule("../js/utils/contactsDb.js", () => mockContactsDb);
+
         jest.unstable_mockModule("../js/data/tasks.js", () => mockTasks);
 
         const module = await import("../js/taskList/seed.js");
+
         initSeed = module.initSeed;
         loadDemoWorkspace = module.loadDemoWorkspace;
         loadDemoLIA = module.loadDemoLIA;
@@ -41,6 +57,20 @@ describe("seed data utilities", () => {
         getAllContacts = mockContactsDb.getAllContacts;
         createTask = mockTasks.createTask;
     });
+
+
+
+  test("throws if fetch fails", async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: false });
+
+    const service = {
+      getTasks: jest.fn().mockReturnValue([]),
+      addTask: jest.fn()
+    };
+
+    await expect(initTasksCSV(service)).rejects.toThrow();
+  });
+
 
     test("initSeed populates state if empty", () => {
         loadState.mockReturnValue({}); // Empty state
@@ -56,7 +86,7 @@ describe("seed data utilities", () => {
         expect(state.tasks.length).toBeGreaterThan(0);
         expect(createTask).toHaveBeenCalled();
 
-        expect(initContactsDB).toHaveBeenCalled(); // Contacts are also seeded
+        expect(initContactsDB).toHaveBeenCalled(); 
     });
 
     test("initSeed does not overwrite existing people/tasks", () => {
@@ -121,10 +151,9 @@ describe("seed data utilities", () => {
 
         await loadDemoWorkspace();
 
-        // Tech demo creates 10 contacts. We mock that Emma is already there. So importContacts is called with 9.
         expect(importContacts).toHaveBeenCalled();
         const importedArray = importContacts.mock.calls[0][0];
-        expect(importedArray.length).toBe(9); // 10 original - 1 existing
+        expect(importedArray.length).toBe(9);
         expect(importedArray.find(c => c.name === "Emma Lindqvist")).toBeUndefined();
     });
 });

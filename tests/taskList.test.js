@@ -34,12 +34,10 @@ describe("taskList component", () => {
         expect(element.className).toContain("task-column");
         expect(element.getAttribute("data-status")).toBe("Att göra");
 
-        // Header
         const header = element.querySelector(".taskHeader");
         expect(header.textContent).toContain("ATT GÖRA");
         expect(header.textContent).toContain("2"); // count
 
-        // Items
         const items = element.querySelectorAll(".mock-list-item");
         expect(items.length).toBe(2);
         expect(items[0].textContent).toBe("Task 1");
@@ -62,7 +60,6 @@ describe("taskList component", () => {
     });
 
     test("Toggles column expand/collapse", () => {
-        // Initial state is expanded (0 tasks, but we don't care, default is expanded unless "collapsed" stored)
         const element = taskList("Att göra", [{ id: 1, title: "T1" }]);
         const header = element.querySelector(".taskHeader");
         const container = element.querySelector(".task-list-items");
@@ -70,13 +67,11 @@ describe("taskList component", () => {
         expect(element.classList.contains("collapsed")).toBe(false);
         expect(container.style.display).toBe("flex");
 
-        // Click to collapse
         header.click();
         expect(element.classList.contains("collapsed")).toBe(true);
         expect(container.style.display).toBe("none");
         expect(localStorage.getItem("column_state_Att göra")).toBe("collapsed");
 
-        // Click to expand
         header.click();
         expect(element.classList.contains("collapsed")).toBe(false);
         expect(container.style.display).toBe("flex");

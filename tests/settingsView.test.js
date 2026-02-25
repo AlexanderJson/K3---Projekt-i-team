@@ -68,8 +68,7 @@ describe("settingsView", () => {
         importContacts = mockContactsDb.importContacts;
         showToast = mockToast.showToast;
 
-        // Default mock data
-        loadState.mockReturnValue({
+         loadState.mockReturnValue({
             people: ["Ingen", "Anna", "Björn"],
             settings: {
                 teamName: "Test Team",
@@ -78,8 +77,7 @@ describe("settingsView", () => {
             }
         });
 
-        // Mock global fetch or window methods if needed
-        window.alert = jest.fn();
+         window.alert = jest.fn();
         window.confirm = jest.fn().mockReturnValue(true);
         window.URL.createObjectURL = jest.fn().mockReturnValue("blob:http://localhost/123");
         window.URL.revokeObjectURL = jest.fn();
@@ -97,7 +95,7 @@ describe("settingsView", () => {
         expect(teamNameInput.value).toBe("Test Team");
 
         const memberRows = container.querySelectorAll(".member-row input");
-        expect(memberRows.length).toBe(2); // "Ingen" should be skipped
+        expect(memberRows.length).toBe(2);  
         expect(memberRows[0].value).toBe("Anna");
         expect(memberRows[1].value).toBe("Björn");
     });
@@ -118,7 +116,7 @@ describe("settingsView", () => {
         const deleteBtns = container.querySelectorAll(".btn-delete-small");
         expect(deleteBtns.length).toBe(2);
 
-        deleteBtns[0].click(); // Delete Anna
+        deleteBtns[0].click();  
 
         const memberRows = container.querySelectorAll(".member-row input");
         expect(memberRows.length).toBe(1);
@@ -128,8 +126,7 @@ describe("settingsView", () => {
     test("Saves settings correctly", () => {
         renderSettings(container, rerenderCallback);
 
-        // Change team name
-        container.querySelector("#teamNameInput").value = "New Team";
+         container.querySelector("#teamNameInput").value = "New Team";
 
         const saveBtn = container.querySelector(".btn-save-main");
         saveBtn.click();
@@ -189,7 +186,7 @@ describe("settingsView", () => {
 
         exportBtn.click();
         await flushPromises();
-        await flushPromises(); // Give export time to await contactsDB
+        await flushPromises();  
 
         expect(initContactsDB).toHaveBeenCalled();
         expect(getAllContacts).toHaveBeenCalled();
@@ -203,7 +200,7 @@ describe("settingsView", () => {
         const input = container.querySelector("input[type='file']");
         const jsonStr = JSON.stringify({ state: { settings: { teamName: "Imported" } }, contacts: [] });
         const file = new File([jsonStr], "backup.json", { type: "application/json" });
-        file.text = jest.fn().mockResolvedValue(jsonStr); // Mock for JSDOM
+        file.text = jest.fn().mockResolvedValue(jsonStr);  
 
         await fireEvent.change(input, { target: { files: [file] } });
         await flushPromises();
@@ -242,8 +239,7 @@ describe("settingsView", () => {
         const buttons = Array.from(container.querySelectorAll(".btn-load-demo"));
         const enableBtn = buttons.find(b => b.textContent.includes("Aktivera Notiser"));
 
-        // Need to mock window.Notification
-        const originalNotification = window.Notification;
+         const originalNotification = window.Notification;
 
         window.Notification = {
             requestPermission: jest.fn().mockResolvedValue("granted"),
@@ -259,6 +255,57 @@ describe("settingsView", () => {
         window.Notification = originalNotification;
     });
 
+
+
+    test("Correctly deals with empty or duplicate 'ingen' names on save", () =>{
+        renderSettings(container, rerenderCallback);
+        const addMemberBtn = container.querySelector(".btn-add-full");
+        addMemberBtn.click();
+        addMemberBtn.click();
+        const inputs = container.querySelectorAll(".member-row input");
+        inputs[inputs.length - 2].value = "Ingen";
+        inputs[inputs.length - 1].value = "   ";
+        const saveBtn = container.querySelector(".btn-save-main");
+        saveBtn.click();
+        const savedState = saveState.mock.calls[0][0];
+        expect(savedState.people).toEqual(["Ingen", "Anna", "Björn"]);
+    })
+
+
+    test("Should rerender if no 'rerenderCallback' is provided", () =>{
+        renderSettings(container, null);
+        const saveBtn = container.querySelector(".btn-save-main");
+        saveBtn.click();
+        expect(container.querySelector("#teamNameInput")).toBeTruthy();
+    })
+
+
+    test("Deals with failed backup import (invalid JSON)",async () =>{
+        const alertSpy = jest.spyOn(window,'alert').mockImplementation(() => {});
+        renderSettings(container, rerenderCallback);
+        const input = container.querySelector("input[type='file']");
+        const file = new File(["not-json"], "bad.json", { type: "application/json" });
+        file.text = jest.fn().mockResolvedValue("not-json");
+
+        await fireEvent.change(input, { target: { files: [file] } });
+        await flushPromises();
+
+        expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining("Kunde inte läsa backup-filen"));
+        alertSpy.mockRestore();
+    })
+
+
+
+
+
+
+
+
+
+
+
+
+
     test("Sends test notification via fallback if no SW", async () => {
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
         renderSettings(container, rerenderCallback);
@@ -268,8 +315,7 @@ describe("settingsView", () => {
 
         const mockNotificationConstructor = jest.fn();
 
-        // Replace Notification class with a mock function
-        window.Notification = class {
+         window.Notification = class {
             constructor(title, options) {
                 mockNotificationConstructor(title, options);
             }

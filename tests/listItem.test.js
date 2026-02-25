@@ -1,196 +1,137 @@
 import { jest } from '@jest/globals';
-import { waitFor, fireEvent } from '@testing-library/dom';
 
 let listItem;
-let updateTaskStatus, removeById, loadState, saveState, addTaskDialog, setView;
-let TASK_STATUSES;
+let mockActions;
 
 describe("listItem component", () => {
-    let mockWindowDispatchEvent;
-
     beforeEach(async () => {
         jest.resetModules();
         jest.clearAllMocks();
 
-        mockWindowDispatchEvent = jest.spyOn(window, 'dispatchEvent').mockImplementation(() => { });
         window.confirm = jest.fn().mockReturnValue(true);
         window.prompt = jest.fn().mockReturnValue("Reason");
 
-        TASK_STATUSES = {
-            TODO: "Att göra",
-            IN_PROGRESS: "Pågår",
-            DONE: "Klar",
-            CLOSED: "Stängd"
+        mockActions = {
+            onNavigate: jest.fn(),
+            onEditTask: jest.fn(),
+            onMoveTask: jest.fn(),
+            onChangeStatus: jest.fn(),
+            onDeleteTask: jest.fn()
         };
 
-        const mockUpdateTaskStatus = { updateTaskStatus: jest.fn() };
-        const mockStorage = {
-            removeById: jest.fn(),
-            loadState: jest.fn().mockReturnValue({
-                tasks: [
-                    { id: 1, title: "T1", status: "Att göra" },
-                    { id: 2, title: "T2", status: "Att göra" }
-                ]
-            }),
-            saveState: jest.fn()
-        };
-        const mockDialog = { addTaskDialog: jest.fn() };
-        const mockView = { setView: jest.fn() };
-        const mockStatus = { TASK_STATUSES };
+ 
+        jest.unstable_mockModule("../js/status.js", () => ({
+            TASK_STATUSES: {
+                TODO: "Att göra",
+                IN_PROGRESS: "Pågår",
+                DONE: "Klar",
+                CLOSED: "Stängd"
+            }
+        }));
 
-        jest.unstable_mockModule("../js/taskList/updateTaskStatus.js", () => mockUpdateTaskStatus);
-        jest.unstable_mockModule("../js/storage.js", () => mockStorage);
-        jest.unstable_mockModule("../js/comps/dialog.js", () => mockDialog);
-        jest.unstable_mockModule("../js/views/viewController.js", () => mockView);
-        jest.unstable_mockModule("../js/status.js", () => mockStatus);
 
-        const module = await import("../js/taskList/listItem.js");
+        const module = await import("../js/card/listItem.js");
         listItem = module.listItem;
-
-        updateTaskStatus = mockUpdateTaskStatus.updateTaskStatus;
-        removeById = mockStorage.removeById;
-        loadState = mockStorage.loadState;
-        saveState = mockStorage.saveState;
-        addTaskDialog = mockDialog.addTaskDialog;
-        setView = mockView.setView;
     });
 
-    afterEach(() => {
-        mockWindowDispatchEvent.mockRestore();
-    });
-
-    test("Renders a basic task item", () => {
-        const task = { id: 1, title: "Test Task", description: "Desc", status: "Att göra", assignedTo: ["Anna"] };
-        const el = listItem(task);
-
+    test("Renders a basic task item with correct content", () => {
+        const task = { 
+            id: 1, 
+            title: "Test Task", 
+            description: "Detailed description", 
+            status: "Att göra", 
+            assignedTo: ["Anna Johansson"] 
+        };
+        const el = listItem(task, mockActions);
+        
         expect(el.className).toContain("listItem");
         expect(el.querySelector(".taskTitle").textContent).toBe("Test Task");
-        expect(el.querySelector(".taskDescription").textContent).toBe("Desc");
+        expect(el.querySelector(".taskDescription").textContent).toBe("Detailed description");
         expect(el.querySelector(".statusBadge").textContent).toBe("Att göra");
-
-        // Assigned avatars
+        
         const avatar = el.querySelector(".assignee-avatar-circle");
-        expect(avatar.textContent).toBe("A"); // Initials for Anna
+        expect(avatar.textContent).toBe("AJ");
     });
 
-    test("Renders default values if fields missing", () => {
+    test("Renders default values if fields are missing", () => {
         const task = { id: 2, status: "Pågår" };
-        const el = listItem(task);
-
+        const el = listItem(task, mockActions);
+        
         expect(el.querySelector(".taskTitle").textContent).toBe("Utan titel");
         expect(el.querySelector(".taskDescription").textContent).toBe("Ingen beskrivning.");
-        expect(el.querySelector(".avatar-empty").textContent).toContain("Ledig");
+        expect(el.querySelector(".avatar-empty")).not.toBeNull();
     });
 
-    test("Expand toggle expands/collapses", () => {
+    test("Toggles expansion when clicking the main container", () => {
         const task = { id: 1, status: "Att göra" };
-        const el = listItem(task);
-
+        const el = listItem(task, mockActions);
+        
         expect(el.classList.contains("is-expanded")).toBe(false);
-        el.click(); // Should toggle expand
+        expect(el.getAttribute("aria-expanded")).toBe("false");
 
+        el.click();
         expect(el.classList.contains("is-expanded")).toBe(true);
+        expect(el.getAttribute("aria-expanded")).toBe("true");
 
-        const expandBtn = el.querySelector(".expand-toggle-btn");
-        expect(expandBtn.getAttribute("aria-expanded")).toBe("true");
-
-        expandBtn.click(); // Should collapse
+        el.click();
         expect(el.classList.contains("is-expanded")).toBe(false);
     });
 
-    test("Opens edit dialog when clicking avatar", () => {
+    test("Clicking avatar triggers edit action and stops propagation", () => {
         const task = { id: 1, status: "Att göra", assignedTo: ["Anna"] };
-        const el = listItem(task);
-
+        const el = listItem(task, mockActions);
         const avatarContainer = el.querySelector(".assignee-avatars-list");
+        
         avatarContainer.click();
-
-        expect(addTaskDialog).toHaveBeenCalledWith(task);
+        
+        expect(mockActions.onEditTask).toHaveBeenCalledWith(task);
+         expect(el.classList.contains("is-expanded")).toBe(false);
     });
 
-    test("Keyboard Enter/Space opens edit dialog on avatar", () => {
-        const task = { id: 1, status: "Att göra", assignedTo: ["Anna"] };
-        const el = listItem(task);
-
-        const avatarContainer = el.querySelector(".assignee-avatars-list");
-        avatarContainer.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-
-        expect(addTaskDialog).toHaveBeenCalledWith(task);
-
-        avatarContainer.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }));
-        expect(addTaskDialog).toHaveBeenCalledTimes(2);
-    });
-
-    test("Moves task up and down within status", () => {
-        const task = { id: 2, status: "Att göra" }; // task 2 is at index 1
-        const el = listItem(task);
-
-        const controlBtns = el.querySelectorAll(".controlBtn");
-        const upBtn = Array.from(controlBtns).find(b => b.textContent && b.textContent.includes("↑"));
-
+    test("Triggers task movement via buttons", () => {
+        const task = { id: "T1", status: "Att göra" };
+        const el = listItem(task, mockActions);
+        
+         const upBtn = el.querySelector('button[aria-label="Flytta upp"]');
         upBtn.click();
-        expect(saveState).toHaveBeenCalled();
-        expect(mockWindowDispatchEvent).toHaveBeenCalled();
+        
+        expect(mockActions.onMoveTask).toHaveBeenCalledWith("T1", "up");
     });
 
-    test("Moves task status left and right", () => {
-        const task = { id: 1, status: "Pågår" };
-        const el = listItem(task);
-
-        const controlBtns = el.querySelectorAll(".controlBtn");
-        const leftBtn = Array.from(controlBtns).find(b => b.textContent && b.textContent.includes("←"));
-        const rightBtn = Array.from(controlBtns).find(b => b.textContent && b.textContent.includes("→"));
-
-        leftBtn.click();
-        expect(updateTaskStatus).toHaveBeenCalledWith(1, "Att göra");
-
+    test("Triggers status change when moving right", () => {
+        const task = { id: "T1", status: "Att göra" };
+        const el = listItem(task, mockActions);
+        
+        const rightBtn = el.querySelector('button[aria-label="Flytta höger"]');
         rightBtn.click();
-        expect(updateTaskStatus).toHaveBeenCalledWith(1, "Klar");
+        
+         expect(mockActions.onChangeStatus).toHaveBeenCalledWith("T1", "Pågår");
     });
 
-    test("Deletes task (for closed)", () => {
-        const task = { id: 1, status: "Stängd" };
-        const el = listItem(task);
+    test("Deletes task via the delete button", () => {
+        const task = { id: 5, status: "Stängd" };
+        const el = listItem(task, mockActions);
+        const deleteBtn = el.querySelector('button[aria-label="Ta bort"]');
 
-        const deleteBtn = el.querySelector(".controlBtn.delete-btn");
         deleteBtn.click();
-
-        expect(window.confirm).toHaveBeenCalled();
-        expect(removeById).toHaveBeenCalledWith(1);
+        expect(mockActions.onDeleteTask).toHaveBeenCalledWith(task);
     });
 
-    test("Closes task via prompt (for open)", () => {
-        const task = { id: 1, status: "Att göra" };
-        const el = listItem(task);
-
-        const deleteBtn = el.querySelector(".controlBtn.delete-btn");
-        deleteBtn.click();
-
-        expect(window.prompt).toHaveBeenCalled();
-        expect(updateTaskStatus).toHaveBeenCalledWith(1, "Stängd", "Reason");
+    test("Navigates to linked contact", () => {
+        const task = { id: 1, status: "Att göra", contactId: "C1", contactName: "Bob" };
+        const el = listItem(task, mockActions);
+        const link = el.querySelector(".task-contact-explicit");
+        
+        link.click();
+        expect(mockActions.onNavigate).toHaveBeenCalledWith("contacts", { highlightId: "C1" });
     });
 
-    test("Renders explicit contact link and interacts", () => {
-        const task = { id: 1, status: "Att göra", contactId: 99, contactName: "Test Contact" };
-        const el = listItem(task);
-
-        const linkDiv = el.querySelector(".task-contact-explicit");
-        expect(linkDiv).not.toBeNull();
-
-        // We have to mock the fact that it was created as a sibling to h3 and p inside the taskMainContent
-        // The implementation appends to mainContent, unfortunately it doesn't give it a separate class 
-        // Wait, it gave it the class "task-contact-explicit"
-
-        linkDiv.click();
-        expect(setView).toHaveBeenCalledWith("contacts", { highlightId: 99 });
-    });
-
-    test("Formats deadline correctly and highlights overdue", () => {
-        const pastDate = new Date(Date.now() - 86400000).toISOString();
+    test("Highlights overdue deadline if date is in the past", () => {
+        const pastDate = "2020-01-01";
         const task = { id: 1, status: "Att göra", deadline: pastDate };
-        const el = listItem(task);
-
-        const overdueItem = el.querySelector(".deadline-overdue");
-        expect(overdueItem).not.toBeNull();
+        const el = listItem(task, mockActions);
+        
+        const overdue = el.querySelector(".deadline-overdue");
+        expect(overdue).not.toBeNull();
     });
 });

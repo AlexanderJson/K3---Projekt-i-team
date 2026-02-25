@@ -1,4 +1,5 @@
 
+
 export class TaskService
 {
      constructor(repo)
@@ -71,7 +72,7 @@ export class TaskService
      }
     
 
-
+     
      updateTask(updatedTask)
      {
         if (!updatedTask || updatedTask.id == null) return null;
@@ -105,6 +106,14 @@ export class TaskService
         * add to batchSaved(map) and dirtIds(id)
         * return task by id - more expensive, but safe way to make sure the task got added
     */
+
+
+/*
+     Testa:
+     branches: 
+     4: (expect(null), expect(null), expect(doesNOTcall generateID), success -> expect (CALLS generateID), expect(returns task))
+
+*/
     addTask(task)
     {
         if (!task) return null;
@@ -115,7 +124,6 @@ export class TaskService
             return null; //Could update but it mixes too many concepts and makes it harder to communicate errors with the user
         } 
         // Otherwise we generate a new ID based on our formatting
-        // and yes, this should overwrite 
         if (!task.id) task.id = this._generateId();
         this.getLatestOrderId(task);
 
@@ -141,9 +149,9 @@ export class TaskService
         returns by status.
      */
 
-        byStatus(status) {
+    byStatus(status) {
         return this._filter("status", status);
-        }
+    }
      changeStatus(id, newStatus)
      {
         if (!id || !newStatus) return null;
@@ -176,12 +184,27 @@ export class TaskService
         return this.getTasks().sort((a, b) => this._compareRank(a.order || "", b.order || ""));
     }
 
+
+
     /*
+        This consumes the ids aka clears it and returns the ids.
+    */
+    /*
+    consumeDirtyIds()
+    {
+        const ids = Array.from(this.dirtyIds);
+        this.dirtyIds.clear();
+        console.log("Consumed dirtyIds:", ids);
+        return ids;
+    }
+
+
+    
         This adds an ID to the dirtyIds set. 
         The idea is to keep track of currently changed items
         so we only update them while rerendering in list.
         I put a threshold of max 20 ids before flushing it.
-    */
+    
 
     markDirty(id)
     {        
@@ -191,19 +214,6 @@ export class TaskService
         if(this.dirtyIds.size >= maxBatchSize) this.consumeDirtyIds();
         this.dirtyIds.add(id);
     }
-
-    /*
-        This consumes the ids aka clears it and returns the ids.
-    */
-
-    consumeDirtyIds()
-    {
-        const ids = Array.from(this.dirtyIds);
-        this.dirtyIds.clear();
-        console.log("Consumed dirtyIds:", ids);
-        return ids;
-    }
-
 
     consumeChangedTasks()
     {
@@ -220,7 +230,7 @@ export class TaskService
         return ids.map(id => this.getTaskById(id) || null);
 
     }
-    
+    */
 
     
 
@@ -262,7 +272,7 @@ export class TaskService
     getTasksByStatus(status) {
         return this.byStatus(status)
             .sort((a, b) => this._compareRank(a.order || "", b.order || ""));
-        }
+    }
 
 
 

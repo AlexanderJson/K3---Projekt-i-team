@@ -3,8 +3,7 @@ import { waitFor, fireEvent } from '@testing-library/dom';
 
 const flushPromises = () => new Promise(process.nextTick);
 
-// Mock globals
-global.qrcode = function (a, b) {
+ global.qrcode = function (a, b) {
     this.addData = jest.fn();
     this.make = jest.fn();
     this.createImgTag = jest.fn().mockReturnValue("<img>");
@@ -289,16 +288,14 @@ describe("contactsView", () => {
 
         fireEvent.change(importCsvInput);
 
-        // Trigger onload
-        if (mockFileReader.onload) mockFileReader.onload({ target: { result: mockFileReader.result } });
+         if (mockFileReader.onload) mockFileReader.onload({ target: { result: mockFileReader.result } });
         await flushPromises();
 
         const overlay = document.body.querySelector(".csv-modal-overlay");
         expect(overlay).not.toBeNull();
         expect(overlay.innerHTML).toContain("CSV Import");
 
-        // Find import button
-        const buttons = overlay.querySelectorAll("button");
+         const buttons = overlay.querySelectorAll("button");
         const importBtn = Array.from(buttons).find(b => b.textContent.includes("Importera"));
 
         importContacts.mockResolvedValue();
@@ -331,7 +328,7 @@ describe("contactsView", () => {
 
         const detailPanel = container.querySelector(".contacts-detail");
         const tabs = detailPanel.querySelectorAll(".detail-tab-btn");
-        tabs[1].click(); // Go to CRM tab
+        tabs[1].click();  
 
         const timeline = detailPanel.querySelector(".crm-timeline");
         expect(timeline).not.toBeNull();
@@ -356,12 +353,10 @@ describe("contactsView", () => {
         const nameInput = overlay.querySelector("input[type='text']");
         expect(nameInput.value).toBe("Edit Me");
 
-        // Cleanup
-        overlay.remove();
+         overlay.remove();
     });
 
     test("Toggles Mobile View classes", async () => {
-        // Change window.innerWidth to mobile size
         global.innerWidth = 500;
         global.dispatchEvent(new Event('resize'));
 
@@ -377,14 +372,14 @@ describe("contactsView", () => {
         expect(master.classList.contains("hidden-mobile")).toBe(true);
         expect(detail.classList.contains("hidden-mobile")).toBe(false);
 
-        // Go back
+ 
         const backBtn = detail.querySelector(".detail-back-btn");
         backBtn.click();
 
         expect(master.classList.contains("hidden-mobile")).toBe(false);
         expect(detail.classList.contains("hidden-mobile")).toBe(true);
 
-        // Reset window size for subsequent tests
+ 
         global.innerWidth = 1024;
     });
 });

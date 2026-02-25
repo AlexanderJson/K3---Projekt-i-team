@@ -1,32 +1,32 @@
 import fs from "fs";
 import path from "path";
 import jestAxe from "jest-axe";
-import { addTaskDialog } from "../js/comps/dialog.js";
-import { listItem } from "../js/taskList/listItem.js";
+import { addTaskDialog } from "../comps/dialog.js";
+import { listItem } from "../taskList/listItem.js";
 import { jest } from '@jest/globals';
 
 const { axe, toHaveNoViolations } = jestAxe;
 expect.extend(toHaveNoViolations);
 
 // Mock people service to prevent error in dialog
-jest.unstable_mockModule('../js/people/peopleService.js', () => ({
+jest.unstable_mockModule('../people/peopleService.js', () => ({
     getPeople: jest.fn(() => ['Alex', 'Sarah'])
 }));
 
 // Mock contacts DB to prevent indexedDB error
-jest.unstable_mockModule('../js/utils/contactsDb.js', () => ({
+jest.unstable_mockModule('../utils/contactsDb.js', () => ({
     initContactsDB: jest.fn(() => Promise.resolve()),
     getAllContacts: jest.fn(() => Promise.resolve([]))
 }));
 
 // Mock storage
-jest.unstable_mockModule('../js/storage.js', () => ({
+jest.unstable_mockModule('../storage.js', () => ({
     addState: jest.fn(),
     loadState: jest.fn(() => ({ tasks: [] })),
     saveState: jest.fn()
 }));
 
-const mockDialog = await import('../js/comps/dialog.js');
+const mockDialog = await import('../comps/dialog.js');
 
 describe("Accessibility checks (jest-axe)", () => {
     test("index.html should have no accessibility violations", async () => {

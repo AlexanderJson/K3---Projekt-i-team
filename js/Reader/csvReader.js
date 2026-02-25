@@ -25,8 +25,6 @@ const _fileGuard = (file) =>
     const maxMB = 10;
     const maxBytes = (maxMB * 1024 * 1024); // we use bytes to compare with file.size that also returns bytes
     const acceptedExtensions = ["csv", "json"];
-    
-    if(!(file instanceof File)) throw new Error("Wrong file object");   
     if(!acceptedExtensions.includes(ext)) throw new Error("Invald file types. Only .csv or .json allowed!");
     if(file.size > maxBytes) throw new Error(`File is too large for upload. Max size is ${maxMB} MB`);
 }

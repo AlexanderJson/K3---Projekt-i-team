@@ -5,7 +5,7 @@ import { openTaskDialog } from "./js/menu/openTaskDialog.js";
 
 
 import { TaskRepo } from "./js/repo/TaskRepo.js";
-import { TaskService } from "./js/service/TaskService.js";
+import { TaskService } from "./js/service/taskService.js";
 import { ViewController } from "./js/views/viewController.js";
 
 import { initTasksCSV } from "./js/taskList/seed.js";
