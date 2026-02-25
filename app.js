@@ -85,7 +85,7 @@ if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
       /** @type {ServiceWorkerRegistration} */
-      const registration = await navigator.serviceWorker.register("/service-worker.js");
+      const registration = await navigator.serviceWorker.register("/K3---Projekt-i-team/service-worker.js");
       console.log("Service Worker registered");
 
       // Vänta tills service workern är aktiv

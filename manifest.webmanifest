@@ -1,10 +1,10 @@
 {
-  "id": "/",
+  "id": "/K3---Projekt-i-team/",
   "name": "Lianer - Responsive Project Management Dashboard",
   "short_name": "Lianer",
   "description": "Lianer is a lightweight, offline-capable project management dashboard built for seamless team collaboration. From idea to done.",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/K3---Projekt-i-team/",
+  "scope": "/K3---Projekt-i-team/",
   "display": "standalone",
   "display_override": [
     "standalone",
