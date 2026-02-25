@@ -69,6 +69,18 @@ Lianer allows teams to collaborate effectively using a classic **SCRUM-board** s
   - **Assignment:** Streamlined workflow allowing members to self-assign based on capacity.
   - **Communication:** Locking tasks requires a mandatory comment, ensuring follow-up is documented.
 
+  - **CRM & Contact Management**
+  - Integrated contact list with dynamic vCard/QR-code generation.
+  - Interaction log and automated status synchronization with the Dashboard.
+
+- **Calendar & iCal Integration**
+  - Interactive calendar with weekly overviews.
+  - iCal support: Import external `.ics` events and export tasks to external calendars.
+
+- **PWA & Offline-first**
+  - Fully functional offline experience utilizing Local Storage and Service Workers.
+  - Installable on home screens via `manifest.webmanifest`.
+
 ---
 
 ## Installation & Usage
@@ -108,14 +120,16 @@ Eftersom detta är en helt klientbaserad applikation krävs ingen specifik backe
 
 ---
 
-## Testing & Quality Assurance
+## Testing, Quality Assurance & Architecture
 
+- **Accessibility (WCAG 2.1 Level AA):** The application ensures an inclusive experience with semantic HTML, advanced ARIA (e.g., `aria-live` for dynamic updates), and professional focus management. Zero keyboard traps and full keyboard navigation.
+- **Advanced Architecture:** Built with a strong focus on *Separation of Concerns*. UI logic is broken down into reusable, modular components (e.g., `btn.js`, `ariaAnnouncer.js`) for scalability.
 - **Browsers:** Verified compatibility in Google Chrome, Mozilla Firefox, and Safari.
 - **Responsiveness:** Validated using Chrome DevTools device simulation for mobile, tablet, and desktop.
-- **Code Standards:** - **HTML:** Passed W3C Validator.
-  - **CSS:** Passed Jigsaw Validator.
-  - **Performance:** Audited via Lighthouse for SEO and accessibility.
-  - **Unit tests:** Code is tested with Jest
+- **Code Standards:** 
+  - **HTML/CSS:** Passed W3C and Jigsaw Validators.
+  - **Performance:** Audited via Lighthouse CI with strict targets (>80% in all categories) and 0 critical errors in axe accessibility tests.
+- **Unit tests:** Logic and accessibility tested automatically with Jest and `jest-axe`.
 
 ### Running Tests
 
@@ -157,6 +171,25 @@ The project is live and hosted via GitHub Pages.
 - The fonts were taken from [Google Fonts](https://fonts.google.com/)
 
 ---
+
+## Agile Process & Scrum Methodology
+
+The project was executed using an agile workflow based on the Scrum framework, divided into three structured sprints:
+
+- **Sprint Planning:** Before each sprint, User Stories were broken down into concrete, estimated tasks, and a clear sprint goal was set.
+- **Daily Standups:** Brief daily syncs (15 minutes) were held to discuss progress and identify blockers.
+- **Sprint Retrospectives:** Evaluated the process post-sprint using the "MAD / SAD / GLAD" method to continuously improve our workflow.
+- **Iterative Code Reviews:** Our Pull Request process evolved from simple approvals to strict quality gates, ensuring JSDoc, CSS structure, and manual WCAG verification before merging to the `main` branch.
+
+> **Role Rotation:**  
+> As a compact team, we rotated responsibilities throughout the sprints.  
+> This meant we alternated between Developer, Scrum Master, and Product Owner roles depending on the situation - planning scope, facilitating ceremonies, implementing features, and reviewing quality.  
+> In short: same team, multiple hats.
+
+> > **Reflection:**  
+> Working this way gave us a real understanding of how Scrum works in practice, not just in theory.  
+> By rotating roles and staying transparent in our retrospectives, we handled setbacks like illness without losing momentum and kept a steady pace all the way to the finish.  
+> Small team, big responsibility  Team Malmö delivers!
 
 ## Contributors
 
