@@ -143,7 +143,7 @@ self.addEventListener('push', event => {
 
   if (event.data) {
     try { data = event.data.json(); }
-    catch (e) { data.body = event.data.text(); }
+    catch { data.body = event.data.text(); }
   }
 
   const options = {
