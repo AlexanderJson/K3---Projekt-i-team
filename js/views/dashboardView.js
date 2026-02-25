@@ -166,7 +166,9 @@ function createTaskBox(name, state, favorites, wrapper, container) {
 
   const tasks = state.tasks || [];
   const filteredTasks = tasks.filter(t => t.status !== "Stängd" && t.status !== "CLOSED");
-  const relevantTasks = name === "Team" ? filteredTasks : filteredTasks.filter(t => t.assigned === name);
+  const relevantTasks = name === "Team"
+    ? filteredTasks
+    : filteredTasks.filter(t => (t.assignedTo && t.assignedTo.includes(name)) || t.assigned === name);
   const totalCount = relevantTasks.length;
 
   const total = document.createElement("div");
@@ -189,13 +191,17 @@ function createTaskBox(name, state, favorites, wrapper, container) {
   // Weekly Target
   const weeklyTarget = state.settings?.weeklyTarget || 5;
   const now = new Date();
-  const day = now.getDay() || 7;
+  const day = now.getDay() || 7; // Sunday = 0, Monday = 1, ..., Saturday = 6. Convert to 1-7 where Monday is 1.
   const startOfWeek = new Date(now);
   startOfWeek.setHours(0, 0, 0, 0);
-  startOfWeek.setDate(now.getDate() - day + 1);
+  startOfWeek.setDate(now.getDate() - day + 1); // Set to Monday of current week
+
   const completedThisWeek = relevantTasks.filter(t => {
-    if (!t.completedDate) return false;
-    return new Date(t.completedDate) >= startOfWeek;
+    if (t.status !== "Klar") return false;
+    const doneDate = t.completedDate || t.updatedAt || t.createdAt;
+    if (!doneDate) return true; // Klar without any date = count it
+    const taskDate = new Date(doneDate);
+    return taskDate >= startOfWeek && taskDate <= now; // Ensure it's within the current week up to now
   }).length;
 
   const targetPercent = Math.min(100, Math.round((completedThisWeek / weeklyTarget) * 100));
