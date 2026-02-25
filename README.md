@@ -8,9 +8,16 @@
   <strong>A modern project planner built with Vanilla JavaScript for educational purposes.</strong>
 </p>
 
----
+<p align="center">
+  <br />
+  <a href="https://alexanderjson.github.io/K3---Projekt-i-team/">
+    <img src="https://img.shields.io/badge/TRY_IT_LIVE-Visit_Application-brightgreen?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Live Demo">
+  </a>
+  <br />
+  <sub>Don't feel like reading? <strong><a href="https://alexanderjson.github.io/K3---Projekt-i-team/">Jump straight into the app!</a></strong></sub>
+</p>
 
-https://alexanderjson.github.io/K3---Projekt-i-team/
+---
 
 ## Description
 
@@ -85,42 +92,50 @@ Lianer allows teams to collaborate effectively using a classic **SCRUM-board** s
 
 ## Installation & Usage
 
-För att köra detta projekt lokalt på din maskin, följ dessa steg:
+To run this project locally, follow the steps below.
 
-### Förutsättningar
+Install dependencies
 
-Eftersom detta är en helt klientbaserad applikation krävs ingen specifik backend-server, men det underlättar att ha en lokal utvecklingsserver för att Serve:a filerna korrekt (speciellt för PWA/Service Workers och `manifest.webmanifest`).
+```bash
+npm install
 
-- [Node.js](https://nodejs.org/en/) & npm (för att kunna installera beroenden samt köra tester).
+```bash
+Build the project
 
-### Steg för steg
+```bash
+npm run build
 
-1. **Klona repot**
-   Klipp in detta i din terminal för att ladda ner koden:
-   ```bash
-   git clone https://github.com/AlexanderJson/K3---Projekt-i-team.git
-   ```
-2. **Navigera in i mappen**
-   ```bash
-   cd K3---Projekt-i-team
-   ```
-3. **Installera NPM-paket**
-   Detta steg krävs främst för testning (Jest):
-   ```bash
-   npm install
-   ```
-4. **Kör projektet lokalt**
-   Du kan öppna `index.html` direkt i webbläsaren, ELLER köra den via en lokal server (rekommenderas).
-   Om du exempelvis använder VS Code kan du starta **Live Server**.
-   Alternativt, använd `npx serve`:
-   ```bash
-   npx serve .
-   ```
-   Öppna sedan din webbläsare och gå till `http://localhost:3000` (eller den port din server anger).
+```bash
+Serve the production build
 
----
+```bash
+npm run serve:dist
+
+### Prerequisites
+
+- Node.js (v18 or higher recommended)
+- npm
+```
+
+### Step-by-Step Setup
+
+1. **Clone the repository**
+
+```bash
+git clone https://github.com/AlexanderJson/K3---Projekt-i-team.git
+cd K3---Projekt-i-team
+```
 
 ## Testing, Quality Assurance & Architecture
+
+```
+npx eslint .
+npm run test
+npm run test:coverage
+npm run lighthouse
+or
+npx lighthouse http://localhost:8080/ --output html --output-path ./lh-report.html
+```
 
 - **Accessibility (WCAG 2.1 Level AA):** The application ensures an inclusive experience with semantic HTML, advanced ARIA (e.g., `aria-live` for dynamic updates), and professional focus management. Zero keyboard traps and full keyboard navigation.
 - **Advanced Architecture:** Built with a strong focus on *Separation of Concerns*. UI logic is broken down into reusable, modular components (e.g., `btn.js`, `ariaAnnouncer.js`) for scalability.
@@ -153,8 +168,12 @@ We use **GitHub Actions** to automate our testing pipeline. On every `push` and 
 
 ## Deployment
 
-The project is live and hosted via GitHub Pages.
-**[Visit the Live Site](https://alexanderjson.github.io/K3---Projekt-i-team/)**
+The project is publicly available and deployed via GitHub Pages.
+<p align="center">
+  <a href="https://alexanderjson.github.io/K3---Projekt-i-team/">
+    Visit Live Application
+  </a>
+</p>
 
 ---
 
@@ -209,42 +228,44 @@ This project was developed by:
 
 ---
 
-## Demo & Gallery
+## <p align="center">Demo & Gallery</p>
 
-Här följer en visuell genomgång av applikationen, dess gränssnitt och funktioner.
+<p align="center">
+A visual walkthrough of the application, highlighting core features, interface design, and technical implementation.
+</p>
 
-### Pitch & Slide
+### <p align="center">Pitch Presentation</p>
 
 <p align="center">
   <img src="docs/images/demo/Slide3.jpg" alt="PWA & Offline" width="800">
-  <br><em>PWA & Offline-first funktionalitet</em>
+  <br><em>PWA & Offline-first Functionality</em>
 </p>
 <p align="center">
   <img src="docs/images/demo/Slide4.jpg" alt="Kalender" width="800">
-  <br><em>Kalender med Veckonummer & .ics export</em>
+  <br><em>Calendar & .ics export</em>
 </p>
 <p align="center">
   <img src="docs/images/demo/Slide5.jpg" alt="CRM" width="800">
-  <br><em>Integrerat CRM med QR-generering</em>
+  <br><em>Integrated CRM with QR-code generation</em>
 </p>
 <p align="center">
   <img src="docs/images/demo/Slide6.jpg" alt="Taskboard" width="800">
-  <br><em>Avancerad Uppgiftshantering (Kanban)</em>
+  <br><em>Advanced Task Management (Kanban)</em>
 </p>
 <p align="center">
   <img src="docs/images/demo/Slide7.jpg" alt="Scrum" width="800">
-  <br><em>Agila Verktyg & SCRUM-stöd</em>
+  <br><em>Agile Tools & Scrum Support</em>
 </p>
 <p align="center">
   <img src="docs/images/demo/Slide8.jpg" alt="WCAG" width="800">
-  <br><em>WCAG 2.1 AA Tillgänglighetsstandard</em>
+  <br><em>WCAG 2.1 AA Accessibility Standard</em>
 </p>
 <p align="center">
   <img src="docs/images/demo/Slide9.jpg" alt="Arkitektur" width="800">
-  <br><em>Arkitektur, Demolägen och Datasäkerhet</em>
+  <br><em>Architecture, Demo Modes & Data Security</em>
 </p>
 
-### Screenshots från Applikationen
+### <p align="center">Application Screenshots</p>
 
 **Dashboard:**
 
@@ -257,7 +278,7 @@ Här följer en visuell genomgång av applikationen, dess gränssnitt och funkti
   <img src="docs/images/screenshots/lightmode mobile.png" alt="Lightmode Mobile" width="300">
 </p>
 
-**Taskboard / Uppgiftshantering:**
+**Task Board:**
 
 <p align="center">
   <img src="docs/images/screenshots/taskboard team desk.png" alt="Taskboard Desktop" width="800">
@@ -271,7 +292,7 @@ Här följer en visuell genomgång av applikationen, dess gränssnitt och funkti
   <img src="docs/images/screenshots/add task mobile.png" alt="Add Task Mobile" width="300">
 </p>
 
-**CRM & Planering:**
+**CRM & Planning:**
 
 <p align="center">
   <img src="docs/images/screenshots/contactCRM desk.png" alt="CRM Desktop" width="800">
