@@ -128,26 +128,22 @@ export class TaskService
     /*
         Returns full task by ID
     */
-    getTaskById(id)
-    {
-        const t =  this.tasks.get(id);
-        console.log(`Fetched task ${t.id}: ${t.title}`);
-        return t;
+    getTaskById(id) {
+    const t = this.tasks.get(id);
+    if (!t) return null;
+    console.log(`Fetched task ${t.id}: ${t.title}`);
+    return t;
     }
-    
+        
 
      /*
         Just default filtering if needed. 
         returns by status.
      */
 
-     byStatus(status)
-     {
-        const tasks = this._filter("status",status);
-        console.log("STATUS CHANG ",tasks.status);
-        return this._filter("status",status);
-     }
-
+        byStatus(status) {
+        return this._filter("status", status);
+        }
      changeStatus(id, newStatus)
      {
         if (!id || !newStatus) return null;
@@ -236,7 +232,8 @@ export class TaskService
         {
           task.order = startingPoint;  
         } else {
-            const sorted = [...tasks].sort((a, b) => this._compareRank(a.order, b.order));              const lastTask = sorted.pop();
+            const sorted = [...tasks].sort((a, b) => this._compareRank(a.order, b.order));              
+            const lastTask = sorted.pop();
             task.order = this._genOrderId(lastTask.order || startingPoint);
             console.log(" task order: ",task.order)
 
@@ -246,10 +243,6 @@ export class TaskService
 
 
     // powerOf = (base,num,i) =>  num * (base ** i) 
-
-
-
-        
     _compareRank(a="", b="")
     {
         const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -336,6 +329,7 @@ export class TaskService
         }
 
             const result = ALPHABET[0] + letters.join('');
+            console.log("RESULT:",result)
             return result;
         }
             // 1. måste kunna ta ut varje bokstav per index för värde
