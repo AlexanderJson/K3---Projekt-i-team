@@ -1,6 +1,5 @@
 import { describe, test, expect, beforeEach, jest } from "@jest/globals";
-import { taskService } from "../js/service/taskService.js";
-
+import { TaskService } from "../js/service/taskService.js";
 
 describe("taskService", () => 
     {
@@ -21,7 +20,7 @@ describe("taskService", () =>
             load: jest.fn(),
             save: jest.fn()
         };
-        service = new taskService(store);
+        service = new TaskService(store);
     });
 
     test("addTask should add task to memory and save to storage", () => 
