@@ -547,6 +547,10 @@ dialog.nativeModalDialog {
     color: var(--text-main);
     border-radius: 8px;
     font-family: inherit;
+    /* Force long text to wrap instead of overflowing */
+    word-break: break-all;
+    word-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 .modalInput:focus {

@@ -3,6 +3,7 @@ import { TASK_STATUSES } from "../status.js";
 import { removeById, loadState, saveState } from "../storage.js";
 import { addTaskDialog, showConfirmDialog, showPromptDialog } from "../comps/dialog.js";
 import { setView } from "../views/viewController.js";
+import { getPeople } from "../people/peopleService.js";
 
 const formatDate = (dateStr) => {
   if (!dateStr || dateStr === 0 || dateStr === "Nyss") return "Nyss";
@@ -42,13 +43,30 @@ const renderAssigneeAvatars = (assignedNames = []) => {
 
   if (!assignedNames || assignedNames.length === 0 || (assignedNames.length === 1 && assignedNames[0] === "Ingen")) {
     const empty = document.createElement("span");
-    empty.className = "avatar-empty";
-    empty.innerHTML = "🟢 Ledig <span style='font-size: 10px; opacity: 0.5; margin-left: 4px;'>✎</span>";
+    empty.className = "avatar-empty glow-up-btn";
+    empty.innerHTML = "<span class='status-dot'></span> Ledig";
     container.append(empty);
     return container;
   }
 
   const validNames = assignedNames.filter(name => name && name !== "Ingen");
+  const allPeople = getPeople().filter(name => name !== "Ingen");
+  
+  // If all team members are assigned
+  const isFullTeam = validNames.length > 0 && validNames.length >= allPeople.length;
+
+  if (isFullTeam) {
+    const teamBadge = document.createElement("div");
+    teamBadge.className = "team-badge full-team tooltip-container";
+    teamBadge.setAttribute("aria-label", validNames.join(", "));
+    teamBadge.setAttribute("role", "text");
+    teamBadge.setAttribute("tabindex", "0");
+    const stateUrl = loadState();
+    const currentTeamName = stateUrl?.settings?.teamName || "TEAM MALMÖ";
+    teamBadge.textContent = currentTeamName.toUpperCase();
+    container.append(teamBadge);
+    return container;
+  }
 
   validNames.forEach((name) => {
     const avatar = document.createElement("div");
@@ -109,18 +127,37 @@ export const listItem = (task) => {
     <p class="taskDescription">${task.description || "Ingen beskrivning."}</p>
   `;
 
-  if (task.contactId && task.contactName) {
-    const linkDiv = document.createElement("div");
-    linkDiv.className = "task-contact-explicit";
-    linkDiv.style.cssText = "margin-top: 10px; padding: 6px 10px; background: rgba(34,211,238,0.1); border-radius: 4px; color: var(--accent-cyan); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: bold; border: 1px solid rgba(34,211,238,0.2); width: fit-content;";
-    linkDiv.innerHTML = `<span>🔗</span> Länkad till: ${task.contactName} <span style="opacity:0.6;font-size:10px;">↗</span>`;
+  // Check if notes exist AND have entries
+  const hasNotes = task.notes && task.notes.length > 0;
 
-    linkDiv.onclick = (e) => {
-      e.stopPropagation();
-      setView('contacts', { highlightId: task.contactId });
-    };
+  if ((task.contactId && task.contactName) || hasNotes) {
+    const extraRow = document.createElement("div");
+    extraRow.className = "task-extra-row";
 
-    mainContent.append(linkDiv);
+    if (task.contactId && task.contactName) {
+      const linkDiv = document.createElement("div");
+      linkDiv.className = "task-contact-pill tooltip-container";
+      linkDiv.setAttribute("aria-label", "Gå till kontakt");
+      linkDiv.innerHTML = `<span class="material-symbols-rounded" style="font-size:14px; margin-right:2px;">link</span> Kontakt: ${task.contactName} <span class="material-symbols-rounded arrow-icon">arrow_outward</span>`;
+
+      linkDiv.onclick = (e) => {
+        e.stopPropagation();
+        setView('contacts', { highlightId: task.contactId });
+      };
+
+      extraRow.append(linkDiv);
+    }
+
+    if (hasNotes) {
+      const noteBadge = document.createElement("div");
+      noteBadge.className = "task-note-indicator tooltip-container";
+      noteBadge.setAttribute("aria-label", `Denna uppgift har ${task.notes.length} notering(ar)`);
+      // Använd en paperclip- eller chat-ikon. Vi använder styling i css för att göra den subtle-amber.
+      noteBadge.innerHTML = `<span class="material-symbols-rounded" style="font-size:14px;">chat</span>`;
+      extraRow.append(noteBadge);
+    }
+
+    mainContent.append(extraRow);
   }
 
   const footer = document.createElement("div");
@@ -193,6 +230,15 @@ export const listItem = (task) => {
 
   footer.append(controls);
   div.append(headerRow, mainContent, footer);
+
+  // Klick på själva kortet (men inte knapparna) för att expandera/kollapsa
+  div.addEventListener("click", (e) => {
+    // Om man klickar inuti nav eller avatarer ska vi inte stänga/öppna kortet
+    if (e.target.closest('.taskControls') || e.target.closest('.assignee-avatars-list') || e.target.closest('.task-contact-explicit')) {
+      return;
+    }
+    div.classList.toggle('expanded');
+  });
 
   return div;
 };

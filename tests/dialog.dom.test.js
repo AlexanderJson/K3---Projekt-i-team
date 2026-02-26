@@ -287,7 +287,7 @@ describe('addTaskDialog DOM Component', () => {
 
         // Value should be updated
         expect(titleInput.value.trim()).toBe('Call Anna Andersson');
-        expect(dialogScope.getByText('🔗 Länkad till:')).toBeInTheDocument();
+        expect(dialogScope.getByText('🔗 Kontak:')).toBeInTheDocument();
     });
 
     // We can also test the contact unlinking

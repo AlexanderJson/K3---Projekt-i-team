@@ -81,7 +81,7 @@ export function renderSettings(container, rerenderCallback) {
     const row = document.createElement("div");
     row.className = "member-row";
     row.innerHTML = `
-        <input type="text" value="${name}" class="premium-input member-edit-input" spellcheck="false" placeholder="Namn..." aria-label="Medlemsnamn">
+        <input type="text" value="${name}" data-original-value="${name}" class="premium-input member-edit-input" spellcheck="false" placeholder="Namn..." aria-label="Medlemsnamn">
         <button class="settings-btn btn-delete-small" aria-label="Radera ${name || 'medlem'}">RADERA</button>
     `;
     row.querySelector(".btn-delete-small").onclick = () => {
@@ -413,15 +413,42 @@ export function renderSettings(container, rerenderCallback) {
     s.settings.weeklyTarget = newWeeklyTarget;
     s.settings.weeklyCRMTarget = newWeeklyCRMTarget;
 
-    const newPeople = memberRows
-      .map(r => r.querySelector("input").value.trim())
-      .filter(n => n !== "" && n.toLowerCase() !== "ingen");
+    const newPeopleInputs = memberRows.map(r => r.querySelector("input"));
+    const newPeople = [];
+    const nameMap = {};
+
+    newPeopleInputs.forEach(input => {
+      const newName = input.value.trim();
+      const oldName = input.getAttribute("data-original-value");
+      if (newName !== "" && newName.toLowerCase() !== "ingen") {
+        newPeople.push(newName);
+        if (oldName && oldName !== newName && oldName.toLowerCase() !== "ingen") {
+          nameMap[oldName] = newName;
+        }
+      }
+    });
 
     if (!newPeople.includes("Ingen")) {
       newPeople.unshift("Ingen");
     }
 
     s.people = newPeople;
+
+    // Update existing tasks with renamed members
+    if (s.tasks && Object.keys(nameMap).length > 0) {
+      s.tasks = s.tasks.map(task => {
+        if (task.assigned && Array.isArray(task.assigned)) {
+          // Assigned is an array
+          const newAssignedArray = task.assigned.map(a => nameMap[a] || a);
+          return { ...task, assigned: newAssignedArray };
+        } else if (task.assigned && typeof task.assigned === 'string') {
+          // Assigned is a string
+          return { ...task, assigned: nameMap[task.assigned] || task.assigned };
+        }
+        return task;
+      });
+    }
+
     saveState(s);
     notify();
 

@@ -48,7 +48,7 @@ export const addTaskDialog = (taskToEdit = null) => {
         <textarea id="taskDesc" placeholder="Beskrivning av uppgiften..." class="modalInput" style="min-height: 80px; resize: none;"></textarea>
         
         <div id="linkedContactBadge" style="display:none;align-items:center;gap:6px;background:rgba(34,211,238,0.1);border:1px solid var(--accent-cyan);padding:6px 10px;border-radius:6px;margin-bottom:10px;color:var(--accent-cyan);font-size:12px;">
-          <span>🔗 Länkad till: <strong id="linkedContactName"></strong></span>
+          <span>🔗 Kontak: <strong id="linkedContactName"></strong></span>
           <span id="removeLink" style="cursor:pointer;opacity:0.7;margin-left:auto;">✕</span>
         </div>
 
