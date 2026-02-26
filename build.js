@@ -151,7 +151,7 @@ async function build() {
 
     // 5. Copy and minify vendor JS
     console.log('Copying and minifying vendor files to dist/vendor...');
-    const vendorSrc = path.join(__dirname, 'src', 'vendor');
+    const vendorSrc = path.join(__dirname, 'vendor');
     if (fs.existsSync(vendorSrc)) {
         const vendorDest = path.join(distDir, 'vendor');
         fs.mkdirSync(vendorDest, { recursive: true });
