@@ -52,8 +52,10 @@ const renderAssigneeAvatars = (assignedNames = []) => {
 
   validNames.forEach((name) => {
     const avatar = document.createElement("div");
-    avatar.className = "assignee-avatar-circle";
-    avatar.title = name;
+    avatar.className = "assignee-avatar-circle tooltip-container";
+    avatar.setAttribute("aria-label", name);
+    avatar.setAttribute("role", "text");
+    avatar.setAttribute("tabindex", "0");
 
     // Plockar ut initialerna
     const initials = name.split(" ").map(n => n.charAt(0)).join("").substring(0, 2).toUpperCase();

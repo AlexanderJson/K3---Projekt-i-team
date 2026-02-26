@@ -5,6 +5,7 @@ import { loadState } from "../storage.js";
 
 let container = null;
 let activeView = "dashboard";
+let currentRenderId = 0;
 
 export function initViewController(target) {
   container = target;
@@ -23,6 +24,8 @@ export async function rerenderActiveView() {
 async function render() {
   if (!container) return;
 
+  const renderId = ++currentRenderId;
+
   // Rensa containern helt innan ny rendering för att undvika dubbla element
   container.innerHTML = "";
 
@@ -30,6 +33,7 @@ async function render() {
   const state = loadState();
 
   if (activeView === "dashboard") {
+    if (renderId !== currentRenderId) return;
     // Vi skickar med state även här om dashboardView behöver det
     renderDashboard(container, state);
     return;
@@ -37,18 +41,24 @@ async function render() {
 
   if (activeView === "calendar") {
     const { renderCalendar } = await import("./calendarView.js");
+    if (renderId !== currentRenderId) return;
+    container.innerHTML = ""; // Extra säkerhet ifall importen dragit ut på tiden
     renderCalendar(container);
     return;
   }
 
   if (activeView === "tasks") {
     const { taskScreen } = await import("../taskList/taskScreen.js");
+    if (renderId !== currentRenderId) return;
+    container.innerHTML = "";
     container.append(taskScreen());
     return;
   }
 
   if (activeView === "settings") {
     const { renderSettings } = await import("./settingsView.js");
+    if (renderId !== currentRenderId) return;
+    container.innerHTML = "";
     renderSettings(container, rerenderActiveView);
     return;
   }
@@ -58,6 +68,8 @@ async function render() {
     window.viewParams = null; // Rensa direkt (params redan kopierad)
     // Lazy-load contactsView to reduce initial JS payload
     const { renderContacts } = await import("./contactsView.js");
+    if (renderId !== currentRenderId) return;
+    container.innerHTML = "";
     renderContacts(container, params);
     return;
   }
