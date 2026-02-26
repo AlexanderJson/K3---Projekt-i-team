@@ -50,7 +50,7 @@ render() {
     this.container.append(
       taskScreen({
         taskService: this.service,
-        navigate: (view,params) => this.setView(view,params)
+        navigate: (view,params) => this.setView(view,params) // 53
         }));;
     return;
   }

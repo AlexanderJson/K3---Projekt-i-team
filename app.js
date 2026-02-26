@@ -3,13 +3,12 @@ import { subscribe } from "./js/observer.js";
 import { initTheme } from "./js/theme.js";
 import { openTaskDialog } from "./js/menu/openTaskDialog.js";
 
-
+import { initSeed } from "./js/taskList/seed.js";
 import { TaskRepo } from "./js/repo/TaskRepo.js";
 import { TaskService } from "./js/service/TaskService.js";
 import { ViewController } from "./js/views/viewController.js";
 
-import { initTasksCSV } from "./js/taskList/seed.js";
-/**
+ /**
  * @file app.js
  * @description Huvudentrépunkt för Lianer Project Management App.
  * Hanterar initiering av tema, layoutstruktur och globala händelselyssnare.

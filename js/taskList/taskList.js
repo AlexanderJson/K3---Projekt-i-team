@@ -98,7 +98,7 @@ export const taskList = (status, tasks, deps = {}) => {
 
     const description = container.querySelector(".archive-description");
     if (description) {
-      description.style.display = isCollapsed ? "none" : "block";
+      description.style.display = isCollapsed ? "none" : "block"; //101
     }
   };
 
@@ -120,11 +120,11 @@ export const taskList = (status, tasks, deps = {}) => {
 
 
 const createListActions = (deps) => ({
-  onNavigate: deps.navigate,
+  onNavigate: deps.navigate, // 124
   onEditTask: (task) => deps.onEditTask?.(task),
   onMoveTask: (id, direction) => deps.onMoveTask?.(id, direction),
   onChangeStatus: (id, newStatus) => deps.onChangeStatus?.(id, newStatus),
-  onDeleteTask: (task) => deps.onDeleteTask?.(task),
+  onDeleteTask: (task) => deps.onDeleteTask?.(task), //127
 });
 
 

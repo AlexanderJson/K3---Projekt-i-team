@@ -72,9 +72,8 @@ describe("listItem component", () => {
         expect(el.querySelector(".taskDescription").textContent).toBe("Desc");
         expect(el.querySelector(".statusBadge").textContent).toBe("Att göra");
 
-        // Assigned avatars
         const avatar = el.querySelector(".assignee-avatar-circle");
-        expect(avatar.textContent).toBe("A"); // Initials for Anna
+        expect(avatar.textContent).toBe("A");  
     });
 
     test("Renders default values if fields missing", () => {
@@ -197,7 +196,9 @@ describe("listItem component", () => {
         expect(el.querySelector(".task-contact-explicit")).toBeNull();
         }
     );
-
+        // We have to mock the fact that it was created as a sibling to h3 and p inside the taskMainContent
+        // The implementation appends to mainContent, unfortunately it doesn't give it a separate class 
+        // Wait, it gave it the class "task-contact-explicit"
   test("Renders explicit contact link and interacts", () => {
     const task = {
       id: 1,

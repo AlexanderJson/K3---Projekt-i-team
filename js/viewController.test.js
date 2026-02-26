@@ -61,7 +61,17 @@ describe("viewController", () => {
         });
         expect(container.children.length).toBe(1);
     });
+        test("taskScreen navigate calls setView", () => {
+        controller.navigate("tasks");
 
+
+        const args = taskScreen.mock.calls[0][0];
+
+
+        args.navigate("contacts", { highlightId: "42" });
+
+        expect(renderContacts).toHaveBeenCalledWith(container, { highlightId: "42" });
+        });
     test("Renders settings", () => {
          controller.navigate("settings");
 
@@ -84,14 +94,13 @@ describe("viewController", () => {
         expect(renderContacts).toHaveBeenLastCalledWith(container, null);
     });
 
-
   test("container is cleared before render", () => {
     container.innerHTML = "<div>old</div>";
      controller.navigate("calendar");
     expect(container.innerHTML).toBe("");
   });
 
-  test("navigate calls navigate", () => {
+  test("navigate is called", () => {
     const spy = jest.spyOn( controller, "navigate");
      controller.navigate("calendar");
     expect(spy).toHaveBeenCalledWith("calendar");

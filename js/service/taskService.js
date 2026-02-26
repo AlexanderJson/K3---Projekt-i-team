@@ -1,5 +1,31 @@
 
 
+
+/*
+    @class
+
+    Service layer for tasks.
+    Centralizes CRUD + ordering and filtering. 
+
+    Main purpose:
+    - keep all data persistent during rerendering of DOM 
+    by storing data. Instead of fetching from localstorage 100x times,
+    we can just store the data we need in-memory instead, and refresh when changing. 
+    
+    
+    - Data here is stored primarily in Map as the single source of truth.
+      I chose a map structure since lookup times are O(1) and that makes
+      it pretty ideal for fetching tasks often. 
+   
+    - dirtyIds is a Set , also O(1) - it stores ids only. Purpose is to
+    later implement this to save rerenders. By keeping tabs on changed
+    items we dont have to send full tables to UI for small changes.
+   
+    - changed stores the latest full version of changed tasks. This
+    was an unfinished idea to implement batch saving (to reduce calls to storage)
+
+
+*/
 export class TaskService
 {
      constructor(repo)
@@ -130,6 +156,7 @@ export class TaskService
         this.tasks.set(task.id, task);
         //this.dirtyIds.set(task.id);
         this._save();
+        console.log("call");
         return this.getTaskById(task.id);
     }
 
