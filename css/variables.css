@@ -1,0 +1,80 @@
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-main: #0b0e11;
+    --bg-card: #15191e;
+    --bg-element: #1c2128;
+    --bg-header: #5e6ad2;
+    --text-main: #f0f2f5;
+    --text-dim: #b0b3b8;
+    --text-muted: #5e6ad2;
+    --text-hovered: #707df0;
+    --border: #30363d;
+    --border-strong: #3f3f46;
+    --accent-cyan: #22d3ee;
+    --accent-amber: #fbbf24;
+    --accent-crimson: #f87171;
+    --accent-violet: #a78bfa;
+    --accent-todo: #60a5fa;
+    --success: #22c55e;
+    --accent-theme: white;
+  }
+}
+
+:root[data-theme="light"] {
+  --bg-main: #e5e7eb; /* Gray-200: Tydligare grå bakgrund */
+  --bg-deep: #d1d5db; /* Gray-300: Ännu mörkare för djup */
+  --bg-card: #f3f4f6; /* Gray-100: Inte kritvit längre */
+  --bg-element: #e5e7eb;
+  --bg-header: #ffffff;
+  --text-main: #111827; /* Gray-900 */
+  --text-dim: #4b5563; /* Gray-600 */
+  --text-muted: #374151; /* Gray-700 */
+  --border: #9ca3af; /* Gray-400: Mycket tydligare border */
+  --border-strong: #6b7280; /* Gray-500 */
+  --accent-cyan: #0891b2;
+  --accent-amber: #d97706;
+  --accent-crimson: #ef4444;
+  --accent-violet: #7c3aed;
+  --accent-todo: #2563eb;
+  --success: #059669;
+  --accent-theme: #d97706;
+  --bg-select-dark: #121216;
+  --text-select-light: #ffffff;
+  --text-weekly-target: #7c3aed; /* Lila text i light mode för att synas */
+  
+  /* Input & Settings specifikt */
+  --bg-input: #ffffff;
+  --text-input: #111827;
+  --bg-settings-modal: #ffffff; /* Solid vit modal i light mode */
+  --settings-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+:root[data-theme="dark"] {
+  --bg-main: #0b0e11;
+  --bg-deep: #050505;
+  --bg-card: #15191e;
+  --bg-element: #1c2128;
+  --bg-header: #5e6ad2;
+  --text-main: #f0f2f5;
+  --text-dim: #b0b3b8;
+  --text-muted: #5e6ad2;
+  --text-hovered: #707df0;
+  --border: #30363d;
+  --border-strong: #3f3f46;
+  --accent-cyan: #22d3ee;
+  --accent-amber: #fbbf24;
+  --accent-crimson: #f87171;
+  --accent-violet: #a78bfa;
+  --accent-todo: #60a5fa;
+  --success: #22c55e;
+  --accent-theme: white;
+  --text-weekly-target: #ffffff; /* Vit text i dark mode */
+  
+  --text-meta-label: var(--accent-cyan); /* Behåll cyan i dark mode */
+
+  /* Input & Settings specifikt */
+  --bg-input: rgba(0, 0, 0, 0.25);
+  --text-input: #ffffff;
+  --bg-settings-modal: rgba(255, 255, 255, 0.02);
+  --settings-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+}
