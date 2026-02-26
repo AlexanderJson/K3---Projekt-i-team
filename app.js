@@ -3,6 +3,7 @@ import { menu } from "./js/menu/sideMenu.js";
 import { subscribe } from "./js/observer.js";
 import { initViewController, rerenderActiveView, setView } from "./js/views/viewController.js";
 import { initTheme } from "./js/theme.js";
+import { maybeShowWelcomeOverlay } from "./js/comps/welcomeOverlay.js";
 import { addTaskDialog } from "./js/comps/dialog.js";
 
 /**
@@ -55,6 +56,15 @@ subscribe(() => rerenderActiveView());
 
 // Bygg ihop applikationens grundstruktur atomiskt
 app.replaceChildren(sideMenuDiv, mainContent);
+
+// Show first-time welcome overlay (checks localStorage internally)
+maybeShowWelcomeOverlay();
+
+// Handle navigation events dispatched by overlay quick-start pills
+window.addEventListener("navigateTo", (e) => {
+  const view = e.detail;
+  if (view) setView(view);
+});
 
 /**
  * Global händelselyssnare för interaktioner.

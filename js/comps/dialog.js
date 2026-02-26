@@ -39,10 +39,11 @@ export const addTaskDialog = (taskToEdit = null) => {
 
   dialog.innerHTML = `
     <h2>${titleText}</h2>
-    <div class="modal-body ${isEdit ? "modal-split" : ""}">
+    <div class="modal-body ${isEdit ? "modal-split" : ""}>
       <div class="modal-col-left">
         <label for="taskTitle" class="sr-only">Titel</label>
         <textarea id="taskTitle" placeholder="Vad ska göras? (t.ex. Kontakta Axis)" class="modalInput" style="height: 54px; min-height: 54px; resize: none; overflow: hidden; padding-top: 12px; line-height: 1.4;"></textarea>
+        <div id="slashHint" class="slash-hint" aria-live="polite"></div>
         
         <label for="taskDesc" class="sr-only">Beskrivning</label>
         <textarea id="taskDesc" placeholder="Beskrivning av uppgiften..." class="modalInput" style="min-height: 80px; resize: none;"></textarea>
@@ -68,9 +69,47 @@ export const addTaskDialog = (taskToEdit = null) => {
           </div>
         </div>
 
-        <div class="modal-field">
-          <label class="modal-label">Deadline:</label>
-          <input type="date" id="taskDeadline" class="modalInput">
+        <div class="modal-fields-row">
+          <div class="modal-field">
+            <label class="modal-label" for="taskDeadline">Deadline:</label>
+            <input type="date" id="taskDeadline" class="modalInput">
+          </div>
+          <div class="modal-field">
+            <label class="modal-label" for="taskTimeStart">Från (valfri):</label>
+            <input type="time" id="taskTimeStart" class="modalInput">
+          </div>
+          <div class="modal-field">
+            <label class="modal-label" for="taskTimeEnd">Till (valfri):</label>
+            <input type="time" id="taskTimeEnd" class="modalInput">
+          </div>
+        </div>
+
+        <div class="modal-field" id="taskTypeRow" style="display:none;">
+          <label class="modal-label">Kategori:</label>
+          <div class="task-type-chips" role="group" aria-label="Uppgiftstyp">
+            <label class="assignee-chip">
+              <input type="radio" name="taskType" value="" checked>
+              <span class="chip-text">📋 Standard</span>
+            </label>
+            <label class="assignee-chip">
+              <input type="radio" name="taskType" value="Möte">
+              <span class="chip-text">📅 Möte</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-field" id="taskPriorityRow" style="display:none;">
+          <label class="modal-label">Prioritet:</label>
+          <div class="task-type-chips" role="group" aria-label="Prioritet">
+            <label class="assignee-chip">
+              <input type="radio" name="taskPriority" value="" checked>
+              <span class="chip-text">Normal</span>
+            </label>
+            <label class="assignee-chip">
+              <input type="radio" name="taskPriority" value="Hög">
+              <span class="chip-text" style="color:#ff4d4d;">🔴 Hög</span>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -99,6 +138,27 @@ export const addTaskDialog = (taskToEdit = null) => {
     dialog.querySelector("#taskDesc").value = taskToEdit.description || "";
     if (taskToEdit.deadline) {
       dialog.querySelector("#taskDeadline").value = taskToEdit.deadline;
+    }
+    // Populate start/end time (handle both {start,end} object and legacy string)
+    const tt = taskToEdit.taskTime;
+    if (tt) {
+      const startVal = typeof tt === "object" ? (tt.start || "") : tt;
+      const endVal   = typeof tt === "object" ? (tt.end   || "") : "";
+      if (startVal) dialog.querySelector("#taskTimeStart").value = startVal;
+      if (endVal)   dialog.querySelector("#taskTimeEnd").value   = endVal;
+    }
+    // Show extra fields if values exist
+    if (taskToEdit.taskType || taskToEdit.priority) {
+      dialog.querySelector("#taskTypeRow").style.display = "";
+      dialog.querySelector("#taskPriorityRow").style.display = "";
+      if (taskToEdit.taskType) {
+        const typeRadio = dialog.querySelector(`input[name='taskType'][value='${taskToEdit.taskType}']`);
+        if (typeRadio) typeRadio.checked = true;
+      }
+      if (taskToEdit.priority) {
+        const prioRadio = dialog.querySelector(`input[name='taskPriority'][value='${taskToEdit.priority}']`);
+        if (prioRadio) prioRadio.checked = true;
+      }
     }
   }
 
@@ -187,13 +247,58 @@ export const addTaskDialog = (taskToEdit = null) => {
     renderNotes();
   }
 
+  // --- Slash command parser ---
+  const titleTextarea  = dialog.querySelector("#taskTitle");
+  const slashHint      = dialog.querySelector("#slashHint");
+  const typeRow        = dialog.querySelector("#taskTypeRow");
+  const priorityRow    = dialog.querySelector("#taskPriorityRow");
+  const timeInput      = dialog.querySelector("#taskTimeStart");
+
+  const SLASH_COMMANDS = [
+    { cmd: "/möte",     label: "📅 Möte – tidstyp satt, välj en tid",    type: "Möte",  prio: "" },
+    { cmd: "/viktigt",  label: "🔴 Viktigt – prioritet Hög satt",         type: "",      prio: "Hög" },
+    { cmd: "/uppgift",  label: "📋 Standard – normaluppgift",             type: "",      prio: "" },
+  ];
+
+  if (titleTextarea) {
+    titleTextarea.addEventListener("input", () => {
+      const val = titleTextarea.value;
+      const match = SLASH_COMMANDS.find(sc => val.toLowerCase().startsWith(sc.cmd));
+      if (match) {
+        // Strip the slash command prefix
+        titleTextarea.value = val.slice(match.cmd.length).trimStart();
+        // Show type + priority rows
+        typeRow.style.display  = "";
+        priorityRow.style.display = "";
+        // Set radios
+        const typeRadio = match.type ? dialog.querySelector(`input[name='taskType'][value='${match.type}']`) : dialog.querySelector(`input[name='taskType'][value='']`);
+        const prioRadio = match.prio ? dialog.querySelector(`input[name='taskPriority'][value='${match.prio}']`) : dialog.querySelector(`input[name='taskPriority'][value='']`);
+        if (typeRadio) typeRadio.checked = true;
+        if (prioRadio) prioRadio.checked = true;
+        // Focus start time picker for meeting
+        if (match.type === "Möte" && timeInput) setTimeout(() => timeInput.focus(), 30);
+        // Apply red tint for high priority
+        if (match.prio === "Hög") dialog.classList.add("dialog-priority-high");
+        else dialog.classList.remove("dialog-priority-high");
+        // Show hint
+        slashHint.textContent = match.label;
+        setTimeout(() => { slashHint.textContent = ""; }, 3000);
+      }
+    });
+  }
+
   // --- Save ---
   dialog.querySelector("#saveTask").onclick = () => {
     const title = dialog.querySelector("#taskTitle").value.trim();
     const description = dialog.querySelector("#taskDesc").value.trim();
     const deadline = dialog.querySelector("#taskDeadline").value || 0;
+    const timeStart = (dialog.querySelector("#taskTimeStart")?.value || "").trim();
+    const timeEnd   = (dialog.querySelector("#taskTimeEnd")?.value   || "").trim();
+    const taskTime  = timeStart ? { start: timeStart, end: timeEnd } : null;
+    const taskType = dialog.querySelector('input[name="taskType"]:checked')?.value || "";
+    const priority = dialog.querySelector('input[name="taskPriority"]:checked')?.value || "";
 
-    const assignedTo = Array.from(dialog.querySelectorAll('.assignee-chip input:checked')).map(cb => cb.value);
+    const assignedTo = Array.from(dialog.querySelectorAll('.assignee-chip input[type="checkbox"]:checked')).map(cb => cb.value);
     const primaryAssignee = assignedTo.length > 0 ? assignedTo[0] : "Ingen";
 
     if (!title) return alert("Titeln får inte vara tom!");
@@ -211,6 +316,9 @@ export const addTaskDialog = (taskToEdit = null) => {
           assigned: primaryAssignee,
           assignedTo,
           deadline,
+          taskTime,
+          taskType,
+          priority,
           notes: taskToEdit.notes || [],
           contactId: selectedContact ? selectedContact.id : null,
           contactName: selectedContact ? selectedContact.name : null
@@ -246,6 +354,9 @@ export const addTaskDialog = (taskToEdit = null) => {
         title,
         description,
         deadline,
+        taskTime,
+        taskType,
+        priority,
         createdAt: new Date().toISOString(),
         status: TASK_STATUSES.TODO,
         assigned: primaryAssignee,

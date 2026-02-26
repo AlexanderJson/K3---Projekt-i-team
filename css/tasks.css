@@ -1658,3 +1658,313 @@ body.menu-is-collapsed .taskFilterContainer {
     border-color: rgba(10, 102, 194, 0.3);
     background: rgba(10, 102, 194, 0.1);
 }
+
+/* ==========================================================================
+   VIEW TOGGLE BAR (Board / Vecka / Dag) - embedded in filter header
+   ========================================================================== */
+.view-toggle-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;           /* push to the right of the filter label+select */
+    padding: 4px;
+    background: var(--bg-deep, rgba(0,0,0,0.2));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    flex-shrink: 0;
+    transition: all 0.25s ease;
+}
+@media (max-width: 600px) {
+    /* On mobile, wrap to its own row beneath the filter select */
+    .view-toggle-bar {
+        margin-left: 0;
+        order: 3;
+        flex-basis: 100%;
+        justify-content: center;
+    }
+}
+
+.view-toggle-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+}
+.view-toggle-btn:hover {
+    background: rgba(255,255,255,0.06);
+    color: var(--text-main);
+}
+.view-toggle-btn.active {
+    background: var(--accent-cyan);
+    color: #000;
+    box-shadow: 0 0 10px rgba(34,211,238,0.4);
+}
+:root[data-theme="light"] .view-toggle-btn.active { color: #fff; }
+
+/* ==========================================================================
+   WEEK VIEW
+   ========================================================================== */
+.week-view-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
+    gap: 10px;
+    padding-bottom: 60px;
+    overflow-x: auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+@media (max-width: 1024px) {
+    .week-view-grid { grid-template-columns: repeat(4, minmax(140px, 1fr)); }
+}
+@media (max-width: 600px) {
+    .week-view-grid { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+}
+
+.week-day-col {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.2s;
+}
+.week-day-col.week-day-today {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 14px rgba(34,211,238,0.18);
+}
+.week-day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+.week-day-name {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-main);
+}
+.week-day-today .week-day-name { color: var(--accent-cyan); }
+.week-day-date {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+}
+.week-day-empty { font-size: 12px; color: var(--text-dim); font-style: italic; text-align: center; padding: 8px 0; }
+
+.week-task-chip {
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    position: relative;
+}
+.week-task-chip:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.week-task-chip:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+.week-chip-attgöra { background: rgba(96,165,250,0.12); border-color: rgba(96,165,250,0.3); color: var(--accent-todo); }
+.week-chip-pågår   { background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.3); color: var(--accent-amber); }
+.week-chip-klar    { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.3); color: var(--success); opacity: 0.8; }
+.week-chip-high    { border-color: rgba(255,77,77,0.5) !important; box-shadow: 0 0 8px rgba(255,77,77,0.2); }
+.week-task-time { font-size: 11px; opacity: 0.8; font-family: 'JetBrains Mono', monospace; }
+.week-task-title { color: var(--text-main); font-weight: 700; }
+.week-prio-dot { position: absolute; top: 6px; right: 8px; font-size: 10px; }
+
+/* ==========================================================================
+   DAY VIEW
+   ========================================================================== */
+.day-view-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-width: 900px;
+    margin: 0 auto;
+    padding-bottom: 60px;
+    width: 100%;
+}
+.day-view-heading {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 16px;
+    text-transform: capitalize;
+}
+
+.day-allday-band {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    background: rgba(34,211,238,0.06);
+    border: 1px solid rgba(34,211,238,0.2);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+}
+.day-allday-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent-cyan);
+    margin-right: 6px;
+    white-space: nowrap;
+}
+.day-allday-chip {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+.day-allday-chip:hover { transform: translateY(-1px); }
+.day-allday-chip:focus-visible { outline: 2px solid var(--accent-cyan); }
+
+.day-time-axis { display: flex; flex-direction: column; gap: 0; }
+.day-hour-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-height: 44px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    padding: 4px 0;
+}
+.day-hour-label {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    width: 42px;
+    flex-shrink: 0;
+    text-align: right;
+    margin-top: 2px;
+}
+.day-hour-line {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: flex-start;
+}
+.day-timed-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    max-width: 400px;
+    border: 1px solid transparent;
+}
+.day-timed-chip:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+.day-timed-chip:focus-visible { outline: 2px solid var(--accent-cyan); }
+.day-chip-time { font-size: 11px; font-family: 'JetBrains Mono', monospace; opacity: 0.8; white-space: nowrap; }
+.day-chip-title { font-weight: 700; color: var(--text-main); }
+
+/* Status colours shared for day & allday chips */
+.day-chip-attgöra  { background: rgba(96,165,250,0.12); border-color: rgba(96,165,250,0.25); }
+.day-chip-pågår    { background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.25); }
+.day-chip-klar     { background: rgba(34,197,94,0.10); border-color: rgba(34,197,94,0.22); opacity: 0.8; }
+.day-chip-high     { border-color: rgba(255,77,77,0.45) !important; }
+.day-chip-meeting  { border-left: 3px solid var(--accent-cyan) !important; }
+
+/* ==========================================================================
+   TIME CHIP & PRIORITY CHIP (on task cards)
+   ========================================================================== */
+.task-time-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: rgba(34,211,238,0.1);
+    border: 1px solid rgba(34,211,238,0.25);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-cyan);
+    white-space: nowrap;
+}
+.task-priority-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: rgba(255,77,77,0.1);
+    border: 1px solid rgba(255,77,77,0.3);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #ff4d4d;
+    white-space: nowrap;
+}
+
+/* Priority accent on the card itself */
+.listItem.priority-high {
+    border-color: #ff4d4d !important;
+    box-shadow: 0 0 18px rgba(255,77,77,0.25) !important;
+}
+/* Meeting/calendar type blue border */
+.listItem.task-type-meeting {
+    border-left: 4px solid var(--accent-cyan) !important;
+}
+
+/* ==========================================================================
+   SLASH HINT (dialog)
+   ========================================================================== */
+.slash-hint {
+    font-size: 12px;
+    color: var(--accent-cyan);
+    font-weight: 600;
+    min-height: 18px;
+    margin-bottom: 4px;
+    transition: opacity 0.3s ease;
+    letter-spacing: 0.3px;
+}
+
+/* Dialog priority-high red tint */
+.dialog-priority-high {
+    border-color: rgba(255,77,77,0.5) !important;
+    box-shadow: 0 0 20px rgba(255,77,77,0.15) !important;
+}
+
+/* Three-column field row in dialog (deadline + start time + end time) */
+.modal-fields-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 10px;
+}
+@media (max-width: 600px) {
+    .modal-fields-row { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 400px) {
+    .modal-fields-row { grid-template-columns: 1fr; }
+}
+
+/* taskFilterContainer – flex row so label+select+view-toggle appear inline */
+.taskFilterContainer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}

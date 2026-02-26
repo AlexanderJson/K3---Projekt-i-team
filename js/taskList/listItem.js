@@ -4,6 +4,7 @@ import { removeById, loadState, saveState } from "../storage.js";
 import { addTaskDialog, showConfirmDialog, showPromptDialog } from "../comps/dialog.js";
 import { setView } from "../views/viewController.js";
 import { getPeople } from "../people/peopleService.js";
+import { formatTaskTime } from "../data/tasks.js";
 
 const formatDate = (dateStr) => {
   if (!dateStr || dateStr === 0 || dateStr === "Nyss") return "Nyss";
@@ -91,7 +92,10 @@ export const listItem = (task) => {
   const isTodo = task.status === TASK_STATUSES.TODO;
 
   const div = document.createElement("div");
-  div.className = `listItem ${isClosed ? "is-closed" : ""}`;
+  let cardClass = `listItem ${isClosed ? "is-closed" : ""}`;
+  if (task.priority === "Hög") cardClass += " priority-high";
+  if (task.taskType === "Möte") cardClass += " task-type-meeting";
+  div.className = cardClass;
   div.setAttribute("role", "listitem");
   div.setAttribute("tabindex", "0");
 
@@ -100,8 +104,21 @@ export const listItem = (task) => {
 
   const dateRow = document.createElement("div");
   dateRow.className = "date-row";
+
+  // Time chip – only shown if taskTime is set
+  const timeLabel = formatTaskTime(task.taskTime);
+  const timeChipHtml = task.taskTime
+    ? `<span class="task-time-chip" aria-label="Tid: ${timeLabel}">${task.taskType === "Möte" ? "📅" : "🕐"} ${timeLabel}</span>`
+    : "";
+
+  // Priority accent chip
+  const prioChipHtml = task.priority === "Hög"
+    ? `<span class="task-priority-chip" aria-label="Prioritet: Hög">🔴 Hög</span>`
+    : "";
+
   dateRow.innerHTML = `
     <div class="meta-item" role="group" aria-label="Skapad: ${formatDate(task.createdAt)}"><span class="meta-label" aria-hidden="true">SKAPAD</span><span class="meta-value" aria-hidden="true">${formatDate(task.createdAt)}</span></div>
+    ${timeChipHtml}${prioChipHtml}
   `;
 
   if (task.deadline) {

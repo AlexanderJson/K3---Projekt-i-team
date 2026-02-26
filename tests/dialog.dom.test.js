@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import { screen, fireEvent, within, waitFor } from '@testing-library/dom';
+import { fireEvent, within, waitFor } from '@testing-library/dom';
 import '@testing-library/jest-dom';
 
 // Setup mocks BEFORE imports

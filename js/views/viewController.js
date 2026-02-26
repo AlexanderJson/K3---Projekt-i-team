@@ -1,6 +1,5 @@
 import { renderDashboard } from "./dashboardView.js";
-// calendarView, taskScreen, settingsView are lazy-loaded on demand (see render())
-// contactsView is also lazy-loaded (see contacts block in render())
+// calendarView, taskScreen, settingsView, contactsView are lazy-loaded on demand
 import { loadState } from "../storage.js";
 
 let container = null;
@@ -26,15 +25,14 @@ async function render() {
 
   const renderId = ++currentRenderId;
 
-  // Rensa containern helt innan ny rendering för att undvika dubbla element
-  container.innerHTML = "";
+  // Each branch clears the container AFTER the renderId check to prevent
+  // race conditions where a superseded render leaves the screen blank.
 
-  // Hämta ALLTID det senaste statet här för att garantera att nya tasks finns med
   const state = loadState();
 
   if (activeView === "dashboard") {
     if (renderId !== currentRenderId) return;
-    // Vi skickar med state även här om dashboardView behöver det
+    container.innerHTML = "";
     renderDashboard(container, state);
     return;
   }
@@ -42,7 +40,7 @@ async function render() {
   if (activeView === "calendar") {
     const { renderCalendar } = await import("./calendarView.js");
     if (renderId !== currentRenderId) return;
-    container.innerHTML = ""; // Extra säkerhet ifall importen dragit ut på tiden
+    container.innerHTML = "";
     renderCalendar(container);
     return;
   }
@@ -65,8 +63,7 @@ async function render() {
 
   if (activeView === "contacts") {
     const params = window.viewParams;
-    window.viewParams = null; // Rensa direkt (params redan kopierad)
-    // Lazy-load contactsView to reduce initial JS payload
+    window.viewParams = null;
     const { renderContacts } = await import("./contactsView.js");
     if (renderId !== currentRenderId) return;
     container.innerHTML = "";
