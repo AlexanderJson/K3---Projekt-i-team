@@ -1,4 +1,4 @@
-import { listItem } from "../card/listItem.js";
+import { listItem } from "./listItem.js";
 /**
  * @file taskList.js
  * @description Renderar en enskild kolumn (statusgrupp) i Kanban-tavlan.

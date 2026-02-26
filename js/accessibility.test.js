@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import jestAxe from "jest-axe";
 import { addTaskDialog } from "../js/comps/dialog.js";
-import { listItem } from "../js/card/listItem.js";
+import { listItem } from "./card/listItem.js";
 import { jest } from '@jest/globals';
 
 const { axe, toHaveNoViolations } = jestAxe;

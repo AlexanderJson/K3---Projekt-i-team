@@ -12,8 +12,7 @@ import { taskList } from "../taskList/taskList.js";
  * Skapar och returnerar huvudvyn för uppgiftshantering.
  * @returns {HTMLElement} Det sammansatta elementet för uppgiftsskärmen.
  */
-export const taskScreen = ({taskService, navigate}) => {
-
+export const taskScreen = ({ taskService, navigate }) => {
   const state = loadState();
   const people = state.people || []; // Array med strängar (namn)
 

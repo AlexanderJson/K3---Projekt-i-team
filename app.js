@@ -5,7 +5,7 @@ import { openTaskDialog } from "./js/menu/openTaskDialog.js";
 
 
 import { TaskRepo } from "./js/repo/TaskRepo.js";
-import { TaskService } from "./js/service/taskService.js";
+import { TaskService } from "./js/service/TaskService.js";
 import { ViewController } from "./js/views/viewController.js";
 
 import { initTasksCSV } from "./js/taskList/seed.js";
@@ -71,8 +71,7 @@ subscribe(() => viewController.rerender());
 /**
  * Initiera startdata och sätt startvyn till dashboard.
  */
-//initSeed();
-await initTasksCSV(taskService, "./team3.csv");
+initSeed();
 viewController.setView("dashboard");
 
 
