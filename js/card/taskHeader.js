@@ -1,12 +1,12 @@
 
-const formatDate = (dateStr) => {
+export const formatDate = (dateStr) => {
   if (!dateStr || dateStr === 0 || dateStr === "Nyss") return "Nyss";
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
   return d.toLocaleDateString('sv-SE', { day: '2-digit', month: '2-digit', year: '2-digit' });
 };
 
-const renderAssigneeAvatars = (assignedNames = []) => {
+export const renderAssigneeAvatars = (assignedNames = []) => {
   const container = document.createElement("div");
   container.className = "assignee-avatars-list";
   container.setAttribute("role", "button");
