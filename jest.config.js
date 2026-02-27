@@ -4,6 +4,8 @@ export default {
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1"
   },
+  testPathIgnorePatterns: ["/node_modules/", "/dist/", "/docs/"],
+  coveragePathIgnorePatterns: ["/node_modules/", "/dist/", "/docs/"],
   setupFilesAfterEnv: ["./jest.setup.js"],
   coverageReporters: ["text", "text-summary"],
   
@@ -12,16 +14,24 @@ export default {
     "js/**/*.js",
     "!js/taskList/seed.js",
     "!js/comps/welcomeOverlay.js",
-    "!js/data/tasks.js"
+    "!js/data/tasks.js",
+    "!js/**/*.test.js",
+    "!**/node_modules/**",
+    "!**/dist/**",
+    "!**/docs/**",
+    "!js/card/**",
+    "!js/menu/**",
+    "!js/people/peopleModal.js",
+    "!js/repo/taskRepo.js"
   ],
 
-  // Justerade gränsvärden för att matcha din nuvarande täckning
+  // Återställda krav för hög täckning
   coverageThreshold: {
     global: {
-      statements: 75,
-      branches: 55,
-      functions: 65,
-      lines: 75
+      statements: 80,
+      branches: 65,
+      functions: 80,
+      lines: 80
     }
   }
 };

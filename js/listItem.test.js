@@ -23,7 +23,6 @@ describe("listItem component", () => {
             CLOSED: "Stängd"
         };
 
-        const mockUpdateTaskStatus = { updateTaskStatus: jest.fn() };
         const mockStorage = {
             removeById: jest.fn(),
             loadState: jest.fn().mockReturnValue({
@@ -42,7 +41,6 @@ describe("listItem component", () => {
         const mockView = { setView: jest.fn() };
         const mockStatus = { TASK_STATUSES };
 
-        jest.unstable_mockModule("../js/taskList/updateTaskStatus.js", () => mockUpdateTaskStatus);
         jest.unstable_mockModule("../js/storage.js", () => mockStorage);
         jest.unstable_mockModule("../js/comps/dialog.js", () => mockDialog);
         jest.unstable_mockModule("../js/views/viewController.js", () => mockView);
