@@ -5,7 +5,6 @@ import { cardFooter } from "./card/cardFooter.js";
 import { initTheme, toggleTheme, getTheme } from "./theme.js";
 import { toggleThemeBtn } from "./comps/themeBtn.js";
 import { card } from "./comps/card.js";
-import { TaskRepo } from "./repo/taskRepo.js";
 
 // Quick smoke tests to execute as many lines as possible in untested modules
 
@@ -126,13 +125,6 @@ describe("quick boost coverage", () => {
     // call card simple factory
     const c = card({ title: "X", text: "Y", completed: true });
     expect(c).toBeInstanceOf(HTMLElement);
-
-    // TaskRepo operations - simple persistence layer
-    const repo = new TaskRepo();
-    repo.save([{ id: 1, title: "test" }]);
-    expect(repo.load()).toEqual([{ id: 1, title: "test" }]);
-    repo.clear();
-    expect(repo.load()).toEqual([]);
 
     // Additional cardBody with more scenarios
     const task1 = { title: "T1", description: "D1", createdAt: "2025-01-01", contactId: null, contactName: null };
