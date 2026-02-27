@@ -1,4 +1,4 @@
-const cardBody = (task, {onNavigate}) =>
+export const cardBody = (task, {onNavigate}) =>
 {
   const mainContent = document.createElement("div");
   mainContent.className = "taskMainContent";
