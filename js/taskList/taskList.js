@@ -135,10 +135,15 @@ export const taskList = (status, tasks, deps = {}) => {
   }
 
   // --- HTML5 DRAG AND DROP EVENTS ---
-  container.addEventListener("dragover", (e) => {
+  listItemsContainer.addEventListener("dragover", (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
+    listItemsContainer.classList.add("drag-over");
     
+    // Ta bort "Inga uppgifter" om vi drar över det
+    const emptyState = listItemsContainer.querySelector(".emptyState");
+    if (emptyState) emptyState.remove();
+
     const afterElement = getDragAfterElement(listItemsContainer, e.clientY);
     const draggingElement = document.querySelector(".dragging");
     if (draggingElement) {
@@ -150,8 +155,17 @@ export const taskList = (status, tasks, deps = {}) => {
     }
   });
 
-  container.addEventListener("drop", (e) => {
+  listItemsContainer.addEventListener("dragleave", (e) => {
+    // Only remove drag-over class if leaving the actual container (not entering a child card)
+    if (!listItemsContainer.contains(e.relatedTarget)) {
+      listItemsContainer.classList.remove("drag-over");
+    }
+  });
+
+  listItemsContainer.addEventListener("drop", (e) => {
     e.preventDefault();
+    listItemsContainer.classList.remove("drag-over");
+    
     const taskId = e.dataTransfer.getData("text/plain");
     if (!taskId) return;
 

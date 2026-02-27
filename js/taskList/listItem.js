@@ -104,9 +104,9 @@ export const listItem = (task, actions = {}) => {
   dateRow.className = "date-row";
 
   // Time chip
-  const timeLabel = formatTaskTime(task.taskTime);
+  const timeLabel = task.taskTime ? formatTaskTime(task.taskTime) : "";
   const timeChipHtml = task.taskTime
-    ? `<span class="task-time-chip" aria-label="Tid: ${timeLabel}">${task.taskType === "Möte" ? "📅" : "🕐"} ${timeLabel}</span>`
+    ? `<div class="meta-item" role="group" aria-label="Tid: ${timeLabel}"><span class="meta-label" aria-hidden="true">TID</span><span class="meta-value" aria-hidden="true">${timeLabel}</span></div>`
     : "";
 
   // Priority chip
@@ -143,6 +143,19 @@ export const listItem = (task, actions = {}) => {
   `;
 
   const hasNotes = task.notes && task.notes.length > 0;
+  
+  if (hasNotes) {
+    const latestNote = task.notes[task.notes.length - 1];
+    const noteText = typeof latestNote === 'object' ? (latestNote.text || latestNote.content || "") : latestNote;
+    if (noteText) {
+      mainContent.innerHTML += `
+        <div class="task-latest-note">
+          <strong style="color: var(--text-main); display: block; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Senaste Notis</strong>
+          ${noteText}
+        </div>
+      `;
+    }
+  }
 
   if ((task.contactId && task.contactName) || hasNotes) {
     const extraRow = document.createElement("div");

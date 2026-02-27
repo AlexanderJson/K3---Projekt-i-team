@@ -7,9 +7,9 @@ const GH_SVG = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentCol
 const LI_SVG = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`;
 
 const CREATORS = [
-  { name: "Alexander Jansson", github: "https://github.com/AlexanderJson",     linkedin: "https://www.linkedin.com/in/alexander-jansson-b53542264/" },
-  { name: "Hussein Hasnawy",   github: "https://github.com/husseinhasnawy",   linkedin: "https://www.linkedin.com/in/hussein-hasnawy/"               },
-  { name: "Joco Borghol",      github: "https://github.com/jocoborghol",       linkedin: "https://www.linkedin.com/in/joco-borghol/"                  },
+  { name: "Alexander Jansson", github: "https://github.com/AlexanderJson",   linkedin: "https://www.linkedin.com/in/alexander-jansson" },
+  { name: "Hussein Al-Hasnawy",   github: "https://github.com/exikoz",          linkedin: "https://www.linkedin.com/in/hussein-hasnawy-5280bb181/" },
+  { name: "Joco Borghol",      github: "https://github.com/jocoborghol",     linkedin: "https://www.linkedin.com/in/joco-borghol-777b59386/" },
 ];
 
 /**
@@ -20,7 +20,7 @@ export function getWelcomeHTML(isOverlay = true) {
     <div class="welcome-bubble" role="document" ${!isOverlay ? 'style="border:none; background:transparent; max-height:none;"' : ''}>
       ${isOverlay ? `
       <div class="welcome-exit-group">
-        <button class="welcome-close-perm" aria-label="Stäng välkomstskärmen" title="Stäng välkomstskärmen">Stäng</button>
+        <button class="welcome-close-temp" aria-label="Stäng välkomstskärmen tillfälligt" title="Stäng tillfälligt">✕</button>
       </div>` : ''}
 
       <div class="welcome-hero">
@@ -67,6 +67,11 @@ export function getWelcomeHTML(isOverlay = true) {
           </div>
         </div>
 
+        ${isOverlay ? `
+        <div class="welcome-permanence-action">
+          <button class="welcome-close-perm">Visa inte denna skärm igen vid uppstart</button>
+        </div>` : ''}
+
         <div class="welcome-creators">
           <h3 class="welcome-creators-title">Meet the Creators</h3>
           <div class="welcome-creators-grid">
@@ -85,33 +90,32 @@ export function getWelcomeHTML(isOverlay = true) {
     </div>
   `;
 }
-
 /**
  * Attaches the shared event listeners for action cards and demo pills.
  */
-export function attachWelcomeEvents(container, taskService, closePerm = null) {
+export function attachWelcomeEvents(container, taskService, closeAction = null) {
   // Create card → open add task dialog
   container.querySelector(".welcome-card-create")?.addEventListener("click", () => {
-    if (closePerm) closePerm();
+    if (closeAction) closeAction();
     setTimeout(() => addTaskDialog(taskService), 350);
   });
   container.querySelector(".welcome-card-create")?.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " ") { 
         e.preventDefault(); 
-        if (closePerm) closePerm(); 
+        if (closeAction) closeAction(); 
         setTimeout(() => addTaskDialog(taskService), 350); 
     }
   });
 
   // Demo card → Settings
   container.querySelector(".welcome-card-demo")?.addEventListener("click", () => {
-    if (closePerm) closePerm();
+    if (closeAction) closeAction();
     setTimeout(() => window.dispatchEvent(new CustomEvent("navigateTo", { detail: "settings" })), 350);
   });
   container.querySelector(".welcome-card-demo")?.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " ") { 
         e.preventDefault(); 
-        if (closePerm) closePerm(); 
+        if (closeAction) closeAction(); 
         setTimeout(() => window.dispatchEvent(new CustomEvent("navigateTo", { detail: "settings" })), 350); 
     }
   });
@@ -121,7 +125,7 @@ export function attachWelcomeEvents(container, taskService, closePerm = null) {
     pill.addEventListener("click", async () => {
       const key = pill.dataset.demo;
       await loadDemoByKey(key, taskService);
-      if (closePerm) closePerm();
+      if (closeAction) closeAction();
       setTimeout(() => window.dispatchEvent(new CustomEvent("navigateTo", { detail: "tasks" })), 350);
     });
   });
@@ -155,14 +159,35 @@ export function maybeShowWelcomeOverlay(taskService) {
     }, { once: true });
   };
 
+  /** Temporary close */
+  const closeTemp = () => animateClose();
+
   /** Permanent close */
   const closePerm = () => {
     localStorage.setItem(STORAGE_KEY, "true");
     animateClose();
   };
 
-  // Stäng button (permanently closes as per "rensa upp i gränssnittet" preventing double confusion)
+  // ✕ button
+  overlay.querySelector(".welcome-close-temp")?.addEventListener("click", closeTemp);
+
+  // "Visa inte igen" button
   overlay.querySelector(".welcome-close-perm")?.addEventListener("click", closePerm);
 
-  attachWelcomeEvents(overlay, taskService, closePerm);
+  // Click on backdrop (outside bubble) = session close
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closeTemp();
+  });
+
+  // Escape key = session close
+  const onEsc = (e) => {
+    if (e.key === "Escape") { 
+      closeTemp(); 
+      document.removeEventListener("keydown", onEsc); 
+    }
+  };
+  document.addEventListener("keydown", onEsc);
+
+  // Pass closeTemp to action cards so it doesn't forcibly perm-hide overlay if they didn't ask it to
+  attachWelcomeEvents(overlay, taskService, closeTemp);
 }

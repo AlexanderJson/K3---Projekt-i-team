@@ -58,6 +58,18 @@ body.menu-is-collapsed .taskFilterContainer {
     white-space: nowrap;
 }
 
+/* Global Kanban classes */
+.task-list-items {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex-grow: 1; /* Ensures empty columns take up available height */
+    min-height: 100%; /* Mål: fyll hela kolumnens vertikala höjd som drop-zon */
+    transition: background 0.2s ease, border 0.2s ease;
+    border-radius: 8px;
+    padding: 8px; /* Adds a bit of bleeding room for drops */
+}
+
 .taskFilterSelect {
     appearance: none;
     -webkit-appearance: none;
@@ -111,7 +123,7 @@ body.menu-is-collapsed .taskFilterContainer {
     gap: 24px;
     padding-bottom: 100px;
     width: 100%;
-    align-items: start !important;
+    align-items: stretch; /* Allows columns to grow to full board height */
 }
 
 @media (min-width: 1024px) {
@@ -168,7 +180,7 @@ body.menu-is-collapsed .taskFilterContainer {
 .taskWrapper {
     background: transparent;
     border: none;
-    border-radius: 0;
+    border-radius: 8px;
     padding: 0;
     box-shadow: none;
     width: 100%;
@@ -176,7 +188,8 @@ body.menu-is-collapsed .taskFilterContainer {
     max-width: none;
     margin: 0;
     transition: all 0.4s ease;
-    border-radius: 8px; /* Slightly rounded corners for the background */
+    display: flex;
+    flex-direction: column;
 }
 
 /* Elegant column backgrounds */
@@ -390,7 +403,7 @@ body.menu-is-collapsed .taskFilterContainer {
     2. LIST ITEM (KORTET) - NEON GLOW EDITION
    ========================================================================== */
 .listItem {
-    height: 280px; /* Tillbaka till fixerad höjd för normalläget */
+    height: 280px;
     display: flex;
     flex-direction: column;
     background: linear-gradient(165deg, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.9)) !important;
@@ -481,6 +494,7 @@ body.menu-is-collapsed .taskFilterContainer {
     gap: 12px;
     flex: 1;
     min-width: 0;
+    flex-wrap: wrap;
 }
 
 .meta-item {
@@ -513,19 +527,7 @@ body.menu-is-collapsed .taskFilterContainer {
     line-height: 1;
 }
 
-.taskWrapper[data-status="Att göra"] .meta-value {
-    color: var(--accent-todo);
-}
 
-.taskWrapper[data-status="Pågår"] .meta-value {
-    color: var(--accent-crimson);
-}
-
-.taskWrapper[data-status="Pågår"] .meta-value:last-child {
-    background: rgba(239, 68, 68, 0.1);
-    padding: 1px 4px;
-    border-radius: 4px;
-}
 
 /* Särskild färg för utgången deadline */
 .deadline-overdue .meta-label,
@@ -554,9 +556,12 @@ body.menu-is-collapsed .taskFilterContainer {
     font-size: 18px;
     font-weight: 700;
     color: var(--text-main);
-    line-height: 1.2;
+    line-height: 1.25;
     border-left: none;
     padding-left: 0;
+    
+    /* Min height to always reserve space for 2 lines even if only 1 is used */
+    min-height: 45px;
 
     /* 2 RADER MAX */
     display: -webkit-box;
@@ -658,6 +663,9 @@ body.menu-is-collapsed .taskFilterContainer {
     font-style: normal;
     font-weight: 400;
 
+    /* Always reserve exactly the space needed for 2 lines using line-height * 2 */
+    min-height: 42px;
+
     /* 2 RADER MAX SOM STANDARD FÖR LIKA STORA KORT */
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -671,8 +679,29 @@ body.menu-is-collapsed .taskFilterContainer {
     word-break: break-word;
     overflow-wrap: break-word;
     
-    min-height: 0;
     margin-bottom: auto;
+}
+
+.task-latest-note {
+    display: none;
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+    border-left: 3px solid var(--accent-cyan);
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+:root[data-theme="light"] .task-latest-note {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.listItem.expanded .task-latest-note {
+    display: block;
 }
 
 /* Expandera all text när kortet är aktivt (klickat) */
