@@ -48,12 +48,16 @@ export const addTaskDialog = (taskService, taskToEdit = null) => {
     <h2>${titleText}</h2>
     <div class="modal-body ${isEdit ? "modal-split" : ""}>
       <div class="modal-col-left">
-        <label for="taskTitle" class="sr-only">Titel</label>
-        <textarea id="taskTitle" placeholder="Vad ska göras? (t.ex. Kontakta Axis)" class="modalInput" style="height: 54px; min-height: 54px; resize: none; overflow: hidden; padding-top: 12px; line-height: 1.4;"></textarea>
-        <div id="slashHint" class="slash-hint" aria-live="polite"></div>
+        <div class="modal-field" style="margin-bottom: 24px;">
+          <label for="taskTitle" class="sr-only">Titel</label>
+          <textarea id="taskTitle" placeholder="Vad ska göras? (t.ex. Kontakta Axis)" class="modalInput" style="height: 54px; min-height: 54px; resize: none; overflow: hidden; padding-top: 12px; line-height: 1.4;"></textarea>
+          <div id="slashHint" class="slash-hint" aria-live="polite"></div>
+        </div>
         
-        <label for="taskDesc" class="sr-only">Beskrivning</label>
-        <textarea id="taskDesc" placeholder="Beskrivning av uppgiften..." class="modalInput" style="min-height: 80px; resize: none;"></textarea>
+        <div class="modal-field" style="margin-bottom: 24px;">
+          <label for="taskDesc" class="sr-only">Beskrivning</label>
+          <textarea id="taskDesc" placeholder="Beskrivning av uppgiften..." class="modalInput" style="min-height: 120px; resize: none; padding-top: 12px; line-height: 1.5;"></textarea>
+        </div>
         
         <div id="linkedContactBadge" style="display:none;align-items:center;gap:6px;background:rgba(34,211,238,0.1);border:1px solid var(--accent-cyan);padding:6px 10px;border-radius:6px;margin-bottom:10px;color:var(--accent-cyan);font-size:12px;">
           <span>🔗 Kontak: <strong id="linkedContactName"></strong></span>

@@ -13,51 +13,27 @@ const CREATORS = [
 ];
 
 /**
- * Shows the first-time welcome overlay.
- * Only renders when localStorage flag "lianer_hasSeenWelcome" is absent.
+ * Exports the HTML skeleton for the welcome view so that taskScreen can reuse it as an empty state.
  */
-export function maybeShowWelcomeOverlay(taskService) {
-  if (localStorage.getItem(STORAGE_KEY)) return;
-
-  const overlay = document.createElement("div");
-  overlay.className = "welcome-overlay";
-  overlay.setAttribute("role", "dialog");
-  overlay.setAttribute("aria-modal", "true");
-  overlay.setAttribute("aria-label", "Välkommen till Lianer");
-
-  overlay.innerHTML = `
-    <div class="welcome-bubble" role="document">
-
-      <!-- Top-right exit controls -->
+export function getWelcomeHTML(isOverlay = true) {
+  return `
+    <div class="welcome-bubble" role="document" ${!isOverlay ? 'style="border:none; background:transparent; max-height:none;"' : ''}>
+      ${isOverlay ? `
       <div class="welcome-exit-group">
-        <button class="welcome-close-temp" aria-label="Stäng för nu (visas igen vid nästa besök)" title="Stäng tillfälligt">✕</button>
-        <button class="welcome-close-perm" aria-label="Visa inte igen" title="Visa inte igen">Visa inte igen</button>
-      </div>
+        <button class="welcome-close-perm" aria-label="Stäng välkomstskärmen" title="Stäng välkomstskärmen">Stäng</button>
+      </div>` : ''}
 
-      <!-- Hero image -->
       <div class="welcome-hero">
         <img src="./docs/images/demo/Slide11.jpg" alt="Lianer – A modern project planner" class="welcome-hero-img" />
         <div class="welcome-hero-overlay"></div>
       </div>
 
-      <!-- Content -->
       <div class="welcome-content">
         <p class="welcome-body">
           Din arbetsyta är redo, men just nu ekar det tomt. En blank tavla är dock början på något stort!
           Här visualiserar ni teamets process från idé till färdig leverans. Ta kontroll över arbetsflödet,
           slipp bruset och samla hela teamets prioriteringar på en och samma plats.
         </p>
-
-        <!-- Quick-Start pills -->
-        <div class="welcome-quickstart">
-          <p class="welcome-qs-label">Eller ladda ett demoscenario direkt:</p>
-          <div class="welcome-qs-pills">
-            <button class="welcome-qs-pill qs-lia"   data-demo="lia">🎓 LIA-Chase</button>
-            <button class="welcome-qs-pill qs-tech"  data-demo="tech">💻 Tech &amp; Dev</button>
-            <button class="welcome-qs-pill qs-family" data-demo="family">🏠 Familjen</button>
-          </div>
-        </div>
-
 
         <!-- Action cards -->
         <div class="welcome-actions">
@@ -68,17 +44,29 @@ export function maybeShowWelcomeOverlay(taskService) {
               <p>Sätt bollen i rullning genom att lägga till en uppgift med titel, beskrivning och ansvariga.</p>
             </div>
           </div>
-          <div class="welcome-action-card welcome-card-demo" role="button" tabindex="0" aria-label="Utforska demolägen i Inställningar">
+          <div class="welcome-action-card welcome-card-demo" role="button" tabindex="0" aria-label="Utforska navigera till inställningar">
             <span class="welcome-action-icon shadow-glow-yellow">⚙</span>
             <div class="welcome-card-text">
               <strong>Utforska potentialen</strong>
-              <p>Gå till <strong>Inställningar → Systemåtgärder</strong> för att utforska demolägen:
-              <code>Demo Workspace</code> eller <code>LIA-Chase</code>.</p>
+              <p>Tryck här för att gå till <strong>Inställningar</strong> där du kan hantera appen eller utforska systemåtgärder.</p>
             </div>
           </div>
         </div>
 
-        <!-- Creators -->
+        <!-- Quick-Start pills -->
+        <div class="welcome-quickstart">
+          <p class="welcome-qs-label">För att utforska demolägen så finns det en del olika varianter, kika på någon som passar dig bäst!</p>
+          <div class="welcome-qs-pills">
+            <button class="welcome-qs-pill qs-lia" data-demo="lia">🎓 LIA-Chase</button>
+            <button class="welcome-qs-pill qs-tech" data-demo="tech">💻 Tech &amp; Dev</button>
+            <button class="welcome-qs-pill qs-wedding" data-demo="wedding">💍 Bröllopsplanering</button>
+            <button class="welcome-qs-pill qs-tele" data-demo="telemarketing">📞 Telemarketing</button>
+            <button class="welcome-qs-pill qs-family" data-demo="family">🏠 Familjepusslet</button>
+            <button class="welcome-qs-pill qs-event" data-demo="event">🎪 Eventkoordinator</button>
+            <button class="welcome-qs-pill qs-realestate" data-demo="realestate">🏡 Fastighetsmäklare</button>
+          </div>
+        </div>
+
         <div class="welcome-creators">
           <h3 class="welcome-creators-title">Meet the Creators</h3>
           <div class="welcome-creators-grid">
@@ -96,6 +84,63 @@ export function maybeShowWelcomeOverlay(taskService) {
       </div>
     </div>
   `;
+}
+
+/**
+ * Attaches the shared event listeners for action cards and demo pills.
+ */
+export function attachWelcomeEvents(container, taskService, closePerm = null) {
+  // Create card → open add task dialog
+  container.querySelector(".welcome-card-create")?.addEventListener("click", () => {
+    if (closePerm) closePerm();
+    setTimeout(() => addTaskDialog(taskService), 350);
+  });
+  container.querySelector(".welcome-card-create")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { 
+        e.preventDefault(); 
+        if (closePerm) closePerm(); 
+        setTimeout(() => addTaskDialog(taskService), 350); 
+    }
+  });
+
+  // Demo card → Settings
+  container.querySelector(".welcome-card-demo")?.addEventListener("click", () => {
+    if (closePerm) closePerm();
+    setTimeout(() => window.dispatchEvent(new CustomEvent("navigateTo", { detail: "settings" })), 350);
+  });
+  container.querySelector(".welcome-card-demo")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { 
+        e.preventDefault(); 
+        if (closePerm) closePerm(); 
+        setTimeout(() => window.dispatchEvent(new CustomEvent("navigateTo", { detail: "settings" })), 350); 
+    }
+  });
+
+  // Quick-Start pills → load demo, navigate to tasks
+  container.querySelectorAll(".welcome-qs-pill").forEach(pill => {
+    pill.addEventListener("click", async () => {
+      const key = pill.dataset.demo;
+      await loadDemoByKey(key, taskService);
+      if (closePerm) closePerm();
+      setTimeout(() => window.dispatchEvent(new CustomEvent("navigateTo", { detail: "tasks" })), 350);
+    });
+  });
+}
+
+/**
+ * Shows the first-time welcome overlay.
+ * Only renders when localStorage flag "lianer_hasSeenWelcome" is absent.
+ */
+export function maybeShowWelcomeOverlay(taskService) {
+  if (localStorage.getItem(STORAGE_KEY)) return;
+
+  const overlay = document.createElement("div");
+  overlay.className = "welcome-overlay";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", "Välkommen till Lianer");
+
+  overlay.innerHTML = getWelcomeHTML(true);
 
   document.body.appendChild(overlay);
 
@@ -110,47 +155,14 @@ export function maybeShowWelcomeOverlay(taskService) {
     }, { once: true });
   };
 
-  /** Session-only close — does NOT set localStorage, overlay reappears on next reload. */
-  const closeTemp = () => animateClose();
-
-  /** Permanent close — sets localStorage flag, overlay never shown again. */
+  /** Permanent close */
   const closePerm = () => {
     localStorage.setItem(STORAGE_KEY, "true");
     animateClose();
   };
 
-  // ✕ button = session close
-  overlay.querySelector(".welcome-close-temp").addEventListener("click", closeTemp);
+  // Stäng button (permanently closes as per "rensa upp i gränssnittet" preventing double confusion)
+  overlay.querySelector(".welcome-close-perm")?.addEventListener("click", closePerm);
 
-  // "Visa inte igen" = permanent close
-  overlay.querySelector(".welcome-close-perm").addEventListener("click", closePerm);
-
-  // Click on backdrop (outside bubble) = session close
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) closeTemp();
-  });
-
-  // Escape key = session close
-  document.addEventListener("keydown", function onEsc(e) {
-    if (e.key === "Escape") { closeTemp(); document.removeEventListener("keydown", onEsc); }
-  });
-
-  // Create card → open add task dialog and close overlay permanently
-  overlay.querySelector(".welcome-card-create").addEventListener("click", () => {
-    closePerm();
-    setTimeout(() => addTaskDialog(), 350);
-  });
-  overlay.querySelector(".welcome-card-create").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); closePerm(); setTimeout(() => addTaskDialog(), 350); }
-  });
-
-  // Quick-Start pills → load demo, navigate to tasks, close overlay permanently
-  overlay.querySelectorAll(".welcome-qs-pill").forEach(pill => {
-    pill.addEventListener("click", async () => {
-      const key = pill.dataset.demo;
-      await loadDemoByKey(key, taskService);
-      closePerm();
-      setTimeout(() => window.dispatchEvent(new CustomEvent("navigateTo", { detail: "tasks" })), 350);
-    });
-  });
+  attachWelcomeEvents(overlay, taskService, closePerm);
 }
