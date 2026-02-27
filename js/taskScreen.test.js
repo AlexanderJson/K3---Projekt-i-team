@@ -11,7 +11,8 @@ describe("taskScreen component", () => {
         localStorage.clear();
 
         const mockStorage = {
-            loadState: jest.fn()
+            loadState: jest.fn(),
+            saveState: jest.fn()
         };
         mockTaskService = {
             getTasks: jest.fn(() => loadState.mock.results[0]?.value?.tasks || []),
@@ -31,9 +32,9 @@ describe("taskScreen component", () => {
             })
         };
 
-        jest.unstable_mockModule("../js/storage.js", () => mockStorage);
-        jest.unstable_mockModule("../js/taskList/taskList.js", () => mockTaskList);
-        jest.unstable_mockModule("../js/menu/openTaskDialog.js", () => ({
+        jest.unstable_mockModule("./storage.js", () => mockStorage);
+        jest.unstable_mockModule("./taskList/taskList.js", () => mockTaskList);
+        jest.unstable_mockModule("./menu/openTaskDialog.js", () => ({
             openTaskDialog: jest.fn()
         }));
         // Provide the constants from status.js directly or mock it
@@ -45,9 +46,9 @@ describe("taskScreen component", () => {
                 CLOSED: "Stängd"
             }
         };
-        jest.unstable_mockModule("../js/status.js", () => mockStatus);
+        jest.unstable_mockModule("./status.js", () => mockStatus);
 
-        const module = await import("../js/taskList/taskScreen.js");
+        const module = await import("./taskList/taskScreen.js");
         taskScreen = module.taskScreen;
         loadState = mockStorage.loadState;
 

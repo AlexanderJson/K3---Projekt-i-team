@@ -8,9 +8,16 @@
   <strong>A modern project planner built with Vanilla JavaScript for educational purposes.</strong>
 </p>
 
----
+<p align="center">
+  <br />
+  <a href="https://alexanderjson.github.io/K3---Projekt-i-team/">
+    <img src="https://img.shields.io/badge/TRY_IT_LIVE-Visit_Application-brightgreen?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Live Demo">
+  </a>
+  <br />
+  <sub>Don't feel like reading? <strong><a href="https://alexanderjson.github.io/K3---Projekt-i-team/">Jump straight into the app!</a></strong></sub>
+</p>
 
-https://alexanderjson.github.io/K3---Projekt-i-team/
+---
 
 ## Description
 
@@ -69,61 +76,90 @@ Lianer allows teams to collaborate effectively using a classic **SCRUM-board** s
   - **Assignment:** Streamlined workflow allowing members to self-assign based on capacity.
   - **Communication:** Locking tasks requires a mandatory comment, ensuring follow-up is documented.
 
+  - **CRM & Contact Management**
+  - Integrated contact list with dynamic vCard/QR-code generation.
+  - Interaction log and automated status synchronization with the Dashboard.
+
+- **Calendar & iCal Integration**
+  - Interactive calendar with weekly overviews.
+  - iCal support: Import external `.ics` events and export tasks to external calendars.
+
+- **PWA & Offline-first**
+  - Fully functional offline experience utilizing Local Storage and Service Workers.
+  - Installable on home screens via `manifest.webmanifest`.
+
 ---
 
 ## Installation & Usage
 
-För att köra detta projekt lokalt på din maskin, följ dessa steg:
+To run this project locally, follow the steps below.
 
-### Förutsättningar
+### Prerequisites
 
-Eftersom detta är en helt klientbaserad applikation krävs ingen specifik backend-server, men det underlättar att ha en lokal utvecklingsserver för att Serve:a filerna korrekt (speciellt för PWA/Service Workers och `manifest.webmanifest`).
+- Node.js (v18 or higher recommended)
+- npm
 
-- [Node.js](https://nodejs.org/en/) & npm (för att kunna installera beroenden samt köra tester).
+### Step-by-Step Setup
 
-### Steg för steg
+1. **Clone the repository**
+   You can specify a custom folder name if you wish:
 
-1. **Klona repot**
-   Klipp in detta i din terminal för att ladda ner koden:
    ```bash
-   git clone https://github.com/AlexanderJson/K3---Projekt-i-team.git
+   git clone https://github.com/AlexanderJson/K3---Projekt-i-team.git [your-folder-name]
    ```
-2. **Navigera in i mappen**
+
+2. **Navigate to the directory**
    ```bash
-   cd K3---Projekt-i-team
+   cd [your-folder-name]
    ```
-3. **Installera NPM-paket**
-   Detta steg krävs främst för testning (Jest):
-   ```bash
-   npm install
-   ```
-4. **Kör projektet lokalt**
-   Du kan öppna `index.html` direkt i webbläsaren, ELLER köra den via en lokal server (rekommenderas).
-   Om du exempelvis använder VS Code kan du starta **Live Server**.
-   Alternativt, använd `npx serve`:
-   ```bash
-   npx serve .
-   ```
-   Öppna sedan din webbläsare och gå till `http://localhost:3000` (eller den port din server anger).
 
----
+### Setup Scripts
 
-## Testing & Quality Assurance
-
-- **Browsers:** Verified compatibility in Google Chrome, Mozilla Firefox, and Safari.
-- **Responsiveness:** Validated using Chrome DevTools device simulation for mobile, tablet, and desktop.
-- **Code Standards:** - **HTML:** Passed W3C Validator.
-  - **CSS:** Passed Jigsaw Validator.
-  - **Performance:** Audited via Lighthouse for SEO and accessibility.
-  - **Unit tests:** Code is tested with Jest
-
-### Running Tests
-
-To verify the project integrity, run the following command:
+**Install dependencies**
 
 ```bash
-npm test
+npm install
 ```
+
+**Build the project**
+
+```bash
+npm run build
+```
+
+**Serve the production build**
+
+```bash
+npm run serve:dist
+```
+
+## Testing, Quality Assurance & Architecture
+
+```bash
+# Run linter
+npx eslint .
+
+# Run unit tests
+npm run test
+
+# Run unit tests with coverage report
+npm run test:coverage
+
+# Run lighthouse performance audit
+npm run lighthouse
+
+# Alternatively, generate a specific HTML report:
+# npx lighthouse http://localhost:8080/ --output html --output-path ./lh-report.html
+```
+
+- **Accessibility (WCAG 2.1 Level AA):** The application ensures an inclusive experience with semantic HTML, advanced ARIA (e.g., `aria-live` for dynamic updates), and professional focus management. Zero keyboard traps and full keyboard navigation.
+- **Advanced Architecture:** Built with a strong focus on _Separation of Concerns_. UI logic is broken down into reusable, modular components (e.g., `btn.js`, `ariaAnnouncer.js`) for scalability.
+- **Browsers:** Verified compatibility in Google Chrome, Mozilla Firefox, and Safari.
+- **Responsiveness:** Validated using Chrome DevTools device simulation for mobile, tablet, and desktop.
+- **Code Standards:**
+  - **HTML/CSS:** Passed W3C and Jigsaw Validators.
+  - **Performance:** Audited via Lighthouse CI with strict targets (>80% in all categories) and 0 critical errors in axe accessibility tests.
+- **Unit tests:** Logic and accessibility tested automatically with Jest and `jest-axe`.
 
 ### Continuous Integration
 
@@ -139,8 +175,13 @@ We use **GitHub Actions** to automate our testing pipeline. On every `push` and 
 
 ## Deployment
 
-The project is live and hosted via GitHub Pages.
-**[Visit the Live Site](https://alexanderjson.github.io/K3---Projekt-i-team/)**
+The project is publicly available and deployed via GitHub Pages.
+
+<p align="center">
+  <a href="https://alexanderjson.github.io/K3---Projekt-i-team/">
+    Visit Live Application
+  </a>
+</p>
 
 ---
 
@@ -157,6 +198,25 @@ The project is live and hosted via GitHub Pages.
 - The fonts were taken from [Google Fonts](https://fonts.google.com/)
 
 ---
+
+## Agile Process & Scrum Methodology
+
+The project was executed using an agile workflow based on the Scrum framework, divided into three structured sprints:
+
+- **Sprint Planning:** Before each sprint, User Stories were broken down into concrete, estimated tasks, and a clear sprint goal was set.
+- **Daily Standups:** Brief daily syncs (15 minutes) were held to discuss progress and identify blockers.
+- **Sprint Retrospectives:** Evaluated the process post-sprint using the "MAD / SAD / GLAD" method to continuously improve our workflow.
+- **Iterative Code Reviews:** Our Pull Request process evolved from simple approvals to strict quality gates, ensuring JSDoc, CSS structure, and manual WCAG verification before merging to the `main` branch.
+
+> **Role Rotation:**  
+> As a compact team, we rotated responsibilities throughout the sprints.  
+> This meant we alternated between Developer, Scrum Master, and Product Owner roles depending on the situation - planning scope, facilitating ceremonies, implementing features, and reviewing quality.  
+> In short: same team, multiple hats.
+
+> > **Reflection:**  
+> > Working this way gave us a real understanding of how Scrum works in practice, not just in theory.  
+> > By rotating roles and staying transparent in our retrospectives, we handled setbacks like illness without losing momentum and kept a steady pace all the way to the finish.  
+> > Small team, big responsibility Team Malmö delivers!
 
 ## Contributors
 
@@ -176,42 +236,44 @@ This project was developed by:
 
 ---
 
-## Demo & Gallery
+## <p align="center">Demo & Gallery</p>
 
-Här följer en visuell genomgång av applikationen, dess gränssnitt och funktioner.
+<p align="center">
+A visual walkthrough of the application, highlighting core features, interface design, and technical implementation.
+</p>
 
-### Pitch & Slide
+### <p align="center">Pitch Presentation</p>
 
 <p align="center">
   <img src="docs/images/demo/Slide3.jpg" alt="PWA & Offline" width="800">
-  <br><em>PWA & Offline-first funktionalitet</em>
+  <br><em>PWA & Offline-first Functionality</em>
 </p>
 <p align="center">
   <img src="docs/images/demo/Slide4.jpg" alt="Kalender" width="800">
-  <br><em>Kalender med Veckonummer & .ics export</em>
+  <br><em>Calendar & .ics export</em>
 </p>
 <p align="center">
   <img src="docs/images/demo/Slide5.jpg" alt="CRM" width="800">
-  <br><em>Integrerat CRM med QR-generering</em>
+  <br><em>Integrated CRM with QR-code generation</em>
 </p>
 <p align="center">
   <img src="docs/images/demo/Slide6.jpg" alt="Taskboard" width="800">
-  <br><em>Avancerad Uppgiftshantering (Kanban)</em>
+  <br><em>Advanced Task Management (Kanban)</em>
 </p>
 <p align="center">
   <img src="docs/images/demo/Slide7.jpg" alt="Scrum" width="800">
-  <br><em>Agila Verktyg & SCRUM-stöd</em>
+  <br><em>Agile Tools & Scrum Support</em>
 </p>
 <p align="center">
   <img src="docs/images/demo/Slide8.jpg" alt="WCAG" width="800">
-  <br><em>WCAG 2.1 AA Tillgänglighetsstandard</em>
+  <br><em>WCAG 2.1 AA Accessibility Standard</em>
 </p>
 <p align="center">
   <img src="docs/images/demo/Slide9.jpg" alt="Arkitektur" width="800">
-  <br><em>Arkitektur, Demolägen och Datasäkerhet</em>
+  <br><em>Architecture, Demo Modes & Data Security</em>
 </p>
 
-### Screenshots från Applikationen
+### <p align="center">Application Screenshots</p>
 
 **Dashboard:**
 
@@ -224,7 +286,7 @@ Här följer en visuell genomgång av applikationen, dess gränssnitt och funkti
   <img src="docs/images/screenshots/lightmode mobile.png" alt="Lightmode Mobile" width="300">
 </p>
 
-**Taskboard / Uppgiftshantering:**
+**Task Board:**
 
 <p align="center">
   <img src="docs/images/screenshots/taskboard team desk.png" alt="Taskboard Desktop" width="800">
@@ -238,7 +300,7 @@ Här följer en visuell genomgång av applikationen, dess gränssnitt och funkti
   <img src="docs/images/screenshots/add task mobile.png" alt="Add Task Mobile" width="300">
 </p>
 
-**CRM & Planering:**
+**CRM & Planning:**
 
 <p align="center">
   <img src="docs/images/screenshots/contactCRM desk.png" alt="CRM Desktop" width="800">

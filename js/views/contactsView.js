@@ -13,6 +13,29 @@ import {
 import { loadState } from "../storage.js";
 
 // ===================================================================
+// LAZY VENDOR SCRIPT LOADER
+// ===================================================================
+let vendorScriptsLoaded = false;
+function loadVendorScripts() {
+  if (vendorScriptsLoaded) return Promise.resolve();
+  const scripts = [
+    { src: "vendor/qrcode.js" },
+    { src: "vendor/html5-qrcode.min.js" }
+  ];
+  return Promise.all(scripts.map(s => {
+    if (document.querySelector(`script[src="${s.src}"]`)) return Promise.resolve();
+    return new Promise((resolve) => {
+      const el = document.createElement("script");
+      el.src = s.src;
+      el.async = true;
+      el.onload = resolve;
+      el.onerror = () => { console.warn(`Failed to load ${s.src}`); resolve(); };
+      document.head.appendChild(el);
+    });
+  })).then(() => { vendorScriptsLoaded = true; });
+}
+
+// ===================================================================
 // STATE
 // ===================================================================
 let selectedContactId = null;
@@ -35,6 +58,9 @@ export const renderContacts = async (container, params = null) => {
     await initContactsDB();
     dbReady = true;
   }
+
+  // Lazy-load vendor scripts (qrcode, html5-qrcode) in parallel with DB init
+  loadVendorScripts();
 
   allContacts = currentSearchTerm
     ? await searchContacts(currentSearchTerm)
@@ -175,24 +201,24 @@ function createMasterPanel(container, shell) {
 
   const btnToggleFav = document.createElement("button");
   btnToggleFav.className = "btn-icon-text"; // Add class for flex alignment if needed
-  
+
   // Material Design Icons
   const iconStar = `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`;
   const iconPeople = `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>`;
 
   const updateToggleBtn = () => {
-      btnToggleFav.innerHTML = showingFavorites ? `${iconPeople} Alla` : `${iconStar} Favoriter`;
-      btnToggleFav.title = showingFavorites ? "Visa alla kontakter" : "Visa endast favoritkontakter";
-      btnToggleFav.style.borderColor = showingFavorites ? "var(--accent-yellow, #fbbf24)" : "var(--border)";
-      btnToggleFav.style.color = showingFavorites ? "var(--accent-yellow, #fbbf24)" : "var(--text-dim)";
-      btnToggleFav.style.display = "flex";
-      btnToggleFav.style.alignItems = "center";
-      btnToggleFav.style.justifyContent = "center";
-      btnToggleFav.style.gap = "6px";
-      btnToggleFav.style.padding = "10px 14px";
-      btnToggleFav.style.borderRadius = "8px";
-      btnToggleFav.style.background = "var(--bg-element)";
-      btnToggleFav.style.cursor = "pointer";
+    btnToggleFav.innerHTML = showingFavorites ? `${iconPeople} Alla` : `${iconStar} Favoriter`;
+    btnToggleFav.title = showingFavorites ? "Visa alla kontakter" : "Visa endast favoritkontakter";
+    btnToggleFav.style.borderColor = showingFavorites ? "var(--accent-yellow, #fbbf24)" : "var(--border)";
+    btnToggleFav.style.color = showingFavorites ? "var(--accent-yellow, #fbbf24)" : "var(--text-dim)";
+    btnToggleFav.style.display = "flex";
+    btnToggleFav.style.alignItems = "center";
+    btnToggleFav.style.justifyContent = "center";
+    btnToggleFav.style.gap = "6px";
+    btnToggleFav.style.padding = "10px 14px";
+    btnToggleFav.style.borderRadius = "8px";
+    btnToggleFav.style.background = "var(--bg-element)";
+    btnToggleFav.style.cursor = "pointer";
   };
   updateToggleBtn();
 
@@ -205,41 +231,41 @@ function createMasterPanel(container, shell) {
   // Status Filter Dropdown
   const statusFilterSelect = document.createElement("select");
   statusFilterSelect.style.cssText = "padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--bg-element);color:var(--text-main);font-family:inherit;font-size:13px;min-width:140px;";
-  
+
   const filterOpts = ["Alla", "Ej kontaktad", "Pågående", "Klar", "Förlorad", "Återkom"];
   filterOpts.forEach(s => {
-      const opt = document.createElement("option");
-      opt.value = s;
-      opt.textContent = s === "Alla" ? "Status: Alla" : s;
-      statusFilterSelect.append(opt);
+    const opt = document.createElement("option");
+    opt.value = s;
+    opt.textContent = s === "Alla" ? "Status: Alla" : s;
+    statusFilterSelect.append(opt);
   });
-  
+
   statusFilterSelect.onchange = () => {
-      currentStatusFilter = statusFilterSelect.value;
-      refreshList(master, container, shell);
+    currentStatusFilter = statusFilterSelect.value;
+    refreshList(master, container, shell);
   };
 
   // Assignee Filter Dropdown
   const assigneeFilterSelect = document.createElement("select");
   assigneeFilterSelect.style.cssText = "padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--bg-element);color:var(--text-main);font-family:inherit;font-size:13px;min-width:150px;";
-  
+
   const people = loadState().people || [];
   const allOpt = document.createElement("option");
   allOpt.value = "Alla";
   allOpt.textContent = "Ansvarig: Alla";
   assigneeFilterSelect.append(allOpt);
-  
+
   people.forEach(p => {
-      if (p === "Ingen") return;
-      const opt = document.createElement("option");
-      opt.value = p;
-      opt.textContent = p;
-      assigneeFilterSelect.append(opt);
+    if (p === "Ingen") return;
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.textContent = p;
+    assigneeFilterSelect.append(opt);
   });
-  
+
   assigneeFilterSelect.onchange = () => {
-      currentAssigneeFilter = assigneeFilterSelect.value;
-      refreshList(master, container, shell);
+    currentAssigneeFilter = assigneeFilterSelect.value;
+    refreshList(master, container, shell);
   };
 
   actions.append(statusFilterSelect, assigneeFilterSelect, importVcfInput, importCsvInput, btnImportVcf, btnImportCsv, btnExport, btnScan, btnAdd);
@@ -264,7 +290,7 @@ function createMasterPanel(container, shell) {
   mobileFilterBtn.style.background = "var(--bg-element)";
   mobileFilterBtn.style.color = "var(--text-main)";
   mobileFilterBtn.style.cursor = "pointer";
-  
+
   mobileFilterBtn.onclick = () => {
     actions.classList.toggle("show-mobile-actions");
     mobileFilterBtn.classList.toggle("active");
@@ -297,36 +323,36 @@ function createMasterPanel(container, shell) {
   // We use the shell to catch events bubbling up from items
   shell.addEventListener("keydown", (e) => {
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-        // Only handle if we are NOT in the search input (already handled safely or default behavior)
-        if (e.target === search) return; 
+      // Only handle if we are NOT in the search input (already handled safely or default behavior)
+      if (e.target === search) return;
 
-        e.preventDefault();
-        const direction = e.key === "ArrowDown" ? 1 : -1;
-        const items = Array.from(list.querySelectorAll(".contact-item"));
-        if (items.length === 0) return;
-        
-        // Find focused item or active item
-        let currentIndex = items.indexOf(document.activeElement);
-        
-        // If no item is focused, try to find the "active" selected one
-        if (currentIndex === -1 && selectedContactId) {
-             currentIndex = items.findIndex(item => item.dataset.id == selectedContactId);
-        }
+      e.preventDefault();
+      const direction = e.key === "ArrowDown" ? 1 : -1;
+      const items = Array.from(list.querySelectorAll(".contact-item"));
+      if (items.length === 0) return;
 
-        let nextIndex;
-        if (currentIndex === -1) {
-            nextIndex = direction === 1 ? 0 : items.length - 1;
-        } else {
-            nextIndex = currentIndex + direction;
-        }
-        
-        // Bounds check
-        if (nextIndex >= 0 && nextIndex < items.length) {
-            const nextItem = items[nextIndex];
-            nextItem.focus();
-            nextItem.click(); // Select it
-            nextItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }
+      // Find focused item or active item
+      let currentIndex = items.indexOf(document.activeElement);
+
+      // If no item is focused, try to find the "active" selected one
+      if (currentIndex === -1 && selectedContactId) {
+        currentIndex = items.findIndex(item => item.dataset.id == selectedContactId);
+      }
+
+      let nextIndex;
+      if (currentIndex === -1) {
+        nextIndex = direction === 1 ? 0 : items.length - 1;
+      } else {
+        nextIndex = currentIndex + direction;
+      }
+
+      // Bounds check
+      if (nextIndex >= 0 && nextIndex < items.length) {
+        const nextItem = items[nextIndex];
+        nextItem.focus();
+        nextItem.click(); // Select it
+        nextItem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
     }
   });
 
@@ -349,18 +375,18 @@ function refreshList(master, container, shell) {
   list.innerHTML = "";
 
   let contactsToShow = allContacts;
-  
+
   // 1. Filter by Status
   if (currentStatusFilter !== "Alla") {
-      contactsToShow = contactsToShow.filter(c => {
-          const s = (c.status || "Ej kontaktad").toLowerCase().trim();
-          return s === currentStatusFilter.toLowerCase().trim();
-      });
+    contactsToShow = contactsToShow.filter(c => {
+      const s = (c.status || "Ej kontaktad").toLowerCase().trim();
+      return s === currentStatusFilter.toLowerCase().trim();
+    });
   }
 
   // 1b. Filter by Assignee
   if (currentAssigneeFilter !== "Alla") {
-      contactsToShow = contactsToShow.filter(c => c.assignedTo === currentAssigneeFilter);
+    contactsToShow = contactsToShow.filter(c => c.assignedTo === currentAssigneeFilter);
   }
 
   // 2. Filter by Favorites (if active)
@@ -377,7 +403,7 @@ function refreshList(master, container, shell) {
     empty.className = "contacts-empty-state";
     const msg = showingFavorites ? "Inga favoriter markerade" : "Inga kontakter hittades";
     const icon = showingFavorites ? iconStar : iconPeople;
-    
+
     empty.innerHTML = `<div class="empty-icon" style="opacity:0.5;margin-bottom:10px;">${icon}</div><div class="empty-text">${msg}</div>`;
     list.append(empty);
     count.textContent = "0 kontakter";
@@ -426,21 +452,21 @@ function createContactItem(contact, container, shell) {
 
   const name = document.createElement("div");
   name.className = "contact-item-name";
-  
+
   // Status Indicator
   if (contact.status && contact.status !== "Ej kontaktad") {
-      const dot = document.createElement("span");
-      dot.className = "status-badge";
-      
-      let color = "#cbd5e1"; // gray
-      if (contact.status === "Pågående") color = "#fcd34d"; // yellow
-      if (contact.status === "Klar" || contact.status === "Vunnen") color = "#4ade80"; // green
-      if (contact.status === "Förlorad") color = "#f87171"; // red
-      if (contact.status === "Återkom") color = "#60a5fa"; // blue
-      
-      dot.style.backgroundColor = color;
-      dot.title = contact.status;
-      name.prepend(dot);
+    const dot = document.createElement("span");
+    dot.className = "status-badge";
+
+    let color = "#cbd5e1"; // gray
+    if (contact.status === "Pågående") color = "#fcd34d"; // yellow
+    if (contact.status === "Klar" || contact.status === "Vunnen") color = "#4ade80"; // green
+    if (contact.status === "Förlorad") color = "#f87171"; // red
+    if (contact.status === "Återkom") color = "#60a5fa"; // blue
+
+    dot.style.backgroundColor = color;
+    dot.title = contact.status;
+    name.prepend(dot);
   }
 
   name.append(document.createTextNode(contact.name || "Namnlös"));
@@ -456,12 +482,12 @@ function createContactItem(contact, container, shell) {
   star.className = "contact-item-star";
   star.textContent = contact.isFavorite ? "★" : "☆";
   star.style.cssText = "padding:8px;cursor:pointer;font-size:18px;color:var(--accent-yellow, #fbbf24);transition:transform 0.2s;";
-  
+
   star.onclick = async (e) => {
     e.stopPropagation(); // Don't select item
     contact.isFavorite = !contact.isFavorite;
     await updateContact(contact);
-    
+
     // Animate
     star.style.transform = "scale(1.4)";
     setTimeout(() => star.style.transform = "scale(1)", 200);
@@ -469,8 +495,8 @@ function createContactItem(contact, container, shell) {
 
     // Refresh if we are in Favorites view and just unfavorited
     if (showingFavorites && !contact.isFavorite) {
-         const master = shell.querySelector(".contacts-master");
-         refreshList(master, container, shell);
+      const master = shell.querySelector(".contacts-master");
+      refreshList(master, container, shell);
     }
   };
 
@@ -478,21 +504,21 @@ function createContactItem(contact, container, shell) {
 
   item.onclick = () => {
     if (String(selectedContactId) === String(contact.id)) {
-        // Deselect if already selected
-        selectedContactId = null;
-        isMobileDetailOpen = false;
+      // Deselect if already selected
+      selectedContactId = null;
+      isMobileDetailOpen = false;
     } else {
-        // Select new
-        selectedContactId = contact.id;
-        isMobileDetailOpen = true;
+      // Select new
+      selectedContactId = contact.id;
+      isMobileDetailOpen = true;
     }
 
     // Update active state in list
     const allItems = item.closest(".contacts-list").querySelectorAll(".contact-item");
     allItems.forEach(i => i.classList.remove("active"));
-    
+
     if (selectedContactId) {
-        item.classList.add("active");
+      item.classList.add("active");
     }
 
     refreshDetail(shell, container);
@@ -564,23 +590,23 @@ function refreshDetailContent(detail, container, shell) {
 
   // Status Badge in Header
   if (contact.status) {
-      const badge = document.createElement("span");
-      badge.style.cssText = "font-size:12px;padding:2px 8px;border-radius:12px;background:var(--bg-element);border:1px solid var(--border);color:var(--text-dim);margin-left:auto;";
-      badge.textContent = contact.status;
-      nameRow.append(badge);
+    const badge = document.createElement("span");
+    badge.style.cssText = "font-size:12px;padding:2px 8px;border-radius:12px;background:var(--bg-element);border:1px solid var(--border);color:var(--text-dim);margin-left:auto;";
+    badge.textContent = contact.status;
+    nameRow.append(badge);
   }
 
   const starBtn = document.createElement("div");
   starBtn.textContent = contact.isFavorite ? "★" : "☆";
   starBtn.style.cssText = "font-size:24px;cursor:pointer;color:var(--accent-yellow, #fbbf24);user-select:none;margin-left:10px;"; // Added margin
   starBtn.title = contact.isFavorite ? "Ta bort från favoriter" : "Lägg till i favoriter";
-  
+
   starBtn.onclick = async () => {
     contact.isFavorite = !contact.isFavorite;
     await updateContact(contact);
     starBtn.textContent = contact.isFavorite ? "★" : "☆";
     starBtn.title = contact.isFavorite ? "Ta bort från favoriter" : "Lägg till i favoriter";
-    
+
     // Refresh list to update star in list and/or filter
     refreshList(shell.querySelector(".contacts-master"), container, shell);
   };
@@ -614,31 +640,31 @@ function refreshDetailContent(detail, container, shell) {
   const infoContent = document.createElement("div");
   infoContent.className = "tab-content active";
   infoContent.id = "tab-info";
-  
+
   // -- Social Links --
   if (contact.social && (contact.social.linkedin || contact.social.website)) {
-      const socialRow = document.createElement("div");
-      socialRow.className = "social-links";
-      
-      if (contact.social.linkedin) {
-          const lnk = document.createElement("a");
-          lnk.className = "social-btn";
-          lnk.href = contact.social.linkedin;
-          lnk.target = "_blank";
-          lnk.title = "LinkedIn Profil";
-          lnk.innerHTML = "in"; // Simple text icon for now, or SVG if available
-          socialRow.append(lnk);
-      }
-      if (contact.social.website) {
-          const lnk = document.createElement("a");
-          lnk.className = "social-btn";
-          lnk.href = contact.social.website;
-          lnk.target = "_blank";
-          lnk.title = "Besök hemsida";
-          lnk.innerHTML = "🌐";
-          socialRow.append(lnk);
-      }
-      infoContent.append(socialRow);
+    const socialRow = document.createElement("div");
+    socialRow.className = "social-links";
+
+    if (contact.social.linkedin) {
+      const lnk = document.createElement("a");
+      lnk.className = "social-btn";
+      lnk.href = contact.social.linkedin;
+      lnk.target = "_blank";
+      lnk.title = "LinkedIn Profil";
+      lnk.innerHTML = "in"; // Simple text icon for now, or SVG if available
+      socialRow.append(lnk);
+    }
+    if (contact.social.website) {
+      const lnk = document.createElement("a");
+      lnk.className = "social-btn";
+      lnk.href = contact.social.website;
+      lnk.target = "_blank";
+      lnk.title = "Besök hemsida";
+      lnk.innerHTML = "🌐";
+      socialRow.append(lnk);
+    }
+    infoContent.append(socialRow);
   }
 
   // PHONE
@@ -741,43 +767,43 @@ function refreshDetailContent(detail, container, shell) {
   statusSelect.className = "crm-status-select";
   const statuses = ["Ej kontaktad", "Pågående", "Klar", "Förlorad", "Återkom"];
   statuses.forEach(s => {
-      const opt = document.createElement("option");
-      opt.value = s;
-      opt.textContent = s;
-      if (contact.status === s || (s === "Klar" && contact.status === "Vunnen")) opt.selected = true;
-      statusSelect.append(opt);
+    const opt = document.createElement("option");
+    opt.value = s;
+    opt.textContent = s;
+    if (contact.status === s || (s === "Klar" && contact.status === "Vunnen")) opt.selected = true;
+    statusSelect.append(opt);
   });
-  
+
   statusSelect.onchange = async () => {
-      const oldStatus = contact.status || "Ej kontaktad";
-      const newStatus = statusSelect.value;
-      contact.status = newStatus;
+    const oldStatus = contact.status || "Ej kontaktad";
+    const newStatus = statusSelect.value;
+    contact.status = newStatus;
 
-      // Sätt completedAt vid "Klar" för CRM veckomål
-      if (newStatus === "Klar" && !contact.completedAt) {
-        contact.completedAt = new Date().toISOString();
-      } else if (newStatus !== "Klar") {
-        contact.completedAt = null;
-      }
-      
-      // Log interaction
-      const logItem = {
-          id: Date.now(),
-          date: new Date().toISOString(),
-          type: "status_change",
-          content: `Status ändrad från ${oldStatus} till ${newStatus}`,
-          previousStatus: oldStatus,
-          newStatus: newStatus
-      };
-      contact.interactionLog = [logItem, ...(contact.interactionLog || [])];
-      contact.lastContactDate = new Date().toISOString();
-      
-      await updateContact(contact);
-      refreshList(shell.querySelector(".contacts-master"), container, shell);
-      renderTimeline(contact, historyContent);
+    // Sätt completedAt vid "Klar" för CRM veckomål
+    if (newStatus === "Klar" && !contact.completedAt) {
+      contact.completedAt = new Date().toISOString();
+    } else if (newStatus !== "Klar") {
+      contact.completedAt = null;
+    }
 
-      // CRM-synk: trigga dashboard-uppdatering i realtid
-      window.dispatchEvent(new CustomEvent('renderApp'));
+    // Log interaction
+    const logItem = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      type: "status_change",
+      content: `Status ändrad från ${oldStatus} till ${newStatus}`,
+      previousStatus: oldStatus,
+      newStatus: newStatus
+    };
+    contact.interactionLog = [logItem, ...(contact.interactionLog || [])];
+    contact.lastContactDate = new Date().toISOString();
+
+    await updateContact(contact);
+    refreshList(shell.querySelector(".contacts-master"), container, shell);
+    renderTimeline(contact, historyContent);
+
+    // CRM-synk: trigga dashboard-uppdatering i realtid
+    window.dispatchEvent(new CustomEvent('renderApp'));
   };
   historyContent.append(statusSelect);
 
@@ -785,97 +811,97 @@ function refreshDetailContent(detail, container, shell) {
   const assignLabel = document.createElement("div");
   assignLabel.textContent = "Ansvarig";
   assignLabel.style.cssText = "font-size:11px;font-weight:bold;color:var(--text-dim);margin-bottom:4px;text-transform:uppercase;";
-  
+
   const assignSelect = document.createElement("select");
   assignSelect.className = "crm-status-select"; // Reuse style
   assignSelect.style.marginBottom = "20px";
-  
+
   const people = loadState().people || [];
   const assignOptionDefault = document.createElement("option");
   assignOptionDefault.value = "";
   assignOptionDefault.textContent = "— Välj ansvarig —";
   assignSelect.append(assignOptionDefault);
-  
+
   people.forEach(p => {
-      if (p === "Ingen") return;
-      const opt = document.createElement("option");
-      opt.value = p;
-      opt.textContent = p;
-      if (contact.assignedTo === p) opt.selected = true;
-      assignSelect.append(opt);
+    if (p === "Ingen") return;
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.textContent = p;
+    if (contact.assignedTo === p) opt.selected = true;
+    assignSelect.append(opt);
   });
-  
+
   assignSelect.onchange = async () => {
-      const oldAssignee = contact.assignedTo || "Ingen";
-      const newAssignee = assignSelect.value || "Ingen";
-      contact.assignedTo = assignSelect.value;
-      
-      // Log interaction
-      const logItem = {
-          id: Date.now(),
-          date: new Date().toISOString(),
-          type: "note", // Log as note/system event
-          content: `Ansvarig ändrad från ${oldAssignee} till ${newAssignee}`
-      };
-      contact.interactionLog = [logItem, ...(contact.interactionLog || [])];
-      
-      await updateContact(contact);
-      renderTimeline(contact, historyContent);
+    const oldAssignee = contact.assignedTo || "Ingen";
+    const newAssignee = assignSelect.value || "Ingen";
+    contact.assignedTo = assignSelect.value;
+
+    // Log interaction
+    const logItem = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      type: "note", // Log as note/system event
+      content: `Ansvarig ändrad från ${oldAssignee} till ${newAssignee}`
+    };
+    contact.interactionLog = [logItem, ...(contact.interactionLog || [])];
+
+    await updateContact(contact);
+    renderTimeline(contact, historyContent);
   };
-  
+
   historyContent.append(assignLabel, assignSelect);
 
   // Add Note
   const noteInput = document.createElement("textarea");
   noteInput.className = "crm-note-input";
   noteInput.placeholder = "Skriv en notering...";
-  
+
   const addNoteBtn = document.createElement("button");
   addNoteBtn.textContent = "Spara notering";
   addNoteBtn.style.cssText = "padding:8px 16px;border-radius:8px;background:var(--accent-cyan);color:var(--bg-main);border:none;cursor:pointer;font-weight:bold;margin-bottom:20px;";
-  
+
   addNoteBtn.onclick = async () => {
-      const text = noteInput.value.trim();
-      if (!text) return;
-      
-      const logItem = {
-          id: Date.now(),
-          date: new Date().toISOString(),
-          type: "note",
-          content: text
-      };
-      
-      contact.interactionLog = [logItem, ...(contact.interactionLog || [])];
-      contact.lastContactDate = new Date().toISOString();
-      
-      await updateContact(contact);
-      noteInput.value = "";
-      renderTimeline(contact, historyContent);
+    const text = noteInput.value.trim();
+    if (!text) return;
+
+    const logItem = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      type: "note",
+      content: text
+    };
+
+    contact.interactionLog = [logItem, ...(contact.interactionLog || [])];
+    contact.lastContactDate = new Date().toISOString();
+
+    await updateContact(contact);
+    noteInput.value = "";
+    renderTimeline(contact, historyContent);
   };
-  
+
   historyContent.append(noteInput, addNoteBtn);
 
   // Timeline Container
   const timelineContainer = document.createElement("div");
   timelineContainer.className = "crm-timeline-wrapper"; // Wrapper for updates
   historyContent.append(timelineContainer);
-  
+
   renderTimeline(contact, historyContent); // Initial render
 
   detail.append(historyContent); // Append History Tab
 
   // TAB SWITCHING LOGIC
   tabInfoBtn.onclick = () => {
-      tabInfoBtn.classList.add("active");
-      tabHistoryBtn.classList.remove("active");
-      infoContent.classList.add("active");
-      historyContent.classList.remove("active");
+    tabInfoBtn.classList.add("active");
+    tabHistoryBtn.classList.remove("active");
+    infoContent.classList.add("active");
+    historyContent.classList.remove("active");
   };
   tabHistoryBtn.onclick = () => {
-      tabHistoryBtn.classList.add("active");
-      tabInfoBtn.classList.remove("active");
-      historyContent.classList.add("active");
-      infoContent.classList.remove("active");
+    tabHistoryBtn.classList.add("active");
+    tabInfoBtn.classList.remove("active");
+    historyContent.classList.add("active");
+    infoContent.classList.remove("active");
   };
 
   // Actions (Edit/Delete) - Append to Detail (outside tabs, at bottom)
@@ -900,7 +926,7 @@ function refreshDetailContent(detail, container, shell) {
       const master = shell.querySelector(".contacts-master");
       refreshList(master, container, shell);
       refreshDetail(shell, container); // Will show empty state
-      
+
       // If mobile, go back to list
       if (window.innerWidth < 1024) {
         isMobileDetailOpen = false;
@@ -915,40 +941,40 @@ function refreshDetailContent(detail, container, shell) {
 
 // Helper to render timeline
 function renderTimeline(contact, container) {
-    let wrapper = container.querySelector(".crm-timeline-wrapper");
-    if (!wrapper) return;
-    wrapper.innerHTML = "";
+  let wrapper = container.querySelector(".crm-timeline-wrapper");
+  if (!wrapper) return;
+  wrapper.innerHTML = "";
 
-    const timeline = document.createElement("div");
-    timeline.className = "crm-timeline";
-    
-    const logs = contact.interactionLog || [];
-    if (logs.length === 0) {
-        wrapper.innerHTML = `<div style="color:var(--text-dim);font-style:italic;">Ingen historik än.</div>`;
-        return;
+  const timeline = document.createElement("div");
+  timeline.className = "crm-timeline";
+
+  const logs = contact.interactionLog || [];
+  if (logs.length === 0) {
+    wrapper.innerHTML = `<div style="color:var(--text-dim);font-style:italic;">Ingen historik än.</div>`;
+    return;
+  }
+
+  logs.forEach(log => {
+    const item = document.createElement("div");
+    item.className = "crm-timeline-item";
+
+    const dateStr = new Date(log.date).toLocaleString("sv-SE").slice(0, 16);
+    const dateEl = document.createElement("div");
+    dateEl.className = "crm-timeline-date";
+    dateEl.textContent = dateStr;
+
+    const content = document.createElement("div");
+    content.className = "crm-timeline-content";
+    content.textContent = log.content;
+
+    if (log.type === "status_change") {
+      content.style.borderLeft = "4px solid var(--accent-yellow, #fbbf24)";
     }
 
-    logs.forEach(log => {
-        const item = document.createElement("div");
-        item.className = "crm-timeline-item";
-        
-        const dateStr = new Date(log.date).toLocaleString("sv-SE").slice(0, 16);
-        const dateEl = document.createElement("div");
-        dateEl.className = "crm-timeline-date";
-        dateEl.textContent = dateStr;
-        
-        const content = document.createElement("div");
-        content.className = "crm-timeline-content";
-        content.textContent = log.content;
-        
-        if (log.type === "status_change") {
-            content.style.borderLeft = "4px solid var(--accent-yellow, #fbbf24)";
-        }
-        
-        item.append(dateEl, content);
-        timeline.append(item);
-    });
-    wrapper.append(timeline);
+    item.append(dateEl, content);
+    timeline.append(item);
+  });
+  wrapper.append(timeline);
 }
 
 // ===================================================================
@@ -1010,16 +1036,16 @@ function openContactModal(contact, container, shell, master) {
   statusLabel.textContent = "Status";
   statusLabel.className = "meta-label"; // Ensure this class exists or allow fallback
   statusLabel.style.fontSize = "11px";
-  
+
   const statusSelect = document.createElement("select");
   statusSelect.style.cssText = "width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--bg-element);color:var(--text-main);";
   const statuses = ["Ej kontaktad", "Pågående", "Klar", "Förlorad", "Återkom"];
   statuses.forEach(s => {
-      const opt = document.createElement("option");
-      opt.value = s;
-      opt.textContent = s;
-      if (isEdit && (contact.status === s || (s === "Klar" && contact.status === "Vunnen"))) opt.selected = true;
-      statusSelect.append(opt);
+    const opt = document.createElement("option");
+    opt.value = s;
+    opt.textContent = s;
+    if (isEdit && (contact.status === s || (s === "Klar" && contact.status === "Vunnen"))) opt.selected = true;
+    statusSelect.append(opt);
   });
   statusContainer.append(statusLabel, statusSelect);
 
@@ -1029,29 +1055,29 @@ function openContactModal(contact, container, shell, master) {
   const assignLabel = document.createElement("label");
   assignLabel.textContent = "Ansvarig";
   assignLabel.style.fontSize = "11px";
-  
+
   const assignSelect = document.createElement("select");
   assignSelect.style.cssText = "width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--bg-element);color:var(--text-main);";
-  
+
   const people = loadState().people || [];
   const assignOptionDefault = document.createElement("option");
   assignOptionDefault.value = "";
   assignOptionDefault.textContent = "— Välj —";
   assignSelect.append(assignOptionDefault);
-  
+
   people.forEach(p => {
-      if (p === "Ingen") return;
-      const opt = document.createElement("option");
-      opt.value = p;
-      opt.textContent = p;
-      if (isEdit && contact.assignedTo === p) opt.selected = true;
-      assignSelect.append(opt);
+    if (p === "Ingen") return;
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.textContent = p;
+    if (isEdit && contact.assignedTo === p) opt.selected = true;
+    assignSelect.append(opt);
   });
   assignContainer.append(assignLabel, assignSelect);
-  
+
   metaRow.append(statusContainer, assignContainer);
   modal.append(metaRow);
-  
+
   fields.forEach(f => {
     const row = document.createElement("div");
     row.className = "csv-mapping-row";
@@ -1091,19 +1117,19 @@ function openContactModal(contact, container, shell, master) {
   saveBtn.style.cssText = "padding:8px 16px;border-radius:8px;border:1px solid var(--accent-cyan);background:var(--accent-cyan);color:var(--bg-main);cursor:pointer;font-family:inherit;font-weight:bold;";
 
   saveBtn.onclick = async () => {
-      const newStatus = statusSelect.value;
-      let assignedCompletedAt = isEdit ? contact.completedAt : null;
+    const newStatus = statusSelect.value;
+    let assignedCompletedAt = isEdit ? contact.completedAt : null;
 
-      if (newStatus === "Klar") {
-          // If newly becoming done or missing date, set date.
-          if (!assignedCompletedAt) {
-              assignedCompletedAt = new Date().toISOString();
-          }
-      } else {
-          assignedCompletedAt = null;
+    if (newStatus === "Klar") {
+      // If newly becoming done or missing date, set date.
+      if (!assignedCompletedAt) {
+        assignedCompletedAt = new Date().toISOString();
       }
+    } else {
+      assignedCompletedAt = null;
+    }
 
-      const data = {
+    const data = {
       id: isEdit ? contact.id : Date.now() + Math.random(),
       name: inputs.name.value.trim(),
       role: inputs.role.value.trim(),
@@ -1125,7 +1151,7 @@ function openContactModal(contact, container, shell, master) {
 
     // Dubblettskydd: case-insensitive namnkontroll
     const nameToCheck = data.name.toLowerCase().trim();
-    const duplicate = allContacts.find(c => 
+    const duplicate = allContacts.find(c =>
       c.name.toLowerCase().trim() === nameToCheck && String(c.id) !== String(data.id)
     );
     if (duplicate) { alert(`En kontakt med namnet "${data.name}" finns redan.`); return; }
@@ -1335,53 +1361,60 @@ function openQRScanner(container, shell, master) {
 
   closeBtn.onclick = () => {
     if (scanner) {
-      scanner.stop().catch(() => {});
+      scanner.stop().catch(() => { });
     }
     overlay.remove();
   };
 
-  // Start scanner
-  Html5Qrcode.getCameras().then(devices => {
-    if (devices && devices.length) {
-      const cameraId = devices[devices.length - 1].id;
-      scanner = new Html5Qrcode(readerDiv.id);
-      scanner.start(
-        cameraId,
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        async (decodedText) => {
-          scanner.stop().catch(() => {});
-          statusMsg.textContent = "✅ QR-kod läst!";
-          statusMsg.style.color = "var(--success)";
+  // Start scanner - ensure vendor scripts are loaded first
+  loadVendorScripts().then(() => {
+    if (typeof Html5Qrcode === "undefined") {
+      statusMsg.textContent = "❌ QR-scanner kunde inte laddas.";
+      statusMsg.style.color = "red";
+      return;
+    }
+    Html5Qrcode.getCameras().then(devices => {
+      if (devices && devices.length) {
+        const cameraId = devices[devices.length - 1].id;
+        scanner = new Html5Qrcode(readerDiv.id);
+        scanner.start(
+          cameraId,
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          async (decodedText) => {
+            scanner.stop().catch(() => { });
+            statusMsg.textContent = "✅ QR-kod läst!";
+            statusMsg.style.color = "var(--success)";
 
-          try {
-            const parsed = parseVCard(decodedText);
-            if (parsed && parsed.length > 0) {
-              await importContacts(parsed);
-              allContacts = await getAllContacts();
-              selectedContactId = parsed[0].id;
-              refreshList(master, container, shell);
-              refreshDetail(shell, container);
-              setTimeout(() => overlay.remove(), 800);
-            } else {
-              statusMsg.textContent = "❌ Ingen kontaktdata i QR-koden.";
+            try {
+              const parsed = parseVCard(decodedText);
+              if (parsed && parsed.length > 0) {
+                await importContacts(parsed);
+                allContacts = await getAllContacts();
+                selectedContactId = parsed[0].id;
+                refreshList(master, container, shell);
+                refreshDetail(shell, container);
+                setTimeout(() => overlay.remove(), 800);
+              } else {
+                statusMsg.textContent = "❌ Ingen kontaktdata i QR-koden.";
+                statusMsg.style.color = "var(--accent-crimson)";
+              }
+            } catch {
+              statusMsg.textContent = "❌ Kunde inte läsa kontaktdata.";
               statusMsg.style.color = "var(--accent-crimson)";
             }
-          } catch {
-            statusMsg.textContent = "❌ Kunde inte läsa kontaktdata.";
-            statusMsg.style.color = "var(--accent-crimson)";
-          }
-        },
-        () => {} // Scan error (ignore, keep scanning)
-      ).catch(err => {
-        statusMsg.textContent = "❌ Kamerafel: " + err;
+          },
+          () => { } // Scan error (ignore, keep scanning)
+        ).catch(err => {
+          statusMsg.textContent = "❌ Kamerafel: " + err;
+          statusMsg.style.color = "var(--accent-crimson)";
+        });
+      } else {
+        statusMsg.textContent = "📷 Inga kameror hittades.";
         statusMsg.style.color = "var(--accent-crimson)";
-      });
-    } else {
-      statusMsg.textContent = "📷 Inga kameror hittades.";
+      }
+    }).catch(err => {
+      statusMsg.textContent = "❌ Kamerafel: " + err;
       statusMsg.style.color = "var(--accent-crimson)";
-    }
-  }).catch(err => {
-    statusMsg.textContent = "❌ Kamerafel: " + err;
-    statusMsg.style.color = "var(--accent-crimson)";
-  });
+    });
+  }); // end loadVendorScripts().then
 }

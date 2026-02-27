@@ -171,7 +171,7 @@ export class TaskService
     }
         
 
-     /*
+    /*
         Just default filtering if needed. 
         returns by status.
      */
@@ -179,6 +179,7 @@ export class TaskService
     byStatus(status) {
         return this._filter("status", status);
     }
+    
      changeStatus(id, newStatus)
      {
         if (!id || !newStatus) return null;
@@ -195,6 +196,62 @@ export class TaskService
 
      }
 
+     updateTaskOrder(taskId, newStatus, prevOrderId, nextOrderId) {
+        const task = this.getTaskById(taskId);
+        if (!task) return null;
+
+        task.status = newStatus;
+
+        const tasksInColumn = this.byStatus(newStatus)
+            .filter(t => t.id !== taskId)
+            .sort((a, b) => this._compareRank(a.order || "", b.order || ""));
+
+        let insertIndex = tasksInColumn.length;
+        if (nextOrderId) {
+            const nextIndex = tasksInColumn.findIndex(t => t.id === nextOrderId);
+            if (nextIndex !== -1) insertIndex = nextIndex;
+        } else if (prevOrderId) {
+            const prevIndex = tasksInColumn.findIndex(t => t.id === prevOrderId);
+            if (prevIndex !== -1) insertIndex = prevIndex + 1;
+        }
+
+        tasksInColumn.splice(insertIndex, 0, task);
+
+        let currentRank = "J"; 
+        for (let i = 0; i < tasksInColumn.length; i++) {
+            const t = tasksInColumn[i];
+            if (t.order !== currentRank) {
+                t.order = currentRank;
+                this.tasks.set(t.id, t);
+                this.changed.set(t.id, t);
+            }
+            currentRank = this._genOrderId(currentRank);
+        }
+
+        this.tasks.set(task.id, task);
+        this.changed.set(task.id, task);
+        this._save();
+        return task;
+     }
+
+     clearTasks() {
+        this.tasks.clear();
+        this.changed.clear();
+        this.dirtyIds.clear();
+        this._save();
+     }
+
+     importDemoTasks(tasksArray) {
+        this.clearTasks();
+        if (Array.isArray(tasksArray)) {
+            tasksArray.forEach(t => {
+                this.getLatestOrderId(t);
+                this.tasks.set(t.id, t);
+            });
+            this._save();
+        }
+     }
+
 
      /*
       Returns by assigned
@@ -204,60 +261,6 @@ export class TaskService
      {
         return this._filter("assigned",assigned);
      }
-
-
-     byOrder()
-     {
-        return this.getTasks().sort((a, b) => this._compareRank(a.order || "", b.order || ""));
-    }
-
-
-
-    /*
-        This consumes the ids aka clears it and returns the ids.
-    */
-    /*
-    consumeDirtyIds()
-    {
-        const ids = Array.from(this.dirtyIds);
-        this.dirtyIds.clear();
-        console.log("Consumed dirtyIds:", ids);
-        return ids;
-    }
-
-
-    
-        This adds an ID to the dirtyIds set. 
-        The idea is to keep track of currently changed items
-        so we only update them while rerendering in list.
-        I put a threshold of max 20 ids before flushing it.
-    
-
-    markDirty(id)
-    {        
-        if(id== null) return;
-
-        const maxBatchSize = 20;
-        if(this.dirtyIds.size >= maxBatchSize) this.consumeDirtyIds();
-        this.dirtyIds.add(id);
-    }
-
-    consumeChangedTasks()
-    {
-        const changedTasks = Array.from(this.changed.values());
-        this.changed.clear();
-        
-        return changedTasks;
-    }
-
-
-    fetchCachedChanges()
-    {
-        const ids = Array.from(this.dirtyIds.values());
-        return ids.map(id => this.getTaskById(id) || null);
-
-    }
-    */
 
     
 

@@ -2,6 +2,7 @@ import { menu } from "./js/menu/sideMenu.js";
 import { subscribe } from "./js/observer.js";
 import { initTheme } from "./js/theme.js";
 import { openTaskDialog } from "./js/menu/openTaskDialog.js";
+import { maybeShowWelcomeOverlay } from "./js/comps/welcomeOverlay.js";
 
 import { initSeed } from "./js/taskList/seed.js";
 import { TaskRepo } from "./js/repo/TaskRepo.js";
@@ -30,7 +31,7 @@ app.classList.add("app");
 
 /** * Sidomeny (Navigation)
  * @description Använder <aside> och role="navigation" för att markera sektionen som sekundärt innehåll/navigering.
- * @type {HTMLElement} 
+ * @type {HTMLElement}
  */
 const sideMenuDiv = document.createElement("aside");
 sideMenuDiv.classList.add("left");
@@ -40,15 +41,11 @@ sideMenuDiv.setAttribute("aria-label", "Huvudmeny");
 
 /** * Huvudinnehåll (Main)
  * @description Använder <main> för att markera applikationens centrala innehåll, vilket är kritiskt för tillgänglighet.
- * @type {HTMLElement} 
+ * @type {HTMLElement}
  */
 const mainContent = document.createElement("main");
 mainContent.classList.add("center");
 mainContent.setAttribute("id", "main-content");
-
-// Bygg ihop applikationens grundstruktur
-app.innerHTML = "";
-app.append(sideMenuDiv, mainContent);
 
 /**
  * Initiera vyn-hanteraren och koppla den till huvudytan.
@@ -62,20 +59,42 @@ sideMenuDiv.append(sideMenu);
 
 
 /**
- * Prenumerera på tillståndsändringar (The Observer Flow).
- * Vid varje ändring i datan renderas den aktiva vyn om.
- */
-subscribe(() => viewController.rerender());
-
-/**
  * Initiera startdata och sätt startvyn till dashboard.
+ * IMPORTANT: subscribe() must come AFTER initSeed + setView to avoid
+ * double-render. initSeed→saveState→notify would trigger rerenderActiveView
+ * before setView runs, rendering the dashboard twice.
  */
 initSeed();
+
+// Bygg ihop applikationens grundstruktur atomiskt
+app.replaceChildren(sideMenuDiv, mainContent);
+
 viewController.setView("dashboard");
 
+// Register observer AFTER initial render to prevent double-render
+subscribe(() => viewController.rerender());
 
+// Show first-time welcome overlay (checks localStorage internally)
+maybeShowWelcomeOverlay(taskService);
 
+// Handle navigation events dispatched by overlay quick-start pills
+window.addEventListener("navigateTo", (e) => {
+  const view = e.detail;
+  if (view) viewController.setView(view);
+});
 
+/**
+ * Global händelselyssnare för interaktioner.
+ * Hanterar bland annat öppning av dialogrutan för att lägga till nya uppgifter (FAB).
+ * * @param {MouseEvent} e - Klickhändelsen.
+ */
+document.addEventListener("click", (e) => {
+  /** @type {Element|null} - Hittar närmaste element med klassen .addTaskFab */
+  const fabButton = e.target.closest(".addTaskFab");
+  if (fabButton) {
+    openTaskDialog({taskService});
+  }
+});
 
 /**
  * Service Worker och Background Sync registrering.
@@ -85,7 +104,7 @@ if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
       /** @type {ServiceWorkerRegistration} */
-      const registration = await navigator.serviceWorker.register("/service-worker.js");
+      const registration = await navigator.serviceWorker.register("/K3---Projekt-i-team/service-worker.js");
       console.log("Service Worker registered");
 
       // Vänta tills service workern är aktiv
@@ -109,6 +128,8 @@ if ("serviceWorker" in navigator) {
 
 /**
  * Hantera PWA Installation (US-2.4)
+ * Obs: Varningen "beforeinstallpromptevent.preventDefault() called" är förväntad
+ * eftersom vi ersätter standardbeteendet med vår egen anpassade installationsbanner.
  */
 let deferredPrompt;
 

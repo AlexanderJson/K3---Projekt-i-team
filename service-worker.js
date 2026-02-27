@@ -7,17 +7,17 @@ const CACHE_NAME = `lianer-cache-${CACHE_VERSION}`;
 
 // Resurser att cacha vid installation - Baserat på din mappstruktur
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/app.js',
-  '/manifest.webmanifest',
-  '/css/variables.css',
-  '/css/main.css',
-  '/css/dashboard.css',
-  '/css/tasks.css',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-512-maskable.png'
+  '/K3---Projekt-i-team/',
+  '/K3---Projekt-i-team/index.html',
+  '/K3---Projekt-i-team/app.js',
+  '/K3---Projekt-i-team/manifest.webmanifest',
+  '/K3---Projekt-i-team/css/variables.css',
+  '/K3---Projekt-i-team/css/main.css',
+  '/K3---Projekt-i-team/css/dashboard.css',
+  '/K3---Projekt-i-team/css/tasks.css',
+  '/K3---Projekt-i-team/icons/icon-192.png',
+  '/K3---Projekt-i-team/icons/icon-512.png',
+  '/K3---Projekt-i-team/icons/icon-512-maskable.png'
 ];
 
 // --- INSTALL: Cacha resurser ---
@@ -143,13 +143,13 @@ self.addEventListener('push', event => {
 
   if (event.data) {
     try { data = event.data.json(); }
-    catch (e) { data.body = event.data.text(); }
+    catch { data.body = event.data.text(); }
   }
 
   const options = {
     body: data.body,
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
+    icon: '/K3---Projekt-i-team/icons/icon-192.png',
+    badge: '/K3---Projekt-i-team/icons/icon-192.png',
     vibrate: [200, 100, 200],
     data: { dateOfArrival: Date.now() }
   };
@@ -162,6 +162,6 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow('/')
+    clients.openWindow('/K3---Projekt-i-team/')
   );
 });

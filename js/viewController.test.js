@@ -1,6 +1,5 @@
 import { jest } from '@jest/globals';
 
-const flushPromises = () => new Promise(process.nextTick);
 
 
 describe("viewController", () => {
@@ -77,7 +76,8 @@ describe("viewController", () => {
 
         expect(renderSettings).toHaveBeenCalledWith(
         container,
-        expect.any(Function)
+        expect.any(Function),
+        service
         );
     });
     test("does nothing if container missing", async () => {

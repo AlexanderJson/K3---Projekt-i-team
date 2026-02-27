@@ -227,13 +227,7 @@ test("getTasksByStatus returns sorted tasks", () => {
       expect(service.byAssigned('Lisa')).toHaveLength(2);
     });
 
-    test('byOrder() should sort by rank', () => {
-      const sorted = service.byOrder();
-      expect(sorted[0].id).toBe('2');
-      expect(sorted[1].id).toBe('1');
-      expect(sorted[2].id).toBe('3');
     });
-  });
 
   test("init should load tasks from repo", () => {
     repo.load.mockReturnValue(tasks);

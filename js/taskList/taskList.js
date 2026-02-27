@@ -5,6 +5,21 @@ import { listItem } from "./listItem.js";
  * Hanterar expandering/kollaps med persistens och tillgänglighetsstöd.
  */
 
+// Helper: Hitta vilket element man drar uppgiften över
+function getDragAfterElement(container, y) {
+  const draggableElements = [...container.querySelectorAll('.listItem:not(.dragging)')];
+
+  return draggableElements.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) {
+      return { offset: offset, element: child };
+    } else {
+      return closest;
+    }
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
 /**
  * Skapar en uppgiftslista för en specifik status.
  * @param {string} status - Namnet på statusen (t.ex. 'Todo', 'In Progress').
@@ -14,6 +29,7 @@ import { listItem } from "./listItem.js";
 export const taskList = (status, tasks, deps = {}) => {
   const container = document.createElement("div");
   const actions = createListActions(deps);
+
   // Hämta sparat läge för att bibehålla användarens vy vid omladdning
   const storageKey = `column_state_${status}`;
   const savedState = localStorage.getItem(storageKey);
@@ -37,7 +53,7 @@ export const taskList = (status, tasks, deps = {}) => {
   const baseClass = "task-column";
   const archiveClass = status === "Stängd" ? " closed-tasks-archive" : "";
   const collapsedClass = shouldBeExpanded ? "" : " collapsed";
-  
+
   container.className = `${baseClass}${archiveClass}${collapsedClass}`;
   container.setAttribute("data-status", status);
 
@@ -62,9 +78,12 @@ export const taskList = (status, tasks, deps = {}) => {
   // Container för listobjekt
   const listItemsContainer = document.createElement("div");
   listItemsContainer.className = "task-list-items";
+  listItemsContainer.setAttribute("role", "list");
   listItemsContainer.style.display = shouldBeExpanded ? "flex" : "none";
   listItemsContainer.style.flexDirection = "column";
   listItemsContainer.style.gap = "16px";
+  // Behövs för att göra det the dropzone
+  listItemsContainer.style.minHeight = "50px";
 
   // Arkiv-beskrivning (VG: Inkluderande beskrivning)
   if (status === "Stängd") {
@@ -72,7 +91,7 @@ export const taskList = (status, tasks, deps = {}) => {
     description.className = "archive-description";
     description.textContent = "Här sparas uppgifter som inte längre är aktuella eller har arkiverats.";
     description.style.display = shouldBeExpanded ? "block" : "none";
-    container.append(header, description, listItemsContainer); 
+    container.append(header, description, listItemsContainer);
   } else {
     container.append(header, listItemsContainer);
   }
@@ -88,12 +107,12 @@ export const taskList = (status, tasks, deps = {}) => {
     // Spara läge och uppdatera tillgänglighetsattribut
     localStorage.setItem(storageKey, isExpanded ? "expanded" : "collapsed");
     header.setAttribute("aria-expanded", String(isExpanded));
-    
+
     const arrow = header.querySelector(".taskArrow");
     if (arrow) {
       arrow.style.transform = isCollapsed ? "rotate(-90deg)" : "rotate(0deg)";
     }
-    
+
     listItemsContainer.style.display = isCollapsed ? "none" : "flex";
 
     const description = container.querySelector(".archive-description");
@@ -115,17 +134,56 @@ export const taskList = (status, tasks, deps = {}) => {
     });
   }
 
+  // --- HTML5 DRAG AND DROP EVENTS ---
+  container.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    
+    const afterElement = getDragAfterElement(listItemsContainer, e.clientY);
+    const draggingElement = document.querySelector(".dragging");
+    if (draggingElement) {
+      if (afterElement == null) {
+        listItemsContainer.appendChild(draggingElement);
+      } else {
+        listItemsContainer.insertBefore(draggingElement, afterElement);
+      }
+    }
+  });
+
+  container.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData("text/plain");
+    if (!taskId) return;
+
+    // Hitta var kortet släpptes
+    const afterElement = getDragAfterElement(listItemsContainer, e.clientY);
+    const nextTaskId = afterElement ? afterElement.getAttribute("data-task-id") : null;
+    
+    let prevTaskId = null;
+    if (afterElement) {
+        const prevElement = afterElement.previousElementSibling;
+        if (prevElement && prevElement.hasAttribute('data-task-id') && !prevElement.classList.contains("dragging")) {
+            prevTaskId = prevElement.getAttribute("data-task-id");
+        }
+    } else {
+        const allItems = [...listItemsContainer.querySelectorAll('.listItem:not(.dragging)')];
+        if (allItems.length > 0) {
+            prevTaskId = allItems[allItems.length - 1].getAttribute("data-task-id");
+        }
+    }
+
+    if (deps.onDropTask) {
+        deps.onDropTask(taskId, status, prevTaskId, nextTaskId);
+    }
+  });
+
   return container;
 };
 
-
 const createListActions = (deps) => ({
-  onNavigate: deps.navigate, // 124
+  onNavigate: deps.navigate,
   onEditTask: (task) => deps.onEditTask?.(task),
   onMoveTask: (id, direction) => deps.onMoveTask?.(id, direction),
   onChangeStatus: (id, newStatus) => deps.onChangeStatus?.(id, newStatus),
-  onDeleteTask: (task) => deps.onDeleteTask?.(task), //127
+  onDeleteTask: (task) => deps.onDeleteTask?.(task),
 });
-
-
-

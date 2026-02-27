@@ -1,8 +1,8 @@
 import { jest } from '@jest/globals';
-import { waitFor, fireEvent } from '@testing-library/dom';
+import { waitFor } from '@testing-library/dom';
 
 let listItem;
-let updateTaskStatus, removeById, loadState, saveState, addTaskDialog, setView;
+let addTaskDialog;
 let TASK_STATUSES;
 
 describe("listItem component", () => {
@@ -48,15 +48,10 @@ describe("listItem component", () => {
         jest.unstable_mockModule("../js/views/viewController.js", () => mockView);
         jest.unstable_mockModule("../js/status.js", () => mockStatus);
 
-        const module = await import("./card/listItem.js");
+        const module = await import("./taskList/listItem.js");
         listItem = module.listItem;
 
-        updateTaskStatus = mockUpdateTaskStatus.updateTaskStatus;
-        removeById = mockStorage.removeById;
-        loadState = mockStorage.loadState;
-        saveState = mockStorage.saveState;
         addTaskDialog = mockDialog.addTaskDialog;
-        setView = mockView.setView;
     });
 
     afterEach(() => {
@@ -154,9 +149,9 @@ describe("listItem component", () => {
         await waitFor(() => {
             expect(onDeleteTask).toHaveBeenCalledWith(task);
         });
-        });
+    });
 
-        test("Delete button calls onDeleteTask (open)", () => {
+    test("Delete button calls onDeleteTask (open)", () => {
         const task = { id: 1, status: "Att göra" };
         const onDeleteTask = jest.fn();
 
@@ -166,10 +161,9 @@ describe("listItem component", () => {
         deleteBtn.click();
 
         expect(onDeleteTask).toHaveBeenCalledWith(task);
-        });
+    });
 
-    test("formatDate handles special values correctly,", () =>
-    {
+    test("formatDate handles special values correctly,", () => {
         const el = listItem(
             { status: "Att göra", createdAt: "Nyss" },
             {}
@@ -213,7 +207,7 @@ describe("listItem component", () => {
         onEditTask: jest.fn(),
     });
 
-    const linkDiv = el.querySelector(".task-contact-explicit");
+    const linkDiv = el.querySelector(".task-contact-pill");
     expect(linkDiv).not.toBeNull();
 
     linkDiv.click();
